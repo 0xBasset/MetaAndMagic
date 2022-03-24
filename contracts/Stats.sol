@@ -19,7 +19,7 @@ contract AttackItemsStats is StatsLike {
             rarity(atts[3]),
             quality(atts[4]),
             bytes8(0),
-            bytes8(0)
+            bytes8(uint64(atts[5]))
         ));
     }
 
@@ -106,7 +106,7 @@ contract DefenseItemsStats is StatsLike {
             rarity(atts[3]),
             quality(atts[4]),
             bytes8(0),
-            bytes8(0)
+            bytes8(uint64(atts[5]))
         ));
     }
 
@@ -195,7 +195,7 @@ contract SpellItemsStats is StatsLike {
             rarity(atts[3]),
             quality(atts[4]),
             bytes8(0),
-            bytes8(0)
+            bytes8(uint64(atts[5]))
         ));
     }
 
@@ -270,8 +270,6 @@ contract SpellItemsStats is StatsLike {
 }
 
 contract BuffItemsStats is StatsLike {
-
-    // ITEMS STATS
 
     function getStats(uint256[6] calldata atts) public pure override returns (bytes32 s1, bytes32 s2) {
         s1 = bytes32(abi.encodePacked(
@@ -381,14 +379,14 @@ contract HeroStats  is StatsLike {
         s1 = bytes32(abi.encodePacked(
             level(atts[0]),
             class(atts[1]),
-            pet(atts[2]),
+            rank(atts[2]),
             bytes8(0)
         ));
 
         s2 = bytes32(abi.encodePacked(
             rarity(atts[3]),
-            item(atts[4]),
-            bytes8(0),
+            pet(atts[4]),
+            item(atts[5]),
             bytes8(0)
         ));
     }
@@ -429,6 +427,19 @@ contract HeroStats  is StatsLike {
         if (petId == 3) (hp, atk, mgk, mod) = (3000,3000,3000,10); // Unicorn
         if (petId == 4) (hp, atk, mgk, mod) = (4000,4000,4000,15); // Sphinx
         if (petId == 5) (hp, atk, mgk, mod) = (5000,5000,4000,15); // Dragon
+
+        packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
+    }
+
+    function rank(uint256 id) public pure returns (bytes8 packed) {
+        (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
+        //todo adjust this
+        if (id == 1) (hp, atk, mgk, mod) = (99, 0,0,0);  // novice
+        if (id == 2) (hp, atk, mgk, mod) = (198,0,0,4);  // beginner
+        if (id == 3) (hp, atk, mgk, mod) = (297,0,0,1); // intermediate
+        if (id == 4) (hp, atk, mgk, mod) = (396,0,0,5); // advanced
+        if (id == 5) (hp, atk, mgk, mod) = (495,0,0,5); // expert
+        if (id == 5) (hp, atk, mgk, mod) = (994,0,0,5); // master
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
