@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
 import { ERC721 } from "./ERC721.sol";
@@ -11,6 +11,7 @@ contract Heroes is ERC721 {
 
     address stats;
     address renderer;
+
     uint256 entropySeed;
 
     function initialize(address stats_, address renderer_) external {
@@ -20,20 +21,30 @@ contract Heroes is ERC721 {
         renderer = renderer_;
     }
 
-    function getStats(uint256 id_) external view virtual returns(bytes32, bytes32) {    
+    function getStats(uint256 id_) external view virtual returns(bytes32, bytes32) {    // [][]
         uint256 seed = entropySeed;
         
         if (!_isSpecial(id_, seed)) return StatsLike(stats).getStats(_traits(seed, id_));
     }
 
+    function getTraits(uint256 id_) external view returns (uint256[6] memory traits_) {
+        return _traits(entropySeed, id_);
+    }
+
     /*///////////////////////////////////////////////////////////////
-                             MINT FUNCTIONS
+                        MINT FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
 
 
+    function setAuth(address add_, bool auth_) external {
+        require(_owner() == msg.sender, "not authorized");
+        auth[add_] = auth_;
+    }
 
-
+    function setEntropy(uint256 seed) external {
+        entropySeed = seed;
+    }
 
     /*///////////////////////////////////////////////////////////////
                              TRAIT FUNCTIONS

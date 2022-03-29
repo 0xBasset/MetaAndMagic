@@ -26,7 +26,11 @@ contract MockMetaAndMagic is MetaAndMagic {
         return _calculateScore(bosses[boss].stats, hero, packedItems);
     }
 
-    function getScore(bytes8 boss, uint256 hero, bytes10 packedItems) external  returns(uint256) {
+    function getCombat(bytes8 boss, uint256 hero, bytes10 packedItems) external returns(Combat memory c) {
+        c = _calc(boss, hero, packedItems);
+    }
+
+    function getScore(bytes8 boss, uint256 hero, bytes10 packedItems) external returns(uint256) {
         return _calculateScore(boss, hero, packedItems);
     }
 
@@ -38,12 +42,20 @@ contract MockMetaAndMagic is MetaAndMagic {
         }
     }
 
+    function getRes(Combat memory combat, bytes8 bossStats) external returns (uint256 heroAtk, uint256 bossAtk) {
+        return _getRes(combat, bossStats);
+    }
+
+    function getResult(Combat memory combat, bytes8 bossStats) external returns (uint256) {
+        return _getResult(combat, bossStats);
+    }
+
     function setNextScore(uint256 s) external {
         nextScore = s;
     }
 
     function get(bytes32 src, uint8 st, uint256 index) public returns (uint256) {
-        return _get(src, st, index);
+        return _get(src, Stat(st), index);
     }
 
 }
@@ -63,7 +75,9 @@ contract HeroesMock is Heroes {
     }
 
     function getStats(uint256 itemId) external view override returns(bytes32, bytes32) {
+        if (getHeroAttributes[itemId][0] == 0) return StatsLike(stats).getStats(_traits(entropySeed, itemId));
         uint256[6] memory atts;
+        
         atts[0] =  getHeroAttributes[itemId][0];
         atts[1] =  getHeroAttributes[itemId][1];
         atts[2] =  getHeroAttributes[itemId][2];

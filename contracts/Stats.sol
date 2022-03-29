@@ -173,9 +173,9 @@ contract DefenseItemsStats is StatsLike {
         if (id == 1)  (hp, atk, mgk, mod) = (0,0,0,0);    // Normal
         if (id == 2)  (hp, atk, mgk, mod) = (100,0,0,0);  // Good
         if (id == 3)  (hp, atk, mgk, mod) = (200,0,0,0);  // Very Good
-        if (id == 4) (hp, atk, mgk, mod) = (300,0,0,1);  // Fine
-        if (id == 5) (hp, atk, mgk, mod) = (400,0,0,4);  // Superfime
-        if (id == 6) (hp, atk, mgk, mod) = (500,0,0,5);  // Excellent
+        if (id == 4) (hp, atk, mgk, mod) = (300,0,0,1);  //  Fine
+        if (id == 5) (hp, atk, mgk, mod) = (400,0,0,4);  //  Superfime
+        if (id == 6) (hp, atk, mgk, mod) = (500,0,0,5);  //  Excellent
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -230,7 +230,7 @@ contract SpellItemsStats is StatsLike {
     function energy(uint256 id) public pure returns (bytes8 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
         
-        if (id == 1) (hp, atk, mgk, mod) = (0,0,0,0);  // Kinectic
+        if (id == 1) (hp, atk, mgk, mod) = (0,0,0,0);   // Kinectic
         if (id == 2) (hp, atk, mgk, mod) = (0,0,100,0); // Potential
         if (id == 3) (hp, atk, mgk, mod) = (0,0,200,0); // Electrical
         if (id == 4) (hp, atk, mgk, mod) = (0,0,300,0); // Nuclear
@@ -373,6 +373,94 @@ contract BuffItemsStats is StatsLike {
 
 }
 
+contract BossDropsStats is StatsLike {
+
+     function getStats(uint256[6] calldata atts) public pure override returns (bytes32 s1, bytes32 s2) {
+        s1 = bytes32(abi.encodePacked(
+            level(atts[0]),
+            kind(atts[1]),
+            rarity(atts[2]),
+            bytes8(0)
+        ));
+        
+        s2 = bytes32(abi.encodePacked(
+            rarity(atts[3]),
+            quality(atts[4]),
+            bytes8(0),
+            bytes8(uint64(atts[5]))
+        ));
+    }
+
+    function level(uint256 id) public pure returns (bytes8 packed) {
+        (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
+        
+        // Spell
+        if (id == 1) (hp, atk, mgk, mod) = (0,0,100,0); // I
+        if (id == 2) (hp, atk, mgk, mod) = (0,0,200,0); // II
+        if (id == 3) (hp, atk, mgk, mod) = (0,0,300,0); // III
+        if (id == 4) (hp, atk, mgk, mod) = (0,0,400,0); // IV
+        if (id == 5) (hp, atk, mgk, mod) = (0,0,500,0); // V
+        if (id == 6) (hp, atk, mgk, mod) = (0,0,1000,0); // X
+
+        packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
+    }
+
+    function kind(uint256 id) public pure returns (bytes8 packed) {
+        (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
+        
+        // Spell 
+        if (id == 1) (hp, atk, mgk, mod) = (0,0,500,0);      // Force
+        if (id == 2) (hp, atk, mgk, mod) = (0,0,1000,0);     // Implosion
+        if (id == 3) (hp, atk, mgk, mod) = (0,0,1500,2);     // Explosion
+        if (id == 4) (hp, atk, mgk, mod) = (500,0,2000,9);   // Antimatter
+        if (id == 5) (hp, atk, mgk, mod) = (1000,0,2500,8);  // Supernova
+        if (id == 6) (hp, atk, mgk, mod) = (1500,0,3000,10); // Ultimatum
+
+        packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
+    }
+
+    function energy(uint256 id) public pure returns (bytes8 packed) {
+        (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
+        
+        if (id == 1) (hp, atk, mgk, mod) = (0,0,0,0);  // Kinectic
+        if (id == 2) (hp, atk, mgk, mod) = (0,0,100,0); // Potential
+        if (id == 3) (hp, atk, mgk, mod) = (0,0,200,0); // Electrical
+        if (id == 4) (hp, atk, mgk, mod) = (0,0,300,0); // Nuclear
+        if (id == 5) (hp, atk, mgk, mod) = (0,0,400,0); // Gravitational
+        if (id == 6) (hp, atk, mgk, mod) = (0,0,500,0); // Cosmic
+
+        packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
+    }
+
+    function rarity(uint256 id) public pure returns (bytes8 packed) {
+        (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
+        
+        // Rarities are equal among all classes
+        if (id == 1) (hp, atk, mgk, mod) = (500,0,0,0);   // Common
+        if (id == 2) (hp, atk, mgk, mod) = (500,0,0,4);   // Uncommon
+        if (id == 3) (hp, atk, mgk, mod) = (500,500,0,5);   // Rare
+        if (id == 4) (hp, atk, mgk, mod) = (500,500,0,13);  // Epic
+        if (id == 5) (hp, atk, mgk, mod) = (500,500,500,13);  // Legendary
+        if (id == 6) (hp, atk, mgk, mod) = (500,500,500,15);  // Mythic
+
+        packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
+    }
+
+    function quality(uint256 id) public pure returns (bytes8 packed) {
+        (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
+        
+        // Spell
+        if (id == 1) (hp, atk, mgk, mod) = (0,0,0,0);   // Normal
+        if (id == 2) (hp, atk, mgk, mod) = (0,100,0,0); // Good
+        if (id == 3) (hp, atk, mgk, mod) = (0,200,0,0); // Very Good
+        if (id == 4) (hp, atk, mgk, mod) = (0,300,0,0); // Fine
+        if (id == 5) (hp, atk, mgk, mod) = (0,400,0,0); // Superfime
+        if (id == 6) (hp, atk, mgk, mod) = (0,500,0,0); // Excellent
+
+        packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
+    }
+}
+
 contract HeroStats  is StatsLike {
 
     function getStats(uint256[6] calldata atts) public pure override returns (bytes32 s1, bytes32 s2) {
@@ -439,32 +527,32 @@ contract HeroStats  is StatsLike {
         if (id == 3) (hp, atk, mgk, mod) = (297,0,0,1); // intermediate
         if (id == 4) (hp, atk, mgk, mod) = (396,0,0,5); // advanced
         if (id == 5) (hp, atk, mgk, mod) = (495,0,0,5); // expert
-        if (id == 5) (hp, atk, mgk, mod) = (994,0,0,5); // master
+        if (id == 6) (hp, atk, mgk, mod) = (994,0,0,5); // master
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
 
-    function item(uint256 ItemId) public pure returns (bytes8 packed) {
+    function item(uint256 id) public pure returns (bytes8 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
 
-        if (ItemId == 1)  (hp, atk, mgk, mod) = (   0, 500,   0, 0); //dagger
-        if (ItemId == 2)  (hp, atk, mgk, mod) = (   0,1000,   0, 0); //sword
-        if (ItemId == 3)  (hp, atk, mgk, mod) = (   0,1500,   0, 8); // hammer
-        if (ItemId == 4)  (hp, atk, mgk, mod) = (   0,2000, 500,1000); //spear
-        if (ItemId == 5)  (hp, atk, mgk, mod) = (   0,2500,1000, 2); // mace
-        if (ItemId == 6)  (hp, atk, mgk, mod) = (   0,3000,1500,1000); //staff
-        if (ItemId == 7)  (hp, atk, mgk, mod) = (   0,   0, 500, 0); // force
-        if (ItemId == 8)  (hp, atk, mgk, mod) = (   0,   0,1000, 0); //implosion
-        if (ItemId == 9)  (hp, atk, mgk, mod) = (   0,   0,1500, 2); // explosion
-        if (ItemId == 10) (hp, atk, mgk, mod) = (   0, 500,2000,1000); //antimatter
-        if (ItemId == 11) (hp, atk, mgk, mod) = (   0,1000,2500, 8); // supernova
-        if (ItemId == 12) (hp, atk, mgk, mod) = (   0,1500,3000,1000); //ultimatum
-        if (ItemId == 13) (hp, atk, mgk, mod) = ( 500,   0,   0, 0); //potion
-        if (ItemId == 14) (hp, atk, mgk, mod) = (1000,   0,   0, 0); // ether
-        if (ItemId == 15) (hp, atk, mgk, mod) = (1500,   0,   0, 4); //elixir
-        if (ItemId == 16) (hp, atk, mgk, mod) = (2000,   0,   0, 1); // nectar
-        if (ItemId == 17) (hp, atk, mgk, mod) = (2500,   0,   0, 5); // ambrosia
-        if (ItemId == 18) (hp, atk, mgk, mod) = (3000,   0,   0, 5); // cornucopia
+        if (id == 1)  (hp, atk, mgk, mod) = (   0, 500,   0, 0); //dagger
+        if (id == 2)  (hp, atk, mgk, mod) = (   0,1000,   0, 0); //sword
+        if (id == 3)  (hp, atk, mgk, mod) = (   0,1500,   0, 8); // hammer
+        if (id == 4)  (hp, atk, mgk, mod) = (   0,2000, 500,1000); //spear
+        if (id == 5)  (hp, atk, mgk, mod) = (   0,2500,1000, 2); // mace
+        if (id == 6)  (hp, atk, mgk, mod) = (   0,3000,1500,1000); //staff
+        if (id == 7)  (hp, atk, mgk, mod) = (   0,   0, 500, 0); // force
+        if (id == 8)  (hp, atk, mgk, mod) = (   0,   0,1000, 0); //implosion
+        if (id == 9)  (hp, atk, mgk, mod) = (   0,   0,1500, 2); // explosion
+        if (id == 10) (hp, atk, mgk, mod) = (   0, 500,2000,1000); //antimatter
+        if (id == 11) (hp, atk, mgk, mod) = (   0,1000,2500, 8); // supernova
+        if (id == 12) (hp, atk, mgk, mod) = (   0,1500,3000,1000); //ultimatum
+        if (id == 13) (hp, atk, mgk, mod) = ( 500,   0,   0, 0); //potion
+        if (id == 14) (hp, atk, mgk, mod) = (1000,   0,   0, 0); // ether
+        if (id == 15) (hp, atk, mgk, mod) = (1500,   0,   0, 4); //elixir
+        if (id == 16) (hp, atk, mgk, mod) = (2000,   0,   0, 1); // nectar
+        if (id == 17) (hp, atk, mgk, mod) = (2500,   0,   0, 5); // ambrosia
+        if (id == 18) (hp, atk, mgk, mod) = (3000,   0,   0, 5); // cornucopia
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }

@@ -1,8 +1,7 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
 import { ERC721 } from "./ERC721.sol";
-
 
 contract Items is ERC721 {
 
@@ -14,6 +13,7 @@ contract Items is ERC721 {
     uint256 entropySeed;
 
     mapping(uint256 => address) statsAddress;
+    mapping(uint256 => uint256) bossSupplies;
 
     function initialize(address stats_1, address stats_2, address stats_3, address stats_4, address renderer_) external {
         require(msg.sender == _owner(), "not authorized");
@@ -22,13 +22,29 @@ contract Items is ERC721 {
         statsAddress[2] = stats_2;
         statsAddress[3] = stats_3;
         statsAddress[4] = stats_4;
+        
         renderer = renderer_;
+
+        // Setting boss drop supplies
+        bossSupplies[2]  = 1000;
+        bossSupplies[3]  = 900;
+        bossSupplies[4]  = 800;
+        bossSupplies[5]  = 700;
+        bossSupplies[6]  = 600;
+        bossSupplies[7]  = 500;
+        bossSupplies[8]  = 400;
+        bossSupplies[9]  = 300;
+        bossSupplies[10] = 200;
     }
 
     function getStats(uint256 id_) external view virtual returns(bytes32, bytes32) {    
         uint256 seed = entropySeed;
         
         if (!_isSpecial(id_, seed)) return StatsLike(stats).getStats(_traits(seed, id_));
+    }
+
+    function getTraits(uint256 id_) external view returns (uint256[6] memory traits_) {
+        return _traits(entropySeed, id_);
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -51,7 +67,7 @@ contract Items is ERC721 {
                 _getTier(id_,    seed, "MATERIAL"), 
                 _getTier(id_,    seed, "RARITY"), 
                 _getTier(id_,    seed, "QUALITY"),
-                _getElement(id_, seed, "Element")];
+                _getElement(id_, seed, "ELEMENT")];
     }
 
     function _getTier(uint256 id_, uint256 seed, bytes32 salt) internal pure returns (uint256 t_) {
@@ -74,6 +90,11 @@ contract Items is ERC721 {
     function _isSpecial(uint256 id, uint256 seed) internal pure returns (bool special) {
         uint256 rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 9_991 + 1;
         if (id > rdn && id <= rdn + 8) return true;
+    }
+
+    // TODO add chainlink
+    function setEntropy(uint256 seed) external {
+        entropySeed = seed;
     }
 
 }
