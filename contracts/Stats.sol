@@ -543,15 +543,15 @@ contract HeroStats  is StatsLike {
         if (id == 1)  (hp, atk, mgk, mod) = (   0, 500,   0, 0); //dagger
         if (id == 2)  (hp, atk, mgk, mod) = (   0,1000,   0, 0); //sword
         if (id == 3)  (hp, atk, mgk, mod) = (   0,1500,   0, 8); // hammer
-        if (id == 4)  (hp, atk, mgk, mod) = (   0,2000, 500,1000); //spear
+        if (id == 4)  (hp, atk, mgk, mod) = (   0,2000, 500,1); //spear
         if (id == 5)  (hp, atk, mgk, mod) = (   0,2500,1000, 2); // mace
-        if (id == 6)  (hp, atk, mgk, mod) = (   0,3000,1500,1000); //staff
+        if (id == 6)  (hp, atk, mgk, mod) = (   0,3000,1500,1); //staff
         if (id == 7)  (hp, atk, mgk, mod) = (   0,   0, 500, 0); // force
         if (id == 8)  (hp, atk, mgk, mod) = (   0,   0,1000, 0); //implosion
         if (id == 9)  (hp, atk, mgk, mod) = (   0,   0,1500, 2); // explosion
-        if (id == 10) (hp, atk, mgk, mod) = (   0, 500,2000,1000); //antimatter
+        if (id == 10) (hp, atk, mgk, mod) = (   0, 500,2000,1); //antimatter
         if (id == 11) (hp, atk, mgk, mod) = (   0,1000,2500, 8); // supernova
-        if (id == 12) (hp, atk, mgk, mod) = (   0,1500,3000,1000); //ultimatum
+        if (id == 12) (hp, atk, mgk, mod) = (   0,1500,3000,1); //ultimatum
         if (id == 13) (hp, atk, mgk, mod) = ( 500,   0,   0, 0); //potion
         if (id == 14) (hp, atk, mgk, mod) = (1000,   0,   0, 0); // ether
         if (id == 15) (hp, atk, mgk, mod) = (1500,   0,   0, 4); //elixir
