@@ -58,11 +58,16 @@ contract MockMetaAndMagic is MetaAndMagic {
         return _get(src, Stat(st), index);
     }
 
-     function _getRes(Combat memory combat, bytes8 bossStats) internal returns (uint256 heroAtk, uint256 bossAtk) {
-        uint256 bossPhy = combat.phyRes * _get(bossStats, Stat.PHY_DMG) / precision;
-        uint256 bossMgk = combat.mgkRes * _get(bossStats, Stat.MGK_DMG) / precision;
+    event D(string k, uint256 val);
 
-        heroAtk = (combat.phyDmg * combat.bossPhyRes / precision) + (combat.mgkDmg * combat.bossMgkRes / precision); // total boss HP
+     function _getRes(Combat memory combat, bytes8 bossStats) internal returns (uint256 heroAtk, uint256 bossAtk) {
+
+        emit D("bossPhy", _get(bossStats, Stat.PHY_DMG));
+        emit D("bossMgk", _get(bossStats, Stat.MGK_DMG));
+        uint256 bossPhy = combat.phyRes * 1000  / precision;
+        uint256 bossMgk = combat.mgkRes * 0 * precision / precision;
+
+        heroAtk = combat.phyDmg + combat.mgkDmg; // total boss HP
         bossAtk = bossPhy + bossMgk;
     }
 

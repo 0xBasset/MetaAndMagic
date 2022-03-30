@@ -83,8 +83,8 @@ contract CalculateScoreTest is MetaAndMagicBaseTest {
             emit log("    Stacked variables (1e12 == 1)");
             emit log_named_uint("   | Hero stacked phy_res", c.phyRes);
             emit log_named_uint("   | Hero stacked mgk_res", c.mgkRes);
-            emit log_named_uint("   | Boss stacked phy_res", c.bossPhyRes);
-            emit log_named_uint("   | Boss stacked mgk_res", c.bossMgkRes);
+            // emit log_named_uint("   | Boss stacked phy_res", c.bossPhyRes);
+            // emit log_named_uint("   | Boss stacked mgk_res", c.bossMgkRes);
             emit log("");
 
             (uint256 heroAttack, uint256 bossPhny) = meta.getRes(c, bossStats);
@@ -92,7 +92,7 @@ contract CalculateScoreTest is MetaAndMagicBaseTest {
             emit log_named_uint("Boss Attack", bossPhny);
 
             emit log("");
-            emit log_named_uint("Final Result", meta.getResult(c, bossStats));
+            emit log_named_uint("Final Result", meta.getResult(c, bossStats));  
         }
 
     }
