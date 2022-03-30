@@ -11,37 +11,30 @@ contract MetaAndMagic {
 
     mapping(uint256 => Heroes) public heroes;
     mapping(uint256 => Boss)   public bosses;
-    mapping(bytes32 => Fight)  public fights;     // fightid -> Fight
+    mapping(bytes32 => Fight)  public fights;     
 
-    mapping(uint256 => uint256) public requests;    // boss -> requestId
+    mapping(uint256 => uint256) public requests;  
     mapping(uint256 => uint256) public prizeValues;
     mapping(uint256 => address) public prizeTokens;
 
     struct Heroes { address owner; uint16 lastBoss; uint32 highestScore;}
 
-    struct Fight  { uint16 heroId; uint16 boss; bytes10 items_; uint32 start; uint32 count; bool claimedScore; }
+    struct Fight  { uint16 heroId; uint16 boss; bytes10 items_; uint32 start; uint32 count; bool claimedScore; bool claimedBoss; }
     
     struct Boss   { bytes8 stats; uint16 drops; uint16 topScorers; uint56 highestScore; uint56 entries; uint56 winIndex; }
 
-    struct Combat {
-        uint256 hp;
-        uint256 phyDmg;
-        uint256 mgkDmg;
-        uint256 phyRes;
-        uint256 mgkRes;
-        uint256 bossPhyRes;
-        uint256 bossMgkRes;
-    }
+    struct Combat { uint256 hp; uint256 phyDmg; uint256 mgkDmg; uint256 phyRes; uint256 mgkRes; uint256 bossPhyRes; uint256 bossMgkRes; }
 
     enum Stat { HP, PHY_DMG, MGK_DMG, MGK_RES, MGK_PEN, PHY_RES, PHY_PEN, ELM }
 
     uint256 constant public precision = 1e12;
 
-    function initialize(address heroes_, address items_) external {
+    function initialize(address heroes_, address items_, address vrf) external {
         require(msg.sender == _owner());
 
         heroesAddress = heroes_;
         itemsAddress  = items_;
+        VRFcoord      = vrf;
 
         currentBoss = 1; // start at current boss
         // Configure chainlink
@@ -94,7 +87,7 @@ contract MetaAndMagic {
         fightId = keccak256(abi.encode(heroId, currBoss, items, msg.sender));
         require(fights[fightId].heroId == 0, "already fought");
 
-        Fight memory fh = Fight(uint16(heroId), uint16(currBoss), items, 0, 0, false);
+        Fight memory fh = Fight(uint16(heroId), uint16(currBoss), items, 0, 0, false, false);
 
         if (score == boss.highestScore) boss.topScorers++; // Tied to the highest score;
         
@@ -125,18 +118,20 @@ contract MetaAndMagic {
 
         Fight memory fh = fights[fightId];
 
-        uint256 score = _calculateScore(bosses[boss_].stats, heroId, items);
-
         require(fh.heroId != 0,  "non existent fight");
-        require(score > 0,       "not won");
+        require(!fh.claimedBoss, "already claimed");
 
-        // Can only be claimed once because items are burned.
+        uint256 score = _calculateScore(bosses[boss_].stats, heroId, items);
+        require(score > 0, "not won");
+
         uint16[5] memory items_ = _unpackItems(items);
         for (uint256 i = 0; i < 5; i++) {
             if (items_[i] == 0) break;
-            require(MetaAndMagicLike(itemsAddress).burnFrom(msg.sender, items_[i]), "burn failed");
+            // Burn the item  if it's not burnt already
+            if (IERC721(itemsAddress).ownerOf(items_[i]) != address(0)) require(MetaAndMagicLike(itemsAddress).burnFrom(msg.sender, items_[i]), "burn failed");
         }
 
+        fights[fightId].claimedBoss = true;
         // Boss drops supplies are checked at the itemsAddress
         bossItemId = MetaAndMagicLike(itemsAddress).mintDrop(boss_, msg.sender);
     }
@@ -170,7 +165,7 @@ contract MetaAndMagic {
         
         require(boss_ < currentBoss,  "not finished");
         require(boss.highestScore > 0, "invalid");
-        require(boss.winIndex != 0, "invalid");
+        require(boss.winIndex != 0,    "invalid");
         require(fh.start >= boss.winIndex && (fh.start + fh.count < boss.winIndex), "not the winner");
 
         fights[fightId].count= 0;
@@ -206,9 +201,8 @@ contract MetaAndMagic {
         // Tally Hero modifies the combat memory inplace
         _tally(combat, s1_, s2_, bossStats);
         uint16[5] memory items_ = _unpackItems(packedItems);
-        for (uint256 i = 0; i < 6; i++) {
+        for (uint256 i = 0; i < 5; i++) {
             if (items_[i] == 0) break;
-            emit Debug_Fight("items", items_[i]);
             (s1_, s2_) = MetaAndMagicLike(itemsAddress).getStats(items_[i]);
             _tally(combat, s1_, s2_, bossStats);
         }
@@ -216,33 +210,7 @@ contract MetaAndMagic {
         return _getResult(combat, bossStats);
     }
 
-    function _calc(bytes8 bossStats, uint256 heroId, bytes10 packedItems) internal returns (Combat memory combat) {
-        (bytes32 s1_, bytes32 s2_) = MetaAndMagicLike(heroesAddress).getStats(heroId);
-
-        // Start with empty combat
-        combat = Combat(0,0,0,precision,precision,precision,precision);
-        
-        // Tally Hero modifies the combat memory inplace
-        _tally(combat, s1_, s2_, bossStats);
-        uint16[5] memory items_ = _unpackItems(packedItems);
-        for (uint256 i = 0; i < 6; i++) {
-            if (items_[i] == 0) break;
-            emit Debug_Fight("items", items_[i]);
-            (s1_, s2_) = MetaAndMagicLike(itemsAddress).getStats(items_[i]);
-            _tally(combat, s1_, s2_, bossStats);
-        }
-    }
-
-    function _getRes(Combat memory combat, bytes8 bossStats) internal returns (uint256 heroAtk, uint256 bossAtk) {
-        uint256 bossPhy = combat.phyRes * _get(bossStats, Stat.PHY_DMG) / precision;
-        uint256 bossMgk = combat.mgkRes * _get(bossStats, Stat.MGK_DMG) / precision;
-
-        heroAtk = (combat.phyDmg * combat.bossPhyRes / precision) + (combat.mgkDmg * combat.bossMgkRes / precision); // total boss HP
-        bossAtk = bossPhy + bossMgk;
-    }
-
-
-    function _getResult(Combat memory combat, bytes8 bossStats) internal returns (uint256) {
+    function _getResult(Combat memory combat, bytes8 bossStats) internal pure returns (uint256) {
         uint256 bossAtk = combat.phyRes * _get(bossStats, Stat.PHY_DMG) / precision;
         uint256 bossMgk = combat.mgkRes * _get(bossStats, Stat.MGK_DMG) / precision;
 
@@ -252,9 +220,8 @@ contract MetaAndMagic {
         return totalHeroAttack - _get(bossStats, Stat.HP) + combat.hp - bossAtk + bossMgk;
     }
 
-    event Debug_Fight(string key, uint256 val);
-
-    function _tally(Combat memory combat, bytes32 s1_, bytes32 s2_, bytes8 bossStats) internal {
+    /// @dev This is the core function for calculating scores
+    function _tally(Combat memory combat, bytes32 s1_, bytes32 s2_, bytes8 bossStats) internal pure {
         uint256 bossPhyPen = _get(bossStats, Stat.PHY_PEN);
         uint256 bossPhyRes = _get(bossStats, Stat.PHY_RES);
         uint256 bossMgkPen = _get(bossStats, Stat.MGK_PEN);
@@ -265,8 +232,7 @@ contract MetaAndMagic {
         combat.phyDmg += _sum(Stat.PHY_DMG, s1_) + _sum(Stat.PHY_DMG, s2_);
         combat.mgkDmg += _sum(Stat.MGK_DMG, s1_) + _sum(Stat.MGK_DMG, s2_);
 
-        emit Debug_Fight("hp", combat.hp);
-
+        // TODO this looks bad, figure it out a way to optimize it
         // Stacked Elements
         combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s1_, bossPhyPen);
         combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s2_, bossPhyPen);
@@ -288,33 +254,33 @@ contract MetaAndMagic {
         combat.bossMgkRes = stackElement(combat.bossMgkRes, bossElement, itemElement);
     }
 
-    function stackElement(uint256 val, uint256 ele, uint256 oppEle) internal returns (uint256) {
+    function stackElement(uint256 val, uint256 ele, uint256 oppEle) internal pure returns (uint256) {
         if (ele == 0 || oppEle == 0 || ele == oppEle) return val;
         if (ele == oppEle + 1 || (ele == 1 && oppEle == 4)) return val * 2 * precision / precision;
         if (ele + 1 == oppEle || (ele == 4 && oppEle == 1)) return val * 1 * precision / 2 * precision;
         return val;
     }
 
-    function _sum(Stat st, bytes32 src) internal returns (uint256 sum) {
+    function _sum(Stat st, bytes32 src) internal pure returns (uint256 sum) {
         sum = _get(src, st, 0) + _get(src, st, 1) + _get(src, st, 2);
     }
 
-    function _stack(Stat st, uint256 val, bytes32 s1_, uint256 oppPen) internal returns (uint256) {
+    function _stack(Stat st, uint256 val, bytes32 s1_, uint256 oppPen) internal pure returns (uint256) {
         (uint256 v1, uint256 v2, uint256 v3) = _getAll(s1_, st);
         return _stack(_stack(_stack(val, oppPen, v3), oppPen, v2), oppPen, v1);
     }
 
-    function _stack(Stat st, uint256 val, uint256 res, bytes32 oppPens) internal returns (uint256) {
+    function _stack(Stat st, uint256 val, uint256 res, bytes32 oppPens) internal pure returns (uint256) {
         (uint256 v1, uint256 v2, uint256 v3) = _getAll(oppPens, st);
         return _stack(_stack(_stack(val, v3, res),v2, res), v1, res);
     }
 
-    function _get(bytes32 src, Stat stat) internal  returns(uint256) {
+    function _get(bytes32 src, Stat stat) internal pure returns(uint256) {
         return _get(src, stat, 0);
     }
 
     /// @dev Function to get a stat given the source, the index and which stat it is.
-    function _get(bytes32 src, Stat sta, uint256 index) internal returns (uint256) {
+    function _get(bytes32 src, Stat sta, uint256 index) internal pure returns (uint256) {
         uint8 st = uint8(sta);
 
         if (st == 7) return uint64(uint256(src)); // Element
@@ -326,7 +292,7 @@ contract MetaAndMagic {
         return (uint16(bytes2(att << (48))) & (1 << st - 3)) >> st - 3;
     }
 
-    function _getAll(bytes32 src, Stat st) internal returns (uint256 val1, uint256 val2, uint256 val3) {
+    function _getAll(bytes32 src, Stat st) internal pure returns (uint256 val1, uint256 val2, uint256 val3) {
         (val1, val2, val3) = (_get(src, st,0),_get(src, st,1),_get(src, st,2));
     }
 

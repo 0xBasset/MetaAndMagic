@@ -30,19 +30,19 @@ contract HeroesTest is DSTest {
         assertEq(heroes.balanceOf(address(this)), 1);
     }
 
-    function test_transfer_authed(uint256 id, address from, address to) public {
-        heroes.mint(address(from), id);
+    // function test_transfer_authed(uint256 id, address from, address to) public {
+    //     heroes.mint(address(from), id);
 
-        vm.expectRevert("NOT_APPROVED");
-        heroes.transferFrom(from, to, id);
+    //     vm.expectRevert("NOT_APPROVED");
+    //     heroes.transferFrom(from, to, id);
 
-        heroes.setAuth(address(this), true);
-        heroes.transferFrom(from, to , id);
+    //     heroes.setAuth(address(this), true);
+    //     heroes.transferFrom(from, to , id);
 
-        assertEq(heroes.ownerOf(id), to);
-        assertEq(heroes.balanceOf(from), 0);
-        assertEq(heroes.balanceOf(to), 1);
-    }
+    //     assertEq(heroes.ownerOf(id), to);
+    //     assertEq(heroes.balanceOf(from), 0);
+    //     assertEq(heroes.balanceOf(to), 1);
+    // }
 
 
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
-import { MetaAndMagic } from "../../MetaAndMagic.sol";
+import { MetaAndMagic, MetaAndMagicLike } from "../../MetaAndMagic.sol";
 import { Heroes }       from "../../Heroes.sol";  
 import { Items }        from "../../Items.sol";
 import { Proxy }        from "../../Proxy.sol";
@@ -58,6 +58,31 @@ contract MockMetaAndMagic is MetaAndMagic {
         return _get(src, Stat(st), index);
     }
 
+     function _getRes(Combat memory combat, bytes8 bossStats) internal returns (uint256 heroAtk, uint256 bossAtk) {
+        uint256 bossPhy = combat.phyRes * _get(bossStats, Stat.PHY_DMG) / precision;
+        uint256 bossMgk = combat.mgkRes * _get(bossStats, Stat.MGK_DMG) / precision;
+
+        heroAtk = (combat.phyDmg * combat.bossPhyRes / precision) + (combat.mgkDmg * combat.bossMgkRes / precision); // total boss HP
+        bossAtk = bossPhy + bossMgk;
+    }
+
+
+    function _calc(bytes8 bossStats, uint256 heroId, bytes10 packedItems) internal returns (Combat memory combat) {
+        (bytes32 s1_, bytes32 s2_) = MetaAndMagicLike(heroesAddress).getStats(heroId);
+
+        // Start with empty combat
+        combat = Combat(0,0,0,precision,precision,precision,precision);
+        
+        // Tally Hero modifies the combat memory inplace
+        _tally(combat, s1_, s2_, bossStats);
+        uint16[5] memory items_ = _unpackItems(packedItems);
+        for (uint256 i = 0; i < 6; i++) {
+            if (items_[i] == 0) break;
+            (s1_, s2_) = MetaAndMagicLike(itemsAddress).getStats(items_[i]);
+            _tally(combat, s1_, s2_, bossStats);
+        }
+    }
+
 }
 
 contract HeroesMock is Heroes {
@@ -101,6 +126,8 @@ contract ItemsMock is Items {
     }
 
     function getStats(uint256 itemId) external view override returns(bytes32, bytes32) {
+        if (getAttributes[itemId][0] == 0) return StatsLike(statsAddress[(itemId % 4) + 1]).getStats(_traits(entropySeed, itemId));
+        
         uint256[6] memory atts;
         atts[0] =  getAttributes[itemId][0];
         atts[1] =  getAttributes[itemId][1];
@@ -108,8 +135,6 @@ contract ItemsMock is Items {
         atts[3] =  getAttributes[itemId][3];
         atts[4] =  getAttributes[itemId][4];
         atts[5] =  getAttributes[itemId][5];
-
-        return StatsLike(statsAddress[(itemId % 4) + 1]).getStats(atts);
     }
 
     function setAttributes(uint256 id_, uint256[6] memory atts) external {
@@ -138,4 +163,29 @@ contract ItemsMock is Items {
 
         list = [fst,sc,thr,frt, fifth];
     }
+}
+
+interface VRFConsumer {
+    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWord) external;
+}
+
+contract VRFMock {
+
+    uint256 nonce;
+    uint256 reqId;
+    address consumer;
+
+
+    function requestRandomWords( bytes32 , uint64 , uint16 , uint32 , uint32 ) external returns (uint256 requestId) {
+        requestId = uint256(keccak256(abi.encode("REQUEST", nonce++)));
+        reqId = requestId;
+    }
+
+    function fulfill() external {
+        uint256[] memory words = new uint256[](1);
+        words[0] = uint256(keccak256(abi.encode("REQUEST", reqId, consumer, nonce++)));
+        VRFConsumer(consumer).fulfillRandomWords(reqId, words);
+    }
+
+
 }

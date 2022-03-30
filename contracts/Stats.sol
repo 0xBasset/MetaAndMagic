@@ -26,12 +26,12 @@ contract AttackItemsStats is StatsLike {
     function level(uint256 id) public pure returns (bytes8 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
         // Attack
-        if (id == 1) (hp, atk, mgk, mod) = (0,100,0,0); // I
-        if (id == 2) (hp, atk, mgk, mod) = (0,200,0,0); // II
-        if (id == 3) (hp, atk, mgk, mod) = (0,300,0,0); // III
-        if (id == 4) (hp, atk, mgk, mod) = (0,400,0,0); // IV
-        if (id == 5) (hp, atk, mgk, mod) = (0,500,0,0); // V
-        if (id == 6) (hp, atk, mgk, mod) = (0,100,0,0); // X
+        if (id == 1) (hp, atk, mgk, mod) = (0, 99,0,0); // I
+        if (id == 2) (hp, atk, mgk, mod) = (0,198,0,0); // II
+        if (id == 3) (hp, atk, mgk, mod) = (0,297,0,0); // III
+        if (id == 4) (hp, atk, mgk, mod) = (0,396,0,0); // IV
+        if (id == 5) (hp, atk, mgk, mod) = (0,495,0,0); // V
+        if (id == 6) (hp, atk, mgk, mod) = (0,994,0,0); // X
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -114,12 +114,12 @@ contract DefenseItemsStats is StatsLike {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
         
         // Defense
-        if (id == 1) (hp, atk, mgk, mod) = (100,0,0,0);  // I
-        if (id == 2) (hp, atk, mgk, mod) = (200,0,0,0);  // II
-        if (id == 3) (hp, atk, mgk, mod) = (300,0,0,0);  // III
-        if (id == 4) (hp, atk, mgk, mod) = (400,0,0,0); // IV
-        if (id == 5) (hp, atk, mgk, mod) = (500,0,0,0); // V
-        if (id == 6) (hp, atk, mgk, mod) = (1000,0,0,0); // X
+        if (id == 1) (hp, atk, mgk, mod) = ( 99,0,0,0);  // I
+        if (id == 2) (hp, atk, mgk, mod) = (198,0,0,0);  // II
+        if (id == 3) (hp, atk, mgk, mod) = (297,0,0,0);  // III
+        if (id == 4) (hp, atk, mgk, mod) = (396,0,0,0); // IV
+        if (id == 5) (hp, atk, mgk, mod) = (495,0,0,0); // V
+        if (id == 6) (hp, atk, mgk, mod) = (994,0,0,0); // X
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -203,12 +203,12 @@ contract SpellItemsStats is StatsLike {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
         
         // Spell
-        if (id == 1) (hp, atk, mgk, mod) = (0,0,100,0); // I
-        if (id == 2) (hp, atk, mgk, mod) = (0,0,200,0); // II
-        if (id == 3) (hp, atk, mgk, mod) = (0,0,300,0); // III
-        if (id == 4) (hp, atk, mgk, mod) = (0,0,400,0); // IV
-        if (id == 5) (hp, atk, mgk, mod) = (0,0,500,0); // V
-        if (id == 6) (hp, atk, mgk, mod) = (0,0,1000,0); // X
+        if (id == 1) (hp, atk, mgk, mod) = (0,0, 99,0); // I
+        if (id == 2) (hp, atk, mgk, mod) = (0,0,198,0); // II
+        if (id == 3) (hp, atk, mgk, mod) = (0,0,297,0); // III
+        if (id == 4) (hp, atk, mgk, mod) = (0,0,396,0); // IV
+        if (id == 5) (hp, atk, mgk, mod) = (0,0,495,0); // V
+        if (id == 6) (hp, atk, mgk, mod) = (0,0,994,0); // X
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -291,12 +291,12 @@ contract BuffItemsStats is StatsLike {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
 
         // Buff
-        if (id == 1) (hp, atk, mgk, mod) = (100,0,0,0); // I
-        if (id == 2) (hp, atk, mgk, mod) = (200,0,0,0); // II
-        if (id == 3) (hp, atk, mgk, mod) = (300,0,0,0); // III
-        if (id == 4) (hp, atk, mgk, mod) = (400,0,0,0); // IV
-        if (id == 5) (hp, atk, mgk, mod) = (500,0,0,0); // V
-        if (id == 6) (hp, atk, mgk, mod) = (1000,0,0,0); // X
+        if (id == 1) (hp, atk, mgk, mod) = ( 99,0,0,0); // I
+        if (id == 2) (hp, atk, mgk, mod) = (198,0,0,0); // II
+        if (id == 3) (hp, atk, mgk, mod) = (297,0,0,0); // III
+        if (id == 4) (hp, atk, mgk, mod) = (396,0,0,0); // IV
+        if (id == 5) (hp, atk, mgk, mod) = (495,0,0,0); // V
+        if (id == 6) (hp, atk, mgk, mod) = (994,0,0,0); // X
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -395,26 +395,29 @@ contract BossDropsStats is StatsLike {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
         
         // Spell
-        if (id == 1) (hp, atk, mgk, mod) = (0,0,100,0); // I
-        if (id == 2) (hp, atk, mgk, mod) = (0,0,200,0); // II
-        if (id == 3) (hp, atk, mgk, mod) = (0,0,300,0); // III
-        if (id == 4) (hp, atk, mgk, mod) = (0,0,400,0); // IV
-        if (id == 5) (hp, atk, mgk, mod) = (0,0,500,0); // V
-        if (id == 6) (hp, atk, mgk, mod) = (0,0,1000,0); // X
+        if (id == 1) (hp, atk, mgk, mod) = (99,0,0,0); // I
+        if (id == 2) (hp, atk, mgk, mod) = (198,0,0,0); // II
+        if (id == 3) (hp, atk, mgk, mod) = (297,0,0,0); // III
+        if (id == 4) (hp, atk, mgk, mod) = (396,0,0,0); // IV
+        if (id == 5) (hp, atk, mgk, mod) = (495,0,0,0); // V
+        if (id == 6) (hp, atk, mgk, mod) = (994,0,0,0); // X
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
 
     function kind(uint256 id) public pure returns (bytes8 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
-        
-        // Spell 
-        if (id == 1) (hp, atk, mgk, mod) = (0,0,500,0);      // Force
-        if (id == 2) (hp, atk, mgk, mod) = (0,0,1000,0);     // Implosion
-        if (id == 3) (hp, atk, mgk, mod) = (0,0,1500,2);     // Explosion
-        if (id == 4) (hp, atk, mgk, mod) = (500,0,2000,9);   // Antimatter
-        if (id == 5) (hp, atk, mgk, mod) = (1000,0,2500,8);  // Supernova
-        if (id == 6) (hp, atk, mgk, mod) = (1500,0,3000,10); // Ultimatum
+ 
+        // Todo fill according to latest tokenomics
+        if (id == 2)  (hp, atk, mgk, mod) = (0,0,500,0);      // Dogemons Tail
+        if (id == 3)  (hp, atk, mgk, mod) = (0,0,1000,0);     // Lunar Rings
+        if (id == 4)  (hp, atk, mgk, mod) = (0,0,1500,2);     // Etherhead
+        if (id == 5)  (hp, atk, mgk, mod) = (500,0,2000,9);   // Axie Wings
+        if (id == 6)  (hp, atk, mgk, mod) = (1000,0,2500,8);  // Circulonimbus
+        if (id == 7)  (hp, atk, mgk, mod) = (1500,0,3000,10); // Vitalik's Horn
+        if (id == 8)  (hp, atk, mgk, mod) = (1500,0,3000,10); // Sand Sacle
+        if (id == 9)  (hp, atk, mgk, mod) = (1500,0,3000,10); // Lunar crystal
+        if (id == 10) (hp, atk, mgk, mod) = (1500,0,3000,10); // Polybeast Shards
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
