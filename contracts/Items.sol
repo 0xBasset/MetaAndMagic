@@ -14,13 +14,19 @@ contract Items is ERC721 {
     mapping(uint256 => address) statsAddress;
     mapping(uint256 => uint256) bossSupplies;
 
-    function initialize(address stats_1, address stats_2, address stats_3, address stats_4, address renderer_) external {
+    // Oracle information
+    address VRFcoord;
+    uint64  subId;
+    bytes32 keyhash;
+
+    function initialize(address stats_1, address stats_2, address stats_3, address stats_4, address stats_5, address renderer_) external {
         require(msg.sender == _owner(), "not authorized");
 
         statsAddress[1] = stats_1;
         statsAddress[2] = stats_2;
         statsAddress[3] = stats_3;
         statsAddress[4] = stats_4;
+        statsAddress[5] = stats_5;
         
         renderer = renderer_;
 
@@ -34,6 +40,14 @@ contract Items is ERC721 {
         bossSupplies[8]  = 400;
         bossSupplies[9]  = 300;
         bossSupplies[10] = 200;
+    }
+
+    function setUpOracle(address vrf_, bytes32 keyHash, uint64 subscriptionId) external {
+        require(msg.sender == _owner());
+
+        VRFcoord = vrf_;
+        keyhash  = keyHash;
+        subId    = subscriptionId;
     }
 
     function getStats(uint256 id_) external view virtual returns(bytes32, bytes32) {    
@@ -59,6 +73,11 @@ contract Items is ERC721 {
         id = boss * 10_000 + bossSupplies[boss]--; // Note boss drops are predictable because the entropy seed is known
 
         _mint(to, id);
+    }
+
+    function burnFrom(address from, uint256 id) external returns (bool) {
+        require(auth[msg.sender], "not authorized");
+        _burn(from, id);
     }
 
 
@@ -107,6 +126,11 @@ contract Items is ERC721 {
     // TODO add chainlink
     function setEntropy(uint256 seed) external {
         entropySeed = seed;
+    }
+
+    function setAuth(address add_, bool auth_) external {
+        require(_owner() == msg.sender, "not authorized");
+        auth[add_] = auth_;
     }
 
 }

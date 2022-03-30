@@ -466,7 +466,7 @@ contract BossDropsStats is StatsLike {
     }
 }
 
-contract HeroStats  is StatsLike {
+contract HeroStats is StatsLike {
 
     function getStats(uint256[6] calldata atts) public pure override returns (bytes32 s1, bytes32 s2) {
         s1 = bytes32(abi.encodePacked(

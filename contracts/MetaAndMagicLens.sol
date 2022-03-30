@@ -3,8 +3,18 @@ pragma solidity 0.8.7;
 
 contract MetaAndMagicLens {
 
+    address admin;
     address heroesAddress;
     address itemsAddress;
+
+    constructor() { admin = msg.sender; }
+
+    function initialize(address heroes_, address items_) external {
+        require(msg.sender == admin);
+
+        heroesAddress = heroes_;
+        itemsAddress  = items_;
+    }
 
     function unstakedHeroes() external view returns (uint256[] memory unstaked){
         unstaked = new uint256[](3000 - IERC721(heroesAddress).balanceOf(heroesAddress));

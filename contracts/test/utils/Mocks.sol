@@ -143,12 +143,6 @@ contract ItemsMock is Items {
         }
     }
 
-    function burnFrom(address from, uint256 id) external returns (bool) {
-        require(ownerOf[id] == from, "not owner");
-        _burn(id);
-        return true;
-    }
-
     function mintDrop(uint256 bossId, address to_) external override returns (uint256 id){
         id = 10000 + (bossId * 100) + ++bossSupply[bossId];
         _mint(to_, id);

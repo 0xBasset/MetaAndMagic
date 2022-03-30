@@ -141,9 +141,10 @@ contract ERC721 {
         emit Transfer(address(0), to, tokenId); 
     }
     
-    function _burn(uint256 tokenId) internal { 
+    function _burn(address acc, uint256 tokenId) internal { 
         address owner_ = ownerOf[tokenId];
         
+        require(acc == owner_, "NOT_OWNER");
         require(ownerOf[tokenId] != address(0), "NOT_MINTED");
         
         totalSupply--;

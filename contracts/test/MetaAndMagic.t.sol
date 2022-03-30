@@ -25,14 +25,14 @@ contract MetaAndMagicBaseTest is DSTest {
         meta   = MockMetaAndMagic(address(new Proxy(address(new MockMetaAndMagic()))));
         oracle = new VRFMock();
 
-        meta.initialize(address(heroes), address(items), address(oracle));
+        meta.initialize(address(heroes), address(items));
         
         
         heroes.initialize(address(new HeroStats()), address(0));
         heroes.setEntropy(uint256(keccak256(abi.encode("HEROES_NTROPY"))));
 
         // Set up items
-        items.initialize(address(new AttackItemsStats()), address(new DefenseItemsStats()), address(new SpellItemsStats()), address(new BuffItemsStats()), address(0));
+        items.initialize(address(new AttackItemsStats()), address(new DefenseItemsStats()), address(new SpellItemsStats()), address(new BuffItemsStats()), address(new BossDropsStats()), address(0));
         items.setEntropy(uint256(keccak256(abi.encode("ITEMS_ENTROPY"))));
     }
 

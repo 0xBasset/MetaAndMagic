@@ -3,7 +3,6 @@ pragma solidity 0.8.7;
 
 contract MetaAndMagic {
 
-    address VRFcoord;
     address heroesAddress;
     address itemsAddress;
 
@@ -17,6 +16,11 @@ contract MetaAndMagic {
     mapping(uint256 => uint256) public prizeValues;
     mapping(uint256 => address) public prizeTokens;
 
+    // Oracle information
+    address VRFcoord;
+    uint64 subId;
+    bytes32 keyhash;
+
     struct Heroes { address owner; uint16 lastBoss; uint32 highestScore;}
 
     struct Fight  { uint16 heroId; uint16 boss; bytes10 items_; uint32 start; uint32 count; bool claimedScore; bool claimedBoss; }
@@ -29,15 +33,21 @@ contract MetaAndMagic {
 
     uint256 constant public precision = 1e12;
 
-    function initialize(address heroes_, address items_, address vrf) external {
+    function initialize(address heroes_, address items_) external {
         require(msg.sender == _owner());
 
         heroesAddress = heroes_;
         itemsAddress  = items_;
-        VRFcoord      = vrf;
-
+        
         currentBoss = 1; // start at current boss
-        // Configure chainlink
+    }
+
+    function setUpOracle(address vrf_, bytes32 keyHash, uint64 subscriptionId) external {
+        require(msg.sender == _owner());
+
+        VRFcoord = vrf_;
+        keyhash  = keyHash;
+        subId    = subscriptionId;
     }
 
     function addBoss(address prizeToken, uint256 halfPrize, uint256 drops, uint256 hp_, uint256 atk_, uint256 mgk_, uint256 mod_, uint256 element_) external {
@@ -50,12 +60,24 @@ contract MetaAndMagic {
         bosses[boss] = Boss({stats: bytes8(abi.encodePacked(uint16(hp_),uint16(atk_),uint16(mgk_), uint8(element_), uint8(mod_))), topScorers:0, drops: uint16(drops), highestScore: 0, entries:0, winIndex:0});
     }
 
-    function stake(uint256 heroId) external {
+    function manageHero(uint256[] calldata toStake, uint256[] calldata toUnstake) external {
+        uint256 len = toStake.length;
+        for (uint256 i = 0; i < len; i++) {
+            stake(toStake[i]);
+        }
+
+        len = toUnstake.length;
+        for (uint256 i = 0; i < len; i++) {
+            unstake(toUnstake[i]);
+        }
+    }
+
+    function stake(uint256 heroId) public {
         _pull(heroesAddress, heroId);
         heroes[heroId] = Heroes(msg.sender, 0, 0);
     }
 
-    function unstake(uint256 heroId) external {
+    function unstake(uint256 heroId) public {
         Heroes memory hero = heroes[heroId];
 
         require(msg.sender == hero.owner,   "not owner");
@@ -176,7 +198,7 @@ contract MetaAndMagic {
         require(boss_ < currentBoss,  "not finished");
         require(requests[boss_] == 0, "already requested");
 
-        uint256 reqId = VRFCoordinatorV2Interface(VRFcoord).requestRandomWords("", 1, 1, 200000, 1);
+        uint256 reqId = VRFCoordinatorV2Interface(VRFcoord).requestRandomWords(keyhash, subId, 1, 200000, 1);
         requests[boss_] = reqId;
     }
 

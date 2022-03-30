@@ -14,6 +14,11 @@ contract Heroes is ERC721 {
 
     uint256 entropySeed;
 
+    // Oracle information
+    address VRFcoord;
+    uint64 subId;
+    bytes32 keyhash;
+
     function initialize(address stats_, address renderer_) external {
         require(msg.sender == _owner(), "not authorized");
 
@@ -31,11 +36,17 @@ contract Heroes is ERC721 {
         return _traits(entropySeed, id_);
     }
 
+    function setUpOracle(address vrf_, bytes32 keyHash, uint64 subscriptionId) external {
+        require(msg.sender == _owner());
+
+        VRFcoord = vrf_;
+        keyhash  = keyHash;
+        subId    = subscriptionId;
+    }
+
     /*///////////////////////////////////////////////////////////////
                         MINT FUNCTIONS
     //////////////////////////////////////////////////////////////*/
-
-
 
     function setAuth(address add_, bool auth_) external {
         require(_owner() == msg.sender, "not authorized");
