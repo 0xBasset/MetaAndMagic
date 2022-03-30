@@ -41,11 +41,11 @@ contract AttackItemsStats is StatsLike {
         
         // Attack
         if (id == 1) (hp, atk, mgk, mod) = (0,500,0,0);   // Dagger
-        if (id == 2) (hp, atk, mgk, mod) = (0,100,0,0);   // Sword
+        if (id == 2) (hp, atk, mgk, mod) = (0,1000,0,0);   // Sword
         if (id == 3) (hp, atk, mgk, mod) = (0,1500,0,8);  // Hammer
-        if (id == 4) (hp, atk, mgk, mod) = (0,2000,0,10); // Spear
-        if (id == 5) (hp, atk, mgk, mod) = (0,2500,0,2);  // Mace
-        if (id == 6) (hp, atk, mgk, mod) = (0,3000,0,10); // Staff
+        if (id == 4) (hp, atk, mgk, mod) = (0,2000,500,10); // Spear
+        if (id == 5) (hp, atk, mgk, mod) = (0,2500,1000,2);  // Mace
+        if (id == 6) (hp, atk, mgk, mod) = (0,3000,1500,10); // Staff
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -55,11 +55,11 @@ contract AttackItemsStats is StatsLike {
         
         // Attack
         if (id == 1) (hp, atk, mgk, mod) = (0,0,0,0);  // Wood
-        if (id == 2) (hp, atk, mgk, mod) = (0,0,100,0); // Iron 
-        if (id == 3) (hp, atk, mgk, mod) = (0,0,200,0); // Bronze 
-        if (id == 4) (hp, atk, mgk, mod) = (0,0,300,0); // Silver
-        if (id == 5) (hp, atk, mgk, mod) = (0,0,400,0); // Gold 
-        if (id == 6) (hp, atk, mgk, mod) = (0,0,500,0); // Mythril
+        if (id == 2) (hp, atk, mgk, mod) = (0,0,98,0); // Iron 
+        if (id == 3) (hp, atk, mgk, mod) = (0,0,197,0); // Bronze 
+        if (id == 4) (hp, atk, mgk, mod) = (0,0,296,0); // Silver
+        if (id == 5) (hp, atk, mgk, mod) = (0,0,395,0); // Gold 
+        if (id == 6) (hp, atk, mgk, mod) = (0,0,494,0); // Mythril
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -143,11 +143,11 @@ contract DefenseItemsStats is StatsLike {
 
         // Defense
         if (id == 1) (hp, atk, mgk, mod) = (0,0,0,0);   // Wood
-        if (id == 2) (hp, atk, mgk, mod) = (100,0,0,0); // Iron
-        if (id == 3) (hp, atk, mgk, mod) = (200,0,0,0); // Bronze
-        if (id == 4) (hp, atk, mgk, mod) = (300,0,0,1); // Silver
-        if (id == 5) (hp, atk, mgk, mod) = (400,0,0,4); // Gold
-        if (id == 6) (hp, atk, mgk, mod) = (500,0,0,5); // Mythril
+        if (id == 2) (hp, atk, mgk, mod) = (98,0,0,0); // Iron
+        if (id == 3) (hp, atk, mgk, mod) = (197,0,0,0); // Bronze
+        if (id == 4) (hp, atk, mgk, mod) = (296,0,0,1); // Silver
+        if (id == 5) (hp, atk, mgk, mod) = (395,0,0,4); // Gold
+        if (id == 6) (hp, atk, mgk, mod) = (494,0,0,5); // Mythril
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -171,11 +171,11 @@ contract DefenseItemsStats is StatsLike {
         
         // Defense
         if (id == 1)  (hp, atk, mgk, mod) = (0,0,0,0);    // Normal
-        if (id == 2)  (hp, atk, mgk, mod) = (100,0,0,0);  // Good
-        if (id == 3)  (hp, atk, mgk, mod) = (200,0,0,0);  // Very Good
-        if (id == 4) (hp, atk, mgk, mod) = (300,0,0,1);  //  Fine
-        if (id == 5) (hp, atk, mgk, mod) = (400,0,0,4);  //  Superfime
-        if (id == 6) (hp, atk, mgk, mod) = (500,0,0,5);  //  Excellent
+        if (id == 2)  (hp, atk, mgk, mod) = (98,0,0,0);  // Good
+        if (id == 3)  (hp, atk, mgk, mod) = (197,0,0,0);  // Very Good
+        if (id == 4) (hp, atk, mgk, mod) = (296,0,0,1);  //  Fine
+        if (id == 5) (hp, atk, mgk, mod) = (395,0,0,4);  //  Superfime
+        if (id == 6) (hp, atk, mgk, mod) = (494,0,0,5);  //  Excellent
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -231,11 +231,11 @@ contract SpellItemsStats is StatsLike {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
         
         if (id == 1) (hp, atk, mgk, mod) = (0,0,0,0);   // Kinectic
-        if (id == 2) (hp, atk, mgk, mod) = (0,0,100,0); // Potential
-        if (id == 3) (hp, atk, mgk, mod) = (0,0,200,0); // Electrical
-        if (id == 4) (hp, atk, mgk, mod) = (0,0,300,0); // Nuclear
-        if (id == 5) (hp, atk, mgk, mod) = (0,0,400,0); // Gravitational
-        if (id == 6) (hp, atk, mgk, mod) = (0,0,500,0); // Cosmic
+        if (id == 2) (hp, atk, mgk, mod) = (0,0,98,0); // Potential
+        if (id == 3) (hp, atk, mgk, mod) = (0,0,197,0); // Electrical
+        if (id == 4) (hp, atk, mgk, mod) = (0,0,296,0); // Nuclear
+        if (id == 5) (hp, atk, mgk, mod) = (0,0,395,0); // Gravitational
+        if (id == 6) (hp, atk, mgk, mod) = (0,0,494,0); // Cosmic
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -259,11 +259,11 @@ contract SpellItemsStats is StatsLike {
         
         // Spell
         if (id == 1) (hp, atk, mgk, mod) = (0,0,0,0);   // Normal
-        if (id == 2) (hp, atk, mgk, mod) = (0,100,0,0); // Good
-        if (id == 3) (hp, atk, mgk, mod) = (0,200,0,0); // Very Good
-        if (id == 4) (hp, atk, mgk, mod) = (0,300,0,0); // Fine
-        if (id == 5) (hp, atk, mgk, mod) = (0,400,0,0); // Superfime
-        if (id == 6) (hp, atk, mgk, mod) = (0,500,0,0); // Excellent
+        if (id == 2) (hp, atk, mgk, mod) = (0,98,0,0); // Good
+        if (id == 3) (hp, atk, mgk, mod) = (0,197,0,0); // Very Good
+        if (id == 4) (hp, atk, mgk, mod) = (0,296,0,0); // Fine
+        if (id == 5) (hp, atk, mgk, mod) = (0,395,0,0); // Superfime
+        if (id == 6) (hp, atk, mgk, mod) = (0,494,0,0); // Excellent
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -334,11 +334,11 @@ contract BuffItemsStats is StatsLike {
 
         // Buff
         if (id == 1) (hp, atk, mgk, mod) = (0,0,0,0);    // Normal
-        if (id == 2) (hp, atk, mgk, mod) = (0,100,0,0); // Good
-        if (id == 3) (hp, atk, mgk, mod) = (0,200,0,0); // Very Good
-        if (id == 4) (hp, atk, mgk, mod) = (0,300,0,0); // Fine
-        if (id == 5) (hp, atk, mgk, mod) = (0,400,0,0); // Superfime
-        if (id == 6) (hp, atk, mgk, mod) = (0,500,0,0); // Excellent
+        if (id == 2) (hp, atk, mgk, mod) = (0,98,0,0); // Good
+        if (id == 3) (hp, atk, mgk, mod) = (0,197,0,0); // Very Good
+        if (id == 4) (hp, atk, mgk, mod) = (0,296,0,0); // Fine
+        if (id == 5) (hp, atk, mgk, mod) = (0,395,0,0); // Superfime
+        if (id == 6) (hp, atk, mgk, mod) = (0,494,0,0); // Excellent
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -362,11 +362,11 @@ contract BuffItemsStats is StatsLike {
 
         // Buff - Applicable both to Element and Vintage stats
         if (potencyId == 1) (hp, atk, mgk, mod) = (0,0,0,0);   // None
-        if (potencyId == 2) (hp, atk, mgk, mod) = (0,0,100,0); // Weak
-        if (potencyId == 3) (hp, atk, mgk, mod) = (0,0,200,0); // Mild
-        if (potencyId == 4) (hp, atk, mgk, mod) = (0,0,300,0); // Regular
-        if (potencyId == 5) (hp, atk, mgk, mod) = (0,0,400,0); // Strong
-        if (potencyId == 6) (hp, atk, mgk, mod) = (0,0,500,0); // Potent
+        if (potencyId == 2) (hp, atk, mgk, mod) = (0,0,98,0); // Weak
+        if (potencyId == 3) (hp, atk, mgk, mod) = (0,0,197,0); // Mild
+        if (potencyId == 4) (hp, atk, mgk, mod) = (0,0,296,0); // Regular
+        if (potencyId == 5) (hp, atk, mgk, mod) = (0,0,395,0); // Strong
+        if (potencyId == 6) (hp, atk, mgk, mod) = (0,0,494,0); // Potent
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -409,18 +409,20 @@ contract BossDropsStats is StatsLike {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
  
         // Todo fill according to latest tokenomics
-        if (id == 2)  (hp, atk, mgk, mod) = (0,0,500,0);      // Dogemons Tail
-        if (id == 3)  (hp, atk, mgk, mod) = (0,0,1000,0);     // Lunar Rings
-        if (id == 4)  (hp, atk, mgk, mod) = (0,0,1500,2);     // Etherhead
-        if (id == 5)  (hp, atk, mgk, mod) = (500,0,2000,9);   // Axie Wings
-        if (id == 6)  (hp, atk, mgk, mod) = (1000,0,2500,8);  // Circulonimbus
-        if (id == 7)  (hp, atk, mgk, mod) = (1500,0,3000,10); // Vitalik's Horn
-        if (id == 8)  (hp, atk, mgk, mod) = (1500,0,3000,10); // Sand Sacle
-        if (id == 9)  (hp, atk, mgk, mod) = (1500,0,3000,10); // Lunar crystal
-        if (id == 10) (hp, atk, mgk, mod) = (1500,0,3000,10); // Polybeast Shards
+        if (id == 2)  (hp, atk, mgk, mod) = (0,1500,1500,0);      // Dogemons Tail
+        if (id == 3)  (hp, atk, mgk, mod) = (5000,0,0,0);     // Lunar Rings
+        if (id == 4)  (hp, atk, mgk, mod) = (0,2000,2000,2);     // Etherhead
+        if (id == 5)  (hp, atk, mgk, mod) = (10000,0,0,9);   // Axie Wings
+        if (id == 6)  (hp, atk, mgk, mod) = (0,3000,3000,8);  // Circulonimbus
+        if (id == 7)  (hp, atk, mgk, mod) = (15000,0,0,10); // Vitalik's Horn
+        if (id == 8)  (hp, atk, mgk, mod) = (0,4000,4000,10); // Sand Sacle
+        if (id == 9)  (hp, atk, mgk, mod) = (20000,0,0,10); // Lunar crystal
+        if (id == 10) (hp, atk, mgk, mod) = (0,5000,5000,10); // Polybeast Shards
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
+
+    // boss drop items have no energy attributes
 
     function energy(uint256 id) public pure returns (bytes8 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
@@ -486,12 +488,12 @@ contract HeroStats  is StatsLike {
     function level(uint256 id) public pure returns (bytes8 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
 
-        if (id == 1) (hp, atk, mgk, mod) = (100,0,0,0); // I
-        if (id == 2) (hp, atk, mgk, mod) = (200,0,0,0); // II
-        if (id == 3) (hp, atk, mgk, mod) = (300,0,0,0); // III
-        if (id == 4) (hp, atk, mgk, mod) = (400,0,0,0); // IV
-        if (id == 5) (hp, atk, mgk, mod) = (500,0,0,0); // V
-        if (id == 6) (hp, atk, mgk, mod) = (1000,0,0,0); // X
+        if (id == 1) (hp, atk, mgk, mod) = (99,0,0,0); // I
+        if (id == 2) (hp, atk, mgk, mod) = (198,0,0,0); // II
+        if (id == 3) (hp, atk, mgk, mod) = (297,0,0,0); // III
+        if (id == 4) (hp, atk, mgk, mod) = (396,0,0,0); // IV
+        if (id == 5) (hp, atk, mgk, mod) = (495,0,0,0); // V
+        if (id == 6) (hp, atk, mgk, mod) = (994,0,0,0); // X
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -513,11 +515,11 @@ contract HeroStats  is StatsLike {
     function pet(uint256 petId) public pure returns (bytes8 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
 
-        if (petId == 1) (hp, atk, mgk, mod) = (1000,1000,1000,0);  // Fairy
-        if (petId == 2) (hp, atk, mgk, mod) = (2000,2000,2000,5);  // Kitsune
-        if (petId == 3) (hp, atk, mgk, mod) = (3000,3000,3000,10); // Unicorn
-        if (petId == 4) (hp, atk, mgk, mod) = (4000,4000,4000,15); // Sphinx
-        if (petId == 5) (hp, atk, mgk, mod) = (5000,5000,4000,15); // Dragon
+        if (petId == 1) (hp, atk, mgk, mod) = (999,999,999,0);  // Fairy
+        if (petId == 2) (hp, atk, mgk, mod) = (1998,1998,1998,5);  // Kitsune
+        if (petId == 3) (hp, atk, mgk, mod) = (2997,2997,2997,10); // Unicorn
+        if (petId == 4) (hp, atk, mgk, mod) = (3996,3996,3996,15); // Sphinx
+        if (petId == 5) (hp, atk, mgk, mod) = (4995,4995,4995,15); // Dragon
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
