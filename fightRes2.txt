@@ -1,8 +1,10 @@
+Logs:
+  ---------------------------------------------------
   Boss: 1
-          | hp:      1000
-          | phy_dmg: 2000
-          | mgk_dmg: 0
-          | element: none
+          | hp:      : 1000
+          | phy_dmg: : 2000
+          | mgk_dmg: : 0
+          | element: : 0
   
   Hero Attributes:
           | Level  : I
@@ -22,15 +24,15 @@
      | Hero stacked mgk_res: 62500000000
   
   Hero Attack: 5996
-  Boss Attack: 125
+  Boss Attack: 250
   
-  Final Result: 13890
+  Final Result: 12640
   ---------------------------------------------------
   Boss: 1
-          | hp:      1000
-          | phy_dmg: 2000
-          | mgk_dmg: 0
-          | element: none
+          | hp:      : 1000
+          | phy_dmg: : 2000
+          | mgk_dmg: : 0
+          | element: : 0
   
   Hero Attributes:
           | Level  : IV
@@ -58,15 +60,15 @@
      | Hero stacked mgk_res: 31250000000
   
   Hero Attack: 12492
-  Boss Attack: 15
+  Boss Attack: 31
   
-  Final Result: 24873
+  Final Result: 23842
   ---------------------------------------------------
   Boss: 1
-          | hp:      1000
-          | phy_dmg: 2000
-          | mgk_dmg: 0
-          | element: none
+          | hp:      : 1000
+          | phy_dmg: : 2000
+          | mgk_dmg: : 0
+          | element: : 0
   
   Hero Attributes:
           | Level  : III
@@ -86,15 +88,15 @@
      | Hero stacked mgk_res: 250000000000
   
   Hero Attack: 6496
-  Boss Attack: 62
+  Boss Attack: 125
   
-  Final Result: 11489
+  Final Result: 10364
   ---------------------------------------------------
   Boss: 1
-          | hp:      1000
-          | phy_dmg: 2000
-          | mgk_dmg: 0
-          | element: none
+          | hp:      : 1000
+          | phy_dmg: : 2000
+          | mgk_dmg: : 0
+          | element: : 0
   
   Hero Attributes:
           | Level  : I
@@ -130,15 +132,15 @@
      | Hero stacked mgk_res: 250000000000
   
   Hero Attack: 10087
-  Boss Attack: 125
+  Boss Attack: 250
   
-  Final Result: 20973
+  Final Result: 19723
   ---------------------------------------------------
   Boss: 1
-          | hp:      1000
-          | phy_dmg: 2000
-          | mgk_dmg: 0
-          | element: none
+          | hp:      : 1000
+          | phy_dmg: : 2000
+          | mgk_dmg: : 0
+          | element: : 0
   
   Hero Attributes:
           | Level  : III
@@ -174,15 +176,15 @@
      | Hero stacked mgk_res: 125000000000
   
   Hero Attack: 16385
-  Boss Attack: 15
+  Boss Attack: 31
   
-  Final Result: 27368
+  Final Result: 26337
   ---------------------------------------------------
   Boss: 1
-          | hp:      1000
-          | phy_dmg: 2000
-          | mgk_dmg: 0
-          | element: none
+          | hp:      : 1000
+          | phy_dmg: : 2000
+          | mgk_dmg: : 0
+          | element: : 0
   
   Hero Attributes:
           | Level  : III
@@ -226,15 +228,15 @@
      | Hero stacked mgk_res: 500000000000
   
   Hero Attack: 5393
-  Boss Attack: 31
+  Boss Attack: 62
   
-  Final Result: 14078
+  Final Result: 13016
   ---------------------------------------------------
   Boss: 1
-          | hp:      1000
-          | phy_dmg: 2000
-          | mgk_dmg: 0
-          | element: none
+          | hp:      : 1000
+          | phy_dmg: : 2000
+          | mgk_dmg: : 0
+          | element: : 0
   
   Hero Attributes:
           | Level  : II
@@ -254,15 +256,15 @@
      | Hero stacked mgk_res: 250000000000
   
   Hero Attack: 10994
-  Boss Attack: 125
+  Boss Attack: 250
   
-  Final Result: 16184
+  Final Result: 14934
   ---------------------------------------------------
   Boss: 1
-          | hp:      1000
-          | phy_dmg: 2000
-          | mgk_dmg: 0
-          | element: none
+          | hp:      : 1000
+          | phy_dmg: : 2000
+          | mgk_dmg: : 0
+          | element: : 0
   
   Hero Attributes:
           | Level  : V
@@ -314,15 +316,15 @@
      | Hero stacked mgk_res: 125000000000
   
   Hero Attack: 11881
-  Boss Attack: 31
+  Boss Attack: 62
   
-  Final Result: 22166
+  Final Result: 21104
   ---------------------------------------------------
   Boss: 1
-          | hp:      1000
-          | phy_dmg: 2000
-          | mgk_dmg: 0
-          | element: none
+          | hp:      : 1000
+          | phy_dmg: : 2000
+          | mgk_dmg: : 0
+          | element: : 0
   
   Hero Attributes:
           | Level  : I
@@ -350,15 +352,15 @@
      | Hero stacked mgk_res: 62500000000
   
   Hero Attack: 4996
-  Boss Attack: 31
+  Boss Attack: 62
   
-  Final Result: 15279
+  Final Result: 14217
   ---------------------------------------------------
   Boss: 1
-          | hp:      1000
-          | phy_dmg: 2000
-          | mgk_dmg: 0
-          | element: none
+          | hp:      : 1000
+          | phy_dmg: : 2000
+          | mgk_dmg: : 0
+          | element: : 0
   
   Hero Attributes:
           | Level  : IV
@@ -378,6 +380,6 @@
      | Hero stacked mgk_res: 62500000000
   
   Hero Attack: 5996
-  Boss Attack: 62
+  Boss Attack: 125
   
-  Final Result: 11885
+  Final Result: 10760

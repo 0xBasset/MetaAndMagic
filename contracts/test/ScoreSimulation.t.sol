@@ -12,6 +12,13 @@ contract CalculateScoreTest is MetaAndMagicBaseTest {
     HeroesDeck deck;
     ItemsDeck  itemsDeck;
 
+    // Set Boss 1
+    uint256 bossHp;
+    uint256 bossAtk;
+    uint256 bossMgk;
+    uint256 bossMod;
+    uint256 bossEle;
+
     function setUp() public override {
         super.setUp();
 
@@ -20,15 +27,22 @@ contract CalculateScoreTest is MetaAndMagicBaseTest {
     }
 
     function test_scoreSimulation_boss1() external {
+        // Setting Boss Info
+        bossHp  = 1000;
+        bossAtk = 2000;
+        bossMgk = 0;
+        bossMod = 0;
+        bossEle = 0;
+
         uint256 runs = 10;
         for (uint256 j = 0; j < runs; j++) {
             uint256 entropy = uint256(keccak256(abi.encode(j, "ENTROPY")));
             emit log("---------------------------------------------------");
             emit log("Boss: 1");
-            emit log("        | hp:      1000");
-            emit log("        | phy_dmg: 2000");
-            emit log("        | mgk_dmg: 0");
-            emit log("        | element: none");
+            emit log_named_uint("        | hp:      ", bossHp);
+            emit log_named_uint("        | phy_dmg: ", bossAtk);
+            emit log_named_uint("        | mgk_dmg: ", bossMgk);
+            emit log_named_uint("        | element: ", bossEle);
 
             emit log("");
             emit log("Hero Attributes:");
@@ -65,13 +79,7 @@ contract CalculateScoreTest is MetaAndMagicBaseTest {
                 emit log("");
             }
 
-            // Set Boss 1
-            uint256 bossHp  = 1000;
-            uint256 bossAtk = 2000;
-            uint256 bossMgk = 0;
-            uint256 bossMod = 0;
-
-            bytes8 bossStats = bytes8(abi.encodePacked(bossHp, bossAtk, bossMgk, bossMod));
+            bytes8 bossStats = bytes8(abi.encodePacked(uint16(bossHp),uint16(bossAtk),uint16(bossMgk), uint8(bossEle), uint8(bossMod)));
 
             MetaAndMagic.Combat memory c = meta.getCombat(bossStats, 1, _getPackedItems(items_));
             // uint256 score = meta.getScore(bossStats, 1, _getPackedItems(items_));
