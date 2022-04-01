@@ -236,7 +236,7 @@ contract MetaAndMagic {
         uint256 bossAtk = combat.phyRes * _get(bossStats, Stat.PHY_DMG) / precision;
         uint256 bossMgk = combat.mgkRes * _get(bossStats, Stat.MGK_DMG) / precision;
 
-        uint256 totalHeroAttack = (combat.phyDmg * combat.bossPhyRes / precision) + (combat.mgkDmg * combat.bossMgkRes / precision); // total boss HP
+        uint256 totalHeroAttack = (combat.phyDmg ) + (combat.mgkDmg ); // total boss HP
         if (bossAtk + bossMgk > combat.hp || totalHeroAttack < _get(bossStats, Stat.HP)) return 0;
 
         return totalHeroAttack - _get(bossStats, Stat.HP) + combat.hp - bossAtk + bossMgk;
@@ -245,46 +245,98 @@ contract MetaAndMagic {
     /// @dev This is the core function for calculating scores
     function _tally(Combat memory combat, bytes32 s1_, bytes32 s2_, bytes8 bossStats) internal pure {
         uint256 bossPhyPen = _get(bossStats, Stat.PHY_PEN);
-        uint256 bossPhyRes = _get(bossStats, Stat.PHY_RES);
+        bool bossPhyRes = _get(bossStats, Stat.PHY_RES) == 1;
         uint256 bossMgkPen = _get(bossStats, Stat.MGK_PEN);
-        uint256 bossMgkRes = _get(bossStats, Stat.MGK_RES);
+        bool bossMgkRes = _get(bossStats, Stat.MGK_RES) == 1;
 
-        // Plain sum elements
+        // Stack elements into modifiers (but with 0.5 / 2 instead of 0.5 / 1)
+        uint256 itemElement = _get(s2_, Stat.ELM);
+        uint256 bossElement = uint8(uint64(bossStats) >> 8);
+
+        // // Plain sum elements
         combat.hp     += _sum(Stat.HP,      s1_) + _sum(Stat.HP,      s2_);
-        combat.phyDmg += _sum(Stat.PHY_DMG, s1_) + _sum(Stat.PHY_DMG, s2_);
-        combat.mgkDmg += _sum(Stat.MGK_DMG, s1_) + _sum(Stat.MGK_DMG, s2_);
+        combat.phyDmg += _sumAtk(s1_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes) + _sumAtk(s2_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes);
+        uint256 mgk = (_sumAtk(s1_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes) + _sumAtk(s2_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes));
+        uint256 adv = _getAdv(itemElement, bossElement);
 
-        // TODO this looks bad, figure it out a way to optimize it
-        // Stacked Elements
+        combat.mgkDmg += adv == 3 ?  0 : mgk * (adv == 1 ? 2 : 1) / (adv == 2 ? 2 : 1);
+
+        // // TODO this looks bad, figure it out a way to optimize it
+        // // Stacked Elements
         combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s1_, bossPhyPen);
         combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s2_, bossPhyPen);
 
         combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s1_, bossMgkPen);
         combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s2_, bossMgkPen);
 
-        combat.bossPhyRes = _stack(Stat.PHY_PEN, combat.bossPhyRes, bossPhyRes, s1_);
-        combat.bossPhyRes = _stack(Stat.PHY_PEN, combat.bossPhyRes, bossPhyRes, s2_);
+        combat.mgkRes = stackElement(combat.mgkRes, itemElement, bossElement);
+    }
 
-        combat.bossMgkRes = _stack(Stat.MGK_PEN, combat.bossMgkRes, bossMgkRes, s1_);
-        combat.bossMgkRes = _stack(Stat.MGK_PEN, combat.bossMgkRes, bossMgkRes, s2_);
+    event Par(uint256 g);
+
+    function _impTally(Combat memory combat, bytes32 s1_, bytes32 s2_, bytes8 bossStats) internal {
+        uint256 bossPhyPen = _get(bossStats, Stat.PHY_PEN);
+        bool bossPhyRes = _get(bossStats, Stat.PHY_RES) == 1;
+        uint256 bossMgkPen = _get(bossStats, Stat.MGK_PEN);
+        bool bossMgkRes = _get(bossStats, Stat.MGK_RES) == 1;
 
         // Stack elements into modifiers (but with 0.5 / 2 instead of 0.5 / 1)
         uint256 itemElement = _get(s2_, Stat.ELM);
         uint256 bossElement = uint8(uint64(bossStats) >> 8);
 
-        combat.mgkRes     = stackElement(combat.mgkRes, itemElement, bossElement);
-        combat.bossMgkRes = stackElement(combat.bossMgkRes, bossElement, itemElement);
+        // // Plain sum elements
+        combat.hp     += _sum(Stat.HP,      s1_) + _sum(Stat.HP,      s2_);
+        combat.phyDmg += _sumAtk(s1_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes) + _sumAtk(s2_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes);
+        uint256 mgk = (_sumAtk(s1_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes) + _sumAtk(s2_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes));
+        uint256 adv = _getAdv(itemElement, bossElement);
+
+        combat.mgkDmg += adv == 3 ?  0 : mgk * (adv == 1 ? 2 : 1) / (adv == 2 ? 2 : 1);
+
+        // // TODO this looks bad, figure it out a way to optimize it
+        // // Stacked Elements
+        combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s1_, bossPhyPen);
+        combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s2_, bossPhyPen);
+        emit Par(combat.mgkRes);
+        combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s1_, bossMgkPen);
+        emit Par(combat.mgkRes);
+        combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s2_, bossMgkPen);
+        emit Par(combat.mgkRes);
+
+        combat.mgkRes = stackElement(combat.mgkRes, itemElement, bossElement);
+        emit Par(combat.mgkRes);
+    }
+
+    function _getAdv(uint256 ele, uint256 oppEle) internal pure returns (uint256 adv) {
+        // Returns 0 if elements don't iteract
+        if (ele == 0 || oppEle == 0) return 0;
+
+        // Returns 1 if ele has advantage
+        if (ele == oppEle - 1 || (ele == 4 && oppEle == 1)) return adv = 1;
+        // // Returns 2 if ele has disavantage
+        if (ele - 1 == oppEle || (ele == 1 && oppEle == 4)) return adv = 2;
+        // Returns 3 if ele is the same
+        if (ele == oppEle) return adv = 3;
     }
 
     function stackElement(uint256 val, uint256 ele, uint256 oppEle) internal pure returns (uint256) {
-        if (ele == 0 || oppEle == 0 || ele == oppEle) return val;
-        if (ele == oppEle + 1 || (ele == 1 && oppEle == 4)) return val * 2 * precision / precision;
-        if (ele + 1 == oppEle || (ele == 4 && oppEle == 1)) return val * 1 * precision / 2 * precision;
-        return val;
+        uint256 adv = _getAdv(ele, oppEle);
+        if (adv == 0) return val;
+
+        if (adv == 3) return 0;
+
+        if (adv == 1) return val * precision / (2 * precision);
+
+        return val * 2 * precision / precision;
     }
 
     function _sum(Stat st, bytes32 src) internal pure returns (uint256 sum) {
         sum = _get(src, st, 0) + _get(src, st, 1) + _get(src, st, 2);
+    }
+
+    function _sumAtk(bytes32 src, Stat stat, Stat pen, bool bossRes) internal pure returns (uint256 sum) {
+        sum  = _get(src, stat, 0) / (((_get(src, pen, 0) == 0) && bossRes) ? 2 : 1);
+        sum += _get(src, stat, 1) / (((_get(src, pen, 1) == 0) && bossRes) ? 2 : 1);
+        sum += _get(src, stat, 2) / (((_get(src, pen, 2) == 0) && bossRes) ? 2 : 1);
     }
 
     function _stack(Stat st, uint256 val, bytes32 s1_, uint256 oppPen) internal pure returns (uint256) {

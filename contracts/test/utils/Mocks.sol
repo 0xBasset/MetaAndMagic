@@ -58,14 +58,18 @@ contract MockMetaAndMagic is MetaAndMagic {
         return _get(src, Stat(st), index);
     }
 
-     function _getRes(Combat memory combat, bytes8 bossStats) internal returns (uint256 heroAtk, uint256 bossAtk) {
-        uint256 bossPhy = combat.phyRes * _get(bossStats, Stat.PHY_DMG) / precision;
-        uint256 bossMgk = combat.mgkRes * _get(bossStats, Stat.MGK_DMG) / precision;
+    event D(string k, uint256 val);
 
-        heroAtk = (combat.phyDmg * combat.bossPhyRes / precision) + (combat.mgkDmg * combat.bossMgkRes / precision); // total boss HP
+     function _getRes(Combat memory combat, bytes8 bossStats) internal returns (uint256 heroAtk, uint256 bossAtk) {
+        uint256 bossPhy = combat.phyRes * _get(bossStats, Stat.PHY_DMG)  / precision;
+        uint256 bossMgk = combat.mgkRes * _get(bossStats, Stat.MGK_DMG) * precision / precision;
+
+        heroAtk = combat.phyDmg + combat.mgkDmg; // total boss HP
         bossAtk = bossPhy + bossMgk;
     }
 
+    event log(string bv);
+    event log_named_uint(string bv, uint256 vas);
 
     function _calc(bytes8 bossStats, uint256 heroId, bytes10 packedItems) internal returns (Combat memory combat) {
         (bytes32 s1_, bytes32 s2_) = MetaAndMagicLike(heroesAddress).getStats(heroId);
@@ -76,10 +80,19 @@ contract MockMetaAndMagic is MetaAndMagic {
         // Tally Hero modifies the combat memory inplace
         _tally(combat, s1_, s2_, bossStats);
         uint16[5] memory items_ = _unpackItems(packedItems);
-        for (uint256 i = 0; i < 6; i++) {
+        for (uint256 i = 0; i < 5; i++) {
             if (items_[i] == 0) break;
             (s1_, s2_) = MetaAndMagicLike(itemsAddress).getStats(items_[i]);
-            _tally(combat, s1_, s2_, bossStats);
+            // emit log("Combat Numbers: ");
+            // emit log_named_uint("   | Total hero HP", combat.hp);
+            // emit log_named_uint("   | Total hero phy_dmg", combat.phyDmg);
+            // emit log_named_uint("   | Total hero mgk_dmg", combat.mgkDmg);
+            // emit log("");
+            // emit log("    Stacked variables (1e12 == 1)");
+            // emit log_named_uint("   | Hero stacked phy_res", combat.phyRes);
+            // emit log_named_uint("   | Hero stacked mgk_res", combat.mgkRes);
+            // emit log("");
+            _impTally(combat, s1_, s2_, bossStats);
         }
     }
 
