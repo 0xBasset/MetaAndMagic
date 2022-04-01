@@ -3,3 +3,4 @@ out/
 hh-cache/
 .env
 node-modules/
+artifacts/

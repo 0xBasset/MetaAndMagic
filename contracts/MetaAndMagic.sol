@@ -227,10 +227,17 @@ contract MetaAndMagic {
         uint256 bossMgkPen = _get(bossStats, Stat.MGK_PEN);
         bool bossMgkRes = _get(bossStats, Stat.MGK_RES) == 1;
 
+        // Stack elements into modifiers (but with 0.5 / 2 instead of 0.5 / 1)
+        uint256 itemElement = _get(s2_, Stat.ELM);
+        uint256 bossElement = uint8(uint64(bossStats) >> 8);
+
         // Plain sum elements
         combat.hp     += _sum(Stat.HP,      s1_) + _sum(Stat.HP,      s2_);
         combat.phyDmg += _sumAtk(s1_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes) + _sumAtk(s2_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes);
-        combat.mgkDmg += _sumAtk(s1_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes) + _sumAtk(s2_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes);
+        uint256 mgk = (_sumAtk(s1_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes) + _sumAtk(s2_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes));
+        uint256 adv = _getAdv(itemElement, bossElement);
+
+        combat.mgkDmg += adv == 3 ?  0 : mgk * (adv == 1 ? 2 : 1) / (adv == 2 ? 2 : 1);
 
         // TODO this looks bad, figure it out a way to optimize it
         // Stacked Elements
@@ -240,18 +247,30 @@ contract MetaAndMagic {
         combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s1_, bossMgkPen);
         combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s2_, bossMgkPen);
 
-        // Stack elements into modifiers (but with 0.5 / 2 instead of 0.5 / 1)
-        uint256 itemElement = _get(s2_, Stat.ELM);
-        uint256 bossElement = uint8(uint64(bossStats) >> 8);
+        combat.mgkRes = stackElement(combat.mgkRes, itemElement, bossElement);
+    }
 
-        combat.mgkRes     = stackElement(combat.mgkRes, itemElement, bossElement);
+    function _getAdv(uint256 ele, uint256 oppEle) internal pure returns (uint256 adv) {
+        // Returns 0 if elements don't iteract
+        if (ele == 0 || oppEle == 0) return 0;
+
+        // Returns 1 if ele has advantage
+        if (ele == oppEle - 1 || (ele == 4 && oppEle == 1)) return adv = 1;
+        // // Returns 2 if ele has disavantage
+        if (ele - 1 == oppEle || (ele == 1 && oppEle == 4)) return adv = 2;
+        // Returns 3 if ele is the same
+        if (ele == oppEle) return adv = 3;
     }
 
     function stackElement(uint256 val, uint256 ele, uint256 oppEle) internal pure returns (uint256) {
-        if (ele == 0 || oppEle == 0 || ele == oppEle) return val;
-        if (ele == oppEle + 1 || (ele == 1 && oppEle == 4)) return val * 2 * precision / precision;
-        if (ele + 1 == oppEle || (ele == 4 && oppEle == 1)) return val * 1 * precision / 2 * precision;
-        return val;
+        uint256 adv = _getAdv(ele, oppEle);
+        if (adv == 0) return val;
+
+        if (adv == 3) return 0;
+
+        if (adv == 1) return val * precision / 2* precision;
+
+        return val * 2 * precision / precision;
     }
 
     function _sum(Stat st, bytes32 src) internal pure returns (uint256 sum) {
