@@ -26,7 +26,7 @@ contract CalculateScoreTest is MetaAndMagicBaseTest {
         itemsDeck = new ItemsDeck();
     }
 
-    function test_scoreSimulation_boss1() external {
+    function test_scoreSimulation_boss1_weak() external {
         // Setting Boss Info
         bossHp  = 1000;
         bossAtk = 2000;
@@ -34,8 +34,38 @@ contract CalculateScoreTest is MetaAndMagicBaseTest {
         bossMod = 0;
         bossEle = 0;
 
-        uint256 runs = 10;
+        _simulate(1);       
+    }
+
+    function test_scoreSimulation_boss1_avg() external {
+        // Setting Boss Info
+        bossHp  = 1000;
+        bossAtk = 2000;
+        bossMgk = 0;
+        bossMod = 0;
+        bossEle = 0;
+
+        _simulate(2);       
+    }
+
+    function test_scoreSimulation_boss1_strong() external {
+        // Setting Boss Info
+        bossHp  = 1000;
+        bossAtk = 2000;
+        bossMgk = 0;
+        bossMod = 0;
+        bossEle = 0;
+
+        _simulate(3);       
+    }
+
+    function _simulate(uint256 deckStrengh) internal {
+        uint256 runs = 300;
+        uint256 wins;
+        uint256 losses;
+        emit log_named_string("///////////  Deck: ", deckStrengh == 1 ? "WEAK" : deckStrengh == 2 ? "AVG" : "STRoNG");
         for (uint256 j = 0; j < runs; j++) {
+            emit log_named_uint("fight: ", j);
             uint256 entropy = uint256(keccak256(abi.encode(j, "ENTROPY")));
             emit log("---------------------------------------------------");
             emit log("Boss: 1");
@@ -63,13 +93,22 @@ contract CalculateScoreTest is MetaAndMagicBaseTest {
             items.setEntropy(uint256(keccak256(abi.encode(entropy, "ITEMS"))));
 
             // get a few items
-            uint num_items = _getRanged(entropy, 0, 6, "num items");
+            uint256 num_items;
+            if (deckStrengh == 1) {
+                // weak deck
+                num_items = _getRanged(entropy, 0, 2, "num items");
+            } else if (deckStrengh == 2) {
+                num_items = _getRanged(entropy, 2, 4, "num items");
+            } else {
+                num_items = _getRanged(entropy, 4, 6, "num items");
+            }   
+            emit log_named_uint("num items: ", num_items);
             uint16[5] memory items_ = [uint16(0),0,0,0,0];
-            for (uint16 index = 1; index < num_items; index++) {
-                items_[index - 1] = index;
-                t = items.getTraits(index);
-                string[6] memory n = itemsDeck.getTraitsNames(t);
-                emit log_named_uint("Item ", index);
+            for (uint16 index = 0; index < num_items; index++) {
+                items_[index] = index + 10;
+                t = items.getTraits(index + 10);
+                n = itemsDeck.getTraitsNames(t);
+                emit log_named_uint("Item ", index + 1);
                 emit log_named_string("        | Level                   ", n[0]);
                 emit log_named_string("        | Kind                    ", n[1]);
                 emit log_named_string("        | Material/Energy/Vintage ", n[2]);
@@ -91,8 +130,6 @@ contract CalculateScoreTest is MetaAndMagicBaseTest {
             emit log("    Stacked variables (1e12 == 1)");
             emit log_named_uint("   | Hero stacked phy_res", c.phyRes);
             emit log_named_uint("   | Hero stacked mgk_res", c.mgkRes);
-            // emit log_named_uint("   | Boss stacked phy_res", c.bossPhyRes);
-            // emit log_named_uint("   | Boss stacked mgk_res", c.bossMgkRes);
             emit log("");
 
             (uint256 heroAttack, uint256 bossPhny) = meta.getRes(c, bossStats);
@@ -100,9 +137,18 @@ contract CalculateScoreTest is MetaAndMagicBaseTest {
             emit log_named_uint("Boss Attack", bossPhny);
 
             emit log("");
-            emit log_named_uint("Final Result", meta.getResult(c, bossStats));  
+            uint256 sc = meta.getResult(c, bossStats);
+            if (sc == 0) {
+                losses++;
+            } else {
+                wins++;
+            }
+            emit log_named_uint("Final Result", sc);  
         }
-
+        emit log("**********************");
+        emit log_named_uint("wins    :", wins);
+        emit log_named_uint("losses  :", losses);
+        emit log("**********************");
     }
 
     function _getRanged(uint256 entropy, uint256 start, uint256 end, string memory salt) internal pure returns(uint256 rdn) {

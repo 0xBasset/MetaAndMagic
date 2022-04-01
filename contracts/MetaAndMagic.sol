@@ -231,7 +231,7 @@ contract MetaAndMagic {
         uint256 itemElement = _get(s2_, Stat.ELM);
         uint256 bossElement = uint8(uint64(bossStats) >> 8);
 
-        // Plain sum elements
+        // // Plain sum elements
         combat.hp     += _sum(Stat.HP,      s1_) + _sum(Stat.HP,      s2_);
         combat.phyDmg += _sumAtk(s1_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes) + _sumAtk(s2_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes);
         uint256 mgk = (_sumAtk(s1_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes) + _sumAtk(s2_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes));
@@ -239,8 +239,8 @@ contract MetaAndMagic {
 
         combat.mgkDmg += adv == 3 ?  0 : mgk * (adv == 1 ? 2 : 1) / (adv == 2 ? 2 : 1);
 
-        // TODO this looks bad, figure it out a way to optimize it
-        // Stacked Elements
+        // // TODO this looks bad, figure it out a way to optimize it
+        // // Stacked Elements
         combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s1_, bossPhyPen);
         combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s2_, bossPhyPen);
 
@@ -248,6 +248,40 @@ contract MetaAndMagic {
         combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s2_, bossMgkPen);
 
         combat.mgkRes = stackElement(combat.mgkRes, itemElement, bossElement);
+    }
+
+    event Par(uint256 g);
+
+    function _impTally(Combat memory combat, bytes32 s1_, bytes32 s2_, bytes8 bossStats) internal {
+        uint256 bossPhyPen = _get(bossStats, Stat.PHY_PEN);
+        bool bossPhyRes = _get(bossStats, Stat.PHY_RES) == 1;
+        uint256 bossMgkPen = _get(bossStats, Stat.MGK_PEN);
+        bool bossMgkRes = _get(bossStats, Stat.MGK_RES) == 1;
+
+        // Stack elements into modifiers (but with 0.5 / 2 instead of 0.5 / 1)
+        uint256 itemElement = _get(s2_, Stat.ELM);
+        uint256 bossElement = uint8(uint64(bossStats) >> 8);
+
+        // // Plain sum elements
+        combat.hp     += _sum(Stat.HP,      s1_) + _sum(Stat.HP,      s2_);
+        combat.phyDmg += _sumAtk(s1_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes) + _sumAtk(s2_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes);
+        uint256 mgk = (_sumAtk(s1_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes) + _sumAtk(s2_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes));
+        uint256 adv = _getAdv(itemElement, bossElement);
+
+        combat.mgkDmg += adv == 3 ?  0 : mgk * (adv == 1 ? 2 : 1) / (adv == 2 ? 2 : 1);
+
+        // // TODO this looks bad, figure it out a way to optimize it
+        // // Stacked Elements
+        combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s1_, bossPhyPen);
+        combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s2_, bossPhyPen);
+        emit Par(combat.mgkRes);
+        combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s1_, bossMgkPen);
+        emit Par(combat.mgkRes);
+        combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s2_, bossMgkPen);
+        emit Par(combat.mgkRes);
+
+        combat.mgkRes = stackElement(combat.mgkRes, itemElement, bossElement);
+        emit Par(combat.mgkRes);
     }
 
     function _getAdv(uint256 ele, uint256 oppEle) internal pure returns (uint256 adv) {
@@ -268,7 +302,7 @@ contract MetaAndMagic {
 
         if (adv == 3) return 0;
 
-        if (adv == 1) return val * precision / 2* precision;
+        if (adv == 1) return val * precision / (2 * precision);
 
         return val * 2 * precision / precision;
     }
