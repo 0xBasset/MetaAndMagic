@@ -5,7 +5,7 @@ pragma solidity 0.8.7;
 contract MetaAndMagicRenderer {
 
     mapping(uint256 => address) decks;
-    mapping(bytes32 => address) svgs; // svg to trait indicator to address that stores it
+    mapping(bytes4 => address) svgs; // svg to trait indicator to address that stores it
 
     string constant heroDesc = unicode"Meta & Magic Heroes is a collection of 3,000 genesis heroes that give players access to fight in a 100% on-chain NFT game. ⛓️ Can you defeat the bosses to win? 🏆 Season I 😈 Equip weapons 🗡️ Cast spells 🔥 ERC-721A standard 🍒";
     string constant itemDesc = unicode"Meta & Magic Items is a collection of 10,000 relic items that aid the genesis heroes in the battles against the ten dark entities. ⛓   Can you defeat the bosses to win? 🏆 Season I 😈 Equip weapons 🗡️ Cast spells 🔥 ERC-721A standard 🍒";
@@ -14,6 +14,10 @@ contract MetaAndMagicRenderer {
 
     function getUri(uint256 id, uint256[6] calldata traits, uint256 cat) external view returns (string memory meta) {
         meta = _getMetadata(id, traits, cat);
+    }
+
+    function setSvg(bytes4 sig, address impl) external {
+        svgs[sig] = impl;
     }
 
     function _getMetadata(uint256 id, uint256[6] calldata traits, uint256 cat) internal view returns (string memory meta) {
