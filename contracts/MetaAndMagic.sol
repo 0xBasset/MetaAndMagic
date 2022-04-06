@@ -214,6 +214,11 @@ contract MetaAndMagic {
         }
     }
 
+    function getResult(uint256 boss_, uint256 rdn) external {
+        Boss memory boss = bosses[boss_];
+        bosses[boss_].winIndex = uint56(rdn % uint256(boss.entries) + 1);
+    }
+
     function _calculateScore(bytes8 bossStats, uint256 heroId, bytes10 packedItems) internal virtual returns (uint256) {
         (bytes32 s1_, bytes32 s2_) = MetaAndMagicLike(heroesAddress).getStats(heroId);
 
