@@ -23,6 +23,10 @@ contract AttackItemsStats is StatsLike {
         ));
     }
 
+    function getStatsArri(uint256[6] calldata atts) public pure returns (bytes10[6] memory a) {
+        a = [level10(atts[0]),level10(atts[0]),level10(atts[0]),level10(atts[0]),level10(atts[0]),level10(atts[0])];
+    } 
+
     function level(uint256 id) public pure returns (bytes8 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
         // Attack
@@ -34,6 +38,19 @@ contract AttackItemsStats is StatsLike {
         if (id == 6) (hp, atk, mgk, mod) = (0,994,0,0); // X
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
+    }
+
+    function level10(uint256 id) public pure returns (bytes10 packed) {
+        (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
+        // Attack
+        if (id == 1) (hp, atk, mgk, mod) = (0, 99,0,0); // I
+        if (id == 2) (hp, atk, mgk, mod) = (0,198,0,0); // II
+        if (id == 3) (hp, atk, mgk, mod) = (0,297,0,0); // III
+        if (id == 4) (hp, atk, mgk, mod) = (0,396,0,0); // IV
+        if (id == 5) (hp, atk, mgk, mod) = (0,495,0,0); // V
+        if (id == 6) (hp, atk, mgk, mod) = (0,994,0,0); // X
+
+        packed = bytes10(abi.encodePacked(hp,atk,mgk,mod, uint16(0)));
     }
 
     function kind(uint256 id) public pure returns (bytes8 packed) {

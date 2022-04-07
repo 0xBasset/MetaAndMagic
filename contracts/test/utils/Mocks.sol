@@ -13,7 +13,6 @@ contract MockMetaAndMagic is MetaAndMagic {
     uint256 nextScore;
 
     // Exposing internal functions
-
     function fight(uint256 heroId, bytes10 items) external returns(bytes32 fightId) {
         return _fight(heroId, items);
     }
@@ -50,15 +49,9 @@ contract MockMetaAndMagic is MetaAndMagic {
         return _getResult(combat, bossStats);
     }
 
-    function setNextScore(uint256 s) external {
-        nextScore = s;
-    }
-
     function get(bytes32 src, uint8 st, uint256 index) public returns (uint256) {
         return _get(src, Stat(st), index);
     }
-
-    event D(string k, uint256 val);
 
      function _getRes(Combat memory combat, bytes8 bossStats) internal returns (uint256 heroAtk, uint256 bossAtk) {
         uint256 bossPhy = combat.phyRes * _get(bossStats, Stat.PHY_DMG)  / precision;
@@ -75,7 +68,7 @@ contract MockMetaAndMagic is MetaAndMagic {
         (bytes32 s1_, bytes32 s2_) = MetaAndMagicLike(heroesAddress).getStats(heroId);
 
         // Start with empty combat
-        combat = Combat(0,0,0,precision,precision,precision,precision);
+        combat = Combat(0,0,0,precision,precision);
         
         // Tally Hero modifies the combat memory inplace
         _tally(combat, s1_, s2_, bossStats);
@@ -96,6 +89,56 @@ contract MockMetaAndMagic is MetaAndMagic {
         }
     }
 
+    function _impTally(Combat memory combat, bytes32 s1_, bytes32 s2_, bytes8 bossStats) internal {
+        uint256 bossPhyPen = _get(bossStats, Stat.PHY_PEN);
+        bool bossPhyRes = _get(bossStats, Stat.PHY_RES) == 1;
+        uint256 bossMgkPen = _get(bossStats, Stat.MGK_PEN);
+        bool bossMgkRes = _get(bossStats, Stat.MGK_RES) == 1;
+
+        // Stack elements into modifiers (but with 0.5 / 2 instead of 0.5 / 1)
+        uint256 itemElement = _get(s2_, Stat.ELM);
+        uint256 bossElement = uint8(uint64(bossStats) >> 8);
+
+        // // Plain sum elements
+        combat.hp     += _sum(Stat.HP,      s1_) + _sum(Stat.HP,      s2_);
+        combat.phyDmg += _sumAtk(s1_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes) + _sumAtk(s2_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes);
+        uint256 mgk = (_sumAtk(s1_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes) + _sumAtk(s2_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes));
+        uint256 adv = _getAdv(itemElement, bossElement);
+
+        combat.mgkDmg += adv == 3 ?  0 : mgk * (adv == 1 ? 2 : 1) / (adv == 2 ? 2 : 1);
+
+        // // TODO this looks bad, figure it out a way to optimize it
+        // // Stacked Elements
+        combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s1_, bossPhyPen);
+        combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s2_, bossPhyPen);
+        // emit Par(combat.mgkRes);
+        combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s1_, bossMgkPen);
+        // emit Par(combat.mgkRes);
+        combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s2_, bossMgkPen);
+        // emit Par(combat.mgkRes);
+
+        combat.mgkRes = stackElement(combat.mgkRes, itemElement, bossElement);
+        // emit Par(combat.mgkRes);
+    }
+
+    // State set function
+    function setFight(bytes32 id, uint256 hero, uint256 boss, bytes10 items, uint256 start, uint256 count, bool claimed, bool claimedBoss) external {
+        fights[id] = Fight(uint16(hero), uint16(boss), items, uint32(start), uint32(count), claimed, claimedBoss);
+    }
+
+    function setBossStats(uint256 id, bytes8 stats) external {
+        bosses[id].stats = stats;
+    }
+
+    function setBossHighScore(uint256 boss, uint256 hs,  uint256 num) external {
+        bosses[boss].highestScore = uint56(hs);
+        bosses[boss].topScorers = uint16(num);
+    }
+
+    function setBosswinIndex(uint256 boss, uint256 winningIndex) external {
+        bosses[boss].winIndex = uint56(winningIndex);
+    }
+  
 }
 
 contract HeroesMock is Heroes {
@@ -130,7 +173,6 @@ contract HeroesMock is Heroes {
 
 contract ItemsMock is Items {
 
-    
     mapping(uint256 => uint256) bossSupply;
     mapping(uint256 => uint16[6]) public getAttributes;
 
