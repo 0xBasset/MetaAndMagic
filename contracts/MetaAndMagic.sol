@@ -6,7 +6,7 @@ contract MetaAndMagic {
     address heroesAddress;
     address itemsAddress;
 
-    uint256 currentBoss;
+    uint256 public currentBoss;
 
     mapping(uint256 => Heroes) public heroes;
     mapping(uint256 => Boss)   public bosses;
@@ -23,11 +23,11 @@ contract MetaAndMagic {
 
     struct Heroes { address owner; uint16 lastBoss; uint32 highestScore;}
 
-    struct Fight  { uint16 heroId; uint16 boss; bytes10 items_; uint32 start; uint32 count; bool claimedScore; bool claimedBoss; }
+    struct Fight  { uint16 heroId; uint16 boss; bytes10 items; uint32 start; uint32 count; bool claimedScore; bool claimedBoss; }
     
     struct Boss   { bytes8 stats; uint16 drops; uint16 topScorers; uint56 highestScore; uint56 entries; uint56 winIndex; }
 
-    struct Combat { uint256 hp; uint256 phyDmg; uint256 mgkDmg; uint256 phyRes; uint256 mgkRes; uint256 bossPhyRes; uint256 bossMgkRes; }
+    struct Combat { uint256 hp; uint256 phyDmg; uint256 mgkDmg; uint256 phyRes; uint256 mgkRes; }
 
     enum Stat { HP, PHY_DMG, MGK_DMG, MGK_RES, MGK_PEN, PHY_RES, PHY_PEN, ELM }
 
@@ -38,8 +38,6 @@ contract MetaAndMagic {
 
         heroesAddress = heroes_;
         itemsAddress  = items_;
-        
-        currentBoss = 1; // start at current boss
     }
 
     function setUpOracle(address vrf_, bytes32 keyHash, uint64 subscriptionId) external {
@@ -73,6 +71,7 @@ contract MetaAndMagic {
     }
 
     function stake(uint256 heroId) public {
+        require(currentBoss != 0, "not started");
         _pull(heroesAddress, heroId);
         heroes[heroId] = Heroes(msg.sender, 0, 0);
     }
@@ -106,7 +105,7 @@ contract MetaAndMagic {
             hero.highestScore = 0;
         }
 
-        fightId = keccak256(abi.encode(heroId, currBoss, items, msg.sender));
+        fightId = getFightId(heroId, currBoss, items, msg.sender);
         require(fights[fightId].heroId == 0, "already fought");
 
         Fight memory fh = Fight(uint16(heroId), uint16(currBoss), items, 0, 0, false, false);
@@ -135,22 +134,26 @@ contract MetaAndMagic {
         fights[fightId] = fh;
     }
 
-    function getBossDrop(uint256 heroId, uint boss_, bytes10 items) external returns (uint256 bossItemId){
-        bytes32 fightId = keccak256(abi.encode(heroId, boss_, items, msg.sender));
+    event De(bytes32 h);
+    event De(uint256 h);
+
+    function getBossDrop(uint256 heroId_, uint boss_, bytes10 items_) external returns (uint256 bossItemId){
+        bytes32 fightId = getFightId(heroId_, boss_, items_, msg.sender);
 
         Fight memory fh = fights[fightId];
 
-        require(fh.heroId != 0,  "non existent fight");
-        require(!fh.claimedBoss, "already claimed");
+        require(fh.boss == currentBoss, "claim over");
+        require(fh.heroId != 0,         "non existent fight");
+        require(!fh.claimedBoss,        "already claimed");
 
-        uint256 score = _calculateScore(bosses[boss_].stats, heroId, items);
+        uint256 score = _calculateScore(bosses[fh.boss].stats, fh.heroId, fh.items);
         require(score > 0, "not won");
 
-        uint16[5] memory items_ = _unpackItems(items);
+        uint16[5] memory _items = _unpackItems(fh.items);
         for (uint256 i = 0; i < 5; i++) {
-            if (items_[i] == 0) break;
+            if (_items[i] == 0) break;
             // Burn the item  if it's not burnt already
-            if (IERC721(itemsAddress).ownerOf(items_[i]) != address(0)) require(MetaAndMagicLike(itemsAddress).burnFrom(msg.sender, items_[i]), "burn failed");
+            if (IERC721(itemsAddress).ownerOf(_items[i]) != address(0)) require(MetaAndMagicLike(itemsAddress).burnFrom(msg.sender, _items[i]), "burn failed");
         }
 
         fights[fightId].claimedBoss = true;
@@ -158,40 +161,39 @@ contract MetaAndMagic {
         bossItemId = MetaAndMagicLike(itemsAddress).mintDrop(boss_, msg.sender);
     }
 
-    function getPrize(uint256 heroId, uint256 boss_, bytes10 items) external {
-        require(boss_ < currentBoss, "not finished");
-
-        bytes32 fightId = keccak256(abi.encode(heroId, boss_, items, msg.sender));
-
-        Fight memory fh   = fights[fightId];
-        Boss  memory boss = bosses[currentBoss];
+    function getPrize(uint256 heroId_, uint256 boss_, bytes10 items_) external {
+        bytes32 fightId = getFightId(heroId_, boss_, items_, msg.sender);
         
-        require(!fh.claimedScore, "already claimed");
+        Fight memory fh   = fights[fightId];
+        Boss  memory boss = bosses[fh.boss];
+
+        require(fh.boss < currentBoss, "not finished");
+        require(!fh.claimedScore,      "already claimed");
     
-        uint256 score  = _calculateScore(bosses[boss_].stats, heroId, fh.items_);
+        uint256 score  = _calculateScore(boss.stats, fh.heroId, fh.items);
 
         require(score == boss.highestScore && boss.highestScore != 0, "not high score");
 
         fights[fightId].claimedScore = true;
 
-        require(IERC20(prizeTokens[boss_]).transfer(msg.sender, prizeValues[boss_] / boss.topScorers));
+        // todo activate this
+        require(IERC20(prizeTokens[fh.boss]).transfer(msg.sender, prizeValues[fh.boss] / boss.topScorers));
     }
 
-    function getRafflePrize(uint256 heroId, uint256 boss_, bytes10 items) external {
-        require(boss_ < currentBoss, "not finished");
-
-        bytes32 fightId = keccak256(abi.encode(heroId, boss_, items, msg.sender));
+    function getRafflePrize(uint256 heroId_, uint256 boss_, bytes10 items_) external {
+        bytes32 fightId = getFightId(heroId_, boss_, items_, msg.sender);
         
         Fight memory fh   = fights[fightId];
-        Boss  memory boss = bosses[currentBoss];
-        
-        require(boss_ < currentBoss,  "not finished");
-        require(boss.highestScore > 0, "invalid");
-        require(boss.winIndex != 0,    "invalid");
-        require(fh.start >= boss.winIndex && (fh.start + fh.count < boss.winIndex), "not the winner");
+        Boss  memory boss = bosses[fh.boss];
 
-        fights[fightId].count= 0;
-        require(IERC20(prizeTokens[boss_]).transfer(msg.sender, prizeValues[boss_]));
+        require(fh.boss < currentBoss, "not finished");
+        require(boss.highestScore > 0, "not fought");
+        require(boss.winIndex != 0,    "not raffled");
+
+        require(fh.start <= boss.winIndex && (fh.start + fh.count > boss.winIndex), "not winner");
+
+        fights[fightId].count = 0;
+        require(IERC20(prizeTokens[fh.boss]).transfer(msg.sender, prizeValues[fh.boss]));
     }
 
     function requestRaffleResult(uint256 boss_) external {
@@ -223,7 +225,7 @@ contract MetaAndMagic {
         (bytes32 s1_, bytes32 s2_) = MetaAndMagicLike(heroesAddress).getStats(heroId);
 
         // Start with empty combat
-        Combat memory combat = Combat(0,0,0,precision,precision,precision,precision);
+        Combat memory combat = Combat(0,0,0,precision,precision);
         
         // Tally Hero modifies the combat memory inplace
         _tally(combat, s1_, s2_, bossStats);
@@ -238,10 +240,10 @@ contract MetaAndMagic {
     }
 
     function _getResult(Combat memory combat, bytes8 bossStats) internal pure returns (uint256) {
-        uint256 bossAtk = combat.phyRes * _get(bossStats, Stat.PHY_DMG) / precision;
-        uint256 bossMgk = combat.mgkRes * _get(bossStats, Stat.MGK_DMG) / precision;
-
-        uint256 totalHeroAttack = (combat.phyDmg ) + (combat.mgkDmg ); // total boss HP
+        uint256 bossAtk         = combat.phyRes * _get(bossStats, Stat.PHY_DMG) / precision;
+        uint256 bossMgk         = combat.mgkRes * _get(bossStats, Stat.MGK_DMG) / precision;
+        uint256 totalHeroAttack = combat.phyDmg + combat.mgkDmg;
+        
         if (bossAtk + bossMgk > combat.hp || totalHeroAttack < _get(bossStats, Stat.HP)) return 0;
 
         return totalHeroAttack - _get(bossStats, Stat.HP) + combat.hp - bossAtk + bossMgk;
@@ -261,6 +263,7 @@ contract MetaAndMagic {
         // // Plain sum elements
         combat.hp     += _sum(Stat.HP,      s1_) + _sum(Stat.HP,      s2_);
         combat.phyDmg += _sumAtk(s1_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes) + _sumAtk(s2_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes);
+        
         uint256 mgk = (_sumAtk(s1_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes) + _sumAtk(s2_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes));
         uint256 adv = _getAdv(itemElement, bossElement);
 
@@ -275,40 +278,6 @@ contract MetaAndMagic {
         combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s2_, bossMgkPen);
 
         combat.mgkRes = stackElement(combat.mgkRes, itemElement, bossElement);
-    }
-
-    event Par(uint256 g);
-
-    function _impTally(Combat memory combat, bytes32 s1_, bytes32 s2_, bytes8 bossStats) internal {
-        uint256 bossPhyPen = _get(bossStats, Stat.PHY_PEN);
-        bool bossPhyRes = _get(bossStats, Stat.PHY_RES) == 1;
-        uint256 bossMgkPen = _get(bossStats, Stat.MGK_PEN);
-        bool bossMgkRes = _get(bossStats, Stat.MGK_RES) == 1;
-
-        // Stack elements into modifiers (but with 0.5 / 2 instead of 0.5 / 1)
-        uint256 itemElement = _get(s2_, Stat.ELM);
-        uint256 bossElement = uint8(uint64(bossStats) >> 8);
-
-        // // Plain sum elements
-        combat.hp     += _sum(Stat.HP,      s1_) + _sum(Stat.HP,      s2_);
-        combat.phyDmg += _sumAtk(s1_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes) + _sumAtk(s2_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes);
-        uint256 mgk = (_sumAtk(s1_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes) + _sumAtk(s2_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes));
-        uint256 adv = _getAdv(itemElement, bossElement);
-
-        combat.mgkDmg += adv == 3 ?  0 : mgk * (adv == 1 ? 2 : 1) / (adv == 2 ? 2 : 1);
-
-        // // TODO this looks bad, figure it out a way to optimize it
-        // // Stacked Elements
-        combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s1_, bossPhyPen);
-        combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s2_, bossPhyPen);
-        emit Par(combat.mgkRes);
-        combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s1_, bossMgkPen);
-        emit Par(combat.mgkRes);
-        combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s2_, bossMgkPen);
-        emit Par(combat.mgkRes);
-
-        combat.mgkRes = stackElement(combat.mgkRes, itemElement, bossElement);
-        emit Par(combat.mgkRes);
     }
 
     function _getAdv(uint256 ele, uint256 oppEle) internal pure returns (uint256 adv) {
@@ -349,9 +318,13 @@ contract MetaAndMagic {
         return _stack(_stack(_stack(val, oppPen, v3), oppPen, v2), oppPen, v1);
     }
 
-    function _stack(Stat st, uint256 val, uint256 res, bytes32 oppPens) internal pure returns (uint256) {
-        (uint256 v1, uint256 v2, uint256 v3) = _getAll(oppPens, st);
-        return _stack(_stack(_stack(val, v3, res),v2, res), v1, res);
+    // function _stack(Stat st, uint256 val, uint256 res, bytes32 oppPens) internal pure returns (uint256) {
+    //     (uint256 v1, uint256 v2, uint256 v3) = _getAll(oppPens, st);
+    //     return _stack(_stack(_stack(val, v3, res),v2, res), v1, res);
+    // }
+
+    function getFightId(uint256 hero_, uint256 boss_, bytes10 items_, address owner_) public pure returns (bytes32 id) {
+        id = keccak256(abi.encode(hero_, boss_, items_, owner_));
     }
 
     function _get(bytes32 src, Stat stat) internal pure returns(uint256) {

@@ -78,6 +78,7 @@ contract Items is ERC721 {
     function burnFrom(address from, uint256 id) external returns (bool) {
         require(auth[msg.sender], "not authorized");
         _burn(from, id);
+        return true;
     }
 
 
