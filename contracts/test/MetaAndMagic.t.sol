@@ -683,73 +683,73 @@ contract ClaimRaffleTest is MetaAndMagicBaseTest {
     }  
 }
 
-contract GetStatsTest is MetaAndMagicBaseTest {
+// contract GetStatsTest is MetaAndMagicBaseTest {
 
-    function setUp() public override {
-        super.setUp();
-    }
+//     function setUp() public override {
+//         super.setUp();
+//     }
 
-    function test_get_attributes() public {
-        heroes.setAttributes(1, [uint256(5),5,1,5,4,15]);
+//     function test_get_attributes() public {
+//         heroes.setAttributes(1, [uint256(5),5,1,5,4,15]);
 
-        (bytes32 s1, bytes32 s2) = heroes.getStats(1);
+//         (bytes32 s1, bytes32 s2) = heroes.getStats(1);
 
-        assertTrue(s1 != bytes32(0));
-        assertTrue(s2 != bytes32(0));
+//         assertTrue(s1 != bytes32(0));
+//         assertTrue(s2 != bytes32(0));
 
-        //Level (V) atts
-        assertEq(meta.get(s1,0,0), 500); // hp
-        assertEq(meta.get(s1,1,0), 0);   // atk
-        assertEq(meta.get(s1,2,0), 0);   //mgk
-        assertEq(meta.get(s1,3,0), 0);   // mgk_res
-        assertEq(meta.get(s1,4,0), 0);   // mgk_pem
-        assertEq(meta.get(s1,5,0), 0);   // phy_res
-        assertEq(meta.get(s1,6,0), 0);   // phy_pen
+//         //Level (V) atts
+//         assertEq(meta.get(s1,0,0), 500); // hp
+//         assertEq(meta.get(s1,1,0), 0);   // atk
+//         assertEq(meta.get(s1,2,0), 0);   //mgk
+//         assertEq(meta.get(s1,3,0), 0);   // mgk_res
+//         assertEq(meta.get(s1,4,0), 0);   // mgk_pem
+//         assertEq(meta.get(s1,5,0), 0);   // phy_res
+//         assertEq(meta.get(s1,6,0), 0);   // phy_pen
 
-        // Class (Mage) atts
-        assertEq(meta.get(s1,0,1), 1000); // hp
-        assertEq(meta.get(s1,1,1), 0);   // atk
-        assertEq(meta.get(s1,2,1), 1000);   //mgk
-        assertEq(meta.get(s1,3,1), 1);   // mgk_res
-        assertEq(meta.get(s1,4,1), 1);   // mgk_pem
-        assertEq(meta.get(s1,5,1), 0);   // phy_res
-        assertEq(meta.get(s1,6,1), 0);   // phy_pen
+//         // Class (Mage) atts
+//         assertEq(meta.get(s1,0,1), 1000); // hp
+//         assertEq(meta.get(s1,1,1), 0);   // atk
+//         assertEq(meta.get(s1,2,1), 1000);   //mgk
+//         assertEq(meta.get(s1,3,1), 1);   // mgk_res
+//         assertEq(meta.get(s1,4,1), 1);   // mgk_pem
+//         assertEq(meta.get(s1,5,1), 0);   // phy_res
+//         assertEq(meta.get(s1,6,1), 0);   // phy_pen
 
-        // Rank (novice) atts
-        assertEq(meta.get(s1,0,2), 99); // hp
-        assertEq(meta.get(s1,1,2), 0);   // atk
-        assertEq(meta.get(s1,2,2), 0);   //mgk
-        assertEq(meta.get(s1,3,2), 0);   // mgk_res
-        assertEq(meta.get(s1,4,2), 0);   // mgk_pem
-        assertEq(meta.get(s1,5,2), 0);   // phy_res
-        assertEq(meta.get(s1,6,2), 0);   // phy_pen
+//         // Rank (novice) atts
+//         assertEq(meta.get(s1,0,2), 99); // hp
+//         assertEq(meta.get(s1,1,2), 0);   // atk
+//         assertEq(meta.get(s1,2,2), 0);   //mgk
+//         assertEq(meta.get(s1,3,2), 0);   // mgk_res
+//         assertEq(meta.get(s1,4,2), 0);   // mgk_pem
+//         assertEq(meta.get(s1,5,2), 0);   // phy_res
+//         assertEq(meta.get(s1,6,2), 0);   // phy_pen
 
-        // Rarity (epic) atts
-        assertEq(meta.get(s2,0,0), 500); // hp
-        assertEq(meta.get(s2,1,0), 500);   // atk
-        assertEq(meta.get(s2,2,0), 500);   //mgk
-        assertEq(meta.get(s2,3,0), 1);   // mgk_res
-        assertEq(meta.get(s2,4,0), 0);   // mgk_pem
-        assertEq(meta.get(s2,5,0), 1);   // phy_res
-        assertEq(meta.get(s2,6,0), 1);   // phy_pen
+//         // Rarity (epic) atts
+//         assertEq(meta.get(s2,0,0), 500); // hp
+//         assertEq(meta.get(s2,1,0), 500);   // atk
+//         assertEq(meta.get(s2,2,0), 500);   //mgk
+//         assertEq(meta.get(s2,3,0), 1);   // mgk_res
+//         assertEq(meta.get(s2,4,0), 0);   // mgk_pem
+//         assertEq(meta.get(s2,5,0), 1);   // phy_res
+//         assertEq(meta.get(s2,6,0), 1);   // phy_pen
 
-        // Pet (Sphinx) atts
-        assertEq(meta.get(s2,0,1), 4000); // hp
-        assertEq(meta.get(s2,1,1), 4000); // atk
-        assertEq(meta.get(s2,2,1), 4000);   //mgk
-        assertEq(meta.get(s2,3,1), 1);   // mgk_res
-        assertEq(meta.get(s2,4,1), 1);   // mgk_pem
-        assertEq(meta.get(s2,5,1), 1);   // phy_res
-        assertEq(meta.get(s2,6,1), 1);   // phy_pen
+//         // Pet (Sphinx) atts
+//         assertEq(meta.get(s2,0,1), 4000); // hp
+//         assertEq(meta.get(s2,1,1), 4000); // atk
+//         assertEq(meta.get(s2,2,1), 4000);   //mgk
+//         assertEq(meta.get(s2,3,1), 1);   // mgk_res
+//         assertEq(meta.get(s2,4,1), 1);   // mgk_pem
+//         assertEq(meta.get(s2,5,1), 1);   // phy_res
+//         assertEq(meta.get(s2,6,1), 1);   // phy_pen
 
-        // Item (elixir) atts
-        assertEq(meta.get(s2,0,2), 1500); // hp
-        assertEq(meta.get(s2,1,2), 0);    // atk
-        assertEq(meta.get(s2,2,2), 0);    //mgk
-        assertEq(meta.get(s2,3,2), 0);    // mgk_res
-        assertEq(meta.get(s2,4,2), 0);    // mgk_pem
-        assertEq(meta.get(s2,5,2), 1);    // phy_res
-        assertEq(meta.get(s2,6,2), 0);    // phy_pen
-    }
+//         // Item (elixir) atts
+//         assertEq(meta.get(s2,0,2), 1500); // hp
+//         assertEq(meta.get(s2,1,2), 0);    // atk
+//         assertEq(meta.get(s2,2,2), 0);    //mgk
+//         assertEq(meta.get(s2,3,2), 0);    // mgk_res
+//         assertEq(meta.get(s2,4,2), 0);    // mgk_pem
+//         assertEq(meta.get(s2,5,2), 1);    // phy_res
+//         assertEq(meta.get(s2,6,2), 0);    // phy_pen
+//     }
     
-}
+// }

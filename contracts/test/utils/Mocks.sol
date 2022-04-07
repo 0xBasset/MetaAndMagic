@@ -49,9 +49,9 @@ contract MockMetaAndMagic is MetaAndMagic {
     //     return _getResult(combat, bossStats);
     // }
 
-    function get(bytes32 src, uint8 st, uint256 index) public returns (uint256) {
-        return _get(src, Stat(st), index);
-    }
+    // function get(bytes32 src, uint8 st, uint256 index) public returns (uint256) {
+    //     return _get(src, Stat(st), index);
+    // }
 
      function _getRes(Combat memory combat, bytes8 bossStats) internal returns (uint256 heroAtk, uint256 bossAtk) {
         uint256 bossPhy = combat.phyRes * _get(bossStats, Stat.PHY_DMG)  / precision;

@@ -222,24 +222,25 @@ contract MetaAndMagic {
     }
 
     function _calculateScore(bytes8 bossStats, uint256 heroId, bytes10 packedItems) internal virtual returns (uint256) {
-        (bytes32 s1_, bytes32 s2_) = MetaAndMagicLike(heroesAddress).getStats(heroId);
+        bytes10[6] memory stats = MetaAndMagicLike(heroesAddress).getStats(heroId);
 
         // Start with empty combat
         Combat memory combat = Combat(0,0,0,precision,precision);
         
         // Tally Hero modifies the combat memory inplace
-        _tally(combat, s1_, s2_, bossStats);
+        _tally(combat, stats, bossStats);
+
         uint16[5] memory items_ = _unpackItems(packedItems);
         for (uint256 i = 0; i < 5; i++) {
             if (items_[i] == 0) break;
-            (s1_, s2_) = MetaAndMagicLike(itemsAddress).getStats(items_[i]);
-            _tally(combat, s1_, s2_, bossStats);
+            stats = MetaAndMagicLike(itemsAddress).getStats(items_[i]);
+            _tally(combat, stats, bossStats);
         }
 
         return _getResult(combat, bossStats);
     }
 
-    function _getResult(Combat memory combat, bytes8 bossStats) internal pure returns (uint256) {
+    function _getResult(Combat memory combat, bytes10 bossStats) internal pure returns (uint256) {
         uint256 bossAtk         = combat.phyRes * _get(bossStats, Stat.PHY_DMG) / precision;
         uint256 bossMgk         = combat.mgkRes * _get(bossStats, Stat.MGK_DMG) / precision;
         uint256 totalHeroAttack = combat.phyDmg + combat.mgkDmg;
@@ -249,35 +250,41 @@ contract MetaAndMagic {
         return totalHeroAttack - _get(bossStats, Stat.HP) + combat.hp - bossAtk + bossMgk;
     }
 
-    /// @dev This is the core function for calculating scores
-    function _tally(Combat memory combat, bytes32 s1_, bytes32 s2_, bytes8 bossStats) internal pure {
+     /// @dev This is the core function for calculating scores
+    function _tally(Combat memory combat, bytes10[6] memory stats , bytes8 bossStats) internal pure {
         uint256 bossPhyPen = _get(bossStats, Stat.PHY_PEN);
-        bool bossPhyRes = _get(bossStats, Stat.PHY_RES) == 1;
         uint256 bossMgkPen = _get(bossStats, Stat.MGK_PEN);
-        bool bossMgkRes = _get(bossStats, Stat.MGK_RES) == 1;
+        bool    bossPhyRes = _get(bossStats, Stat.PHY_RES) == 1;
+        bool    bossMgkRes = _get(bossStats, Stat.MGK_RES) == 1;
 
-        // Stack elements into modifiers (but with 0.5 / 2 instead of 0.5 / 1)
-        uint256 itemElement = _get(s2_, Stat.ELM);
+        uint256 itemElement = _get(stats[5], Stat.ELM);
         uint256 bossElement = uint8(uint64(bossStats) >> 8);
 
-        // // Plain sum elements
-        combat.hp     += _sum(Stat.HP,      s1_) + _sum(Stat.HP,      s2_);
-        combat.phyDmg += _sumAtk(s1_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes) + _sumAtk(s2_, Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes);
-        
-        uint256 mgk = (_sumAtk(s1_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes) + _sumAtk(s2_, Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes));
-        uint256 adv = _getAdv(itemElement, bossElement);
+        for (uint256 i = 0; i < 6; i++) {
+            // Sum HP
+            combat.hp += _get(stats[i], Stat.HP);
 
-        combat.mgkDmg += adv == 3 ?  0 : mgk * (adv == 1 ? 2 : 1) / (adv == 2 ? 2 : 1);
+            combat.phyDmg += _sumAtk(stats[i], Stat.PHY_DMG, Stat.PHY_PEN, bossPhyRes);
 
-        // // TODO this looks bad, figure it out a way to optimize it
-        // // Stacked Elements
-        combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s1_, bossPhyPen);
-        combat.phyRes = _stack(Stat.PHY_RES, combat.phyRes, s2_, bossPhyPen);
+            uint256 mgk = _sumAtk(stats[i], Stat.MGK_DMG, Stat.MGK_PEN, bossMgkRes);
+            uint256 adv = _getAdv(itemElement, bossElement);
 
-        combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s1_, bossMgkPen);
-        combat.mgkRes = _stack(Stat.MGK_RES, combat.mgkRes, s2_, bossMgkPen);
+            combat.mgkDmg += adv == 3 ?  0 : mgk * (adv == 1 ? 2 : 1) / (adv == 2 ? 2 : 1);
 
-        combat.mgkRes = stackElement(combat.mgkRes, itemElement, bossElement);
+            combat.phyRes = _stack(combat.phyRes, stats[i], Stat.PHY_RES, bossPhyPen);
+            combat.mgkRes = _stack(combat.mgkRes, stats[i], Stat.MGK_RES, bossMgkPen);
+
+            combat.mgkRes = stackElement(combat.mgkRes, itemElement, bossElement);
+        }
+    }
+
+    function _get(bytes10 src, Stat stat) internal pure returns (uint256) {
+        uint8 st = uint8(stat);
+
+        if (st == 7) return uint8(uint80(src)); // Element
+        if (st < 3)  return uint16(bytes2(src << (st * 16))); // Hp, PhyDmg or MgkDmg
+
+        return (uint16(bytes2(src << (48))) & (1 << st - 3)) >> st - 3;
     }
 
     function _getAdv(uint256 ele, uint256 oppEle) internal pure returns (uint256 adv) {
@@ -303,55 +310,22 @@ contract MetaAndMagic {
         return val * 2 * precision / precision;
     }
 
-    function _sum(Stat st, bytes32 src) internal pure returns (uint256 sum) {
-        sum = _get(src, st, 0) + _get(src, st, 1) + _get(src, st, 2);
+    function _sumAtk(bytes10 src, Stat stat, Stat pen, bool bossRes) internal pure returns (uint256 sum) {
+        sum  = _get(src, stat) / (((_get(src, pen) == 0) && bossRes) ? 2 : 1);
     }
 
-    function _sumAtk(bytes32 src, Stat stat, Stat pen, bool bossRes) internal pure returns (uint256 sum) {
-        sum  = _get(src, stat, 0) / (((_get(src, pen, 0) == 0) && bossRes) ? 2 : 1);
-        sum += _get(src, stat, 1) / (((_get(src, pen, 1) == 0) && bossRes) ? 2 : 1);
-        sum += _get(src, stat, 2) / (((_get(src, pen, 2) == 0) && bossRes) ? 2 : 1);
-    }
-
-    function _stack(Stat st, uint256 val, bytes32 s1_, uint256 oppPen) internal pure returns (uint256) {
-        (uint256 v1, uint256 v2, uint256 v3) = _getAll(s1_, st);
-        return _stack(_stack(_stack(val, oppPen, v3), oppPen, v2), oppPen, v1);
-    }
-
-    // function _stack(Stat st, uint256 val, uint256 res, bytes32 oppPens) internal pure returns (uint256) {
-    //     (uint256 v1, uint256 v2, uint256 v3) = _getAll(oppPens, st);
-    //     return _stack(_stack(_stack(val, v3, res),v2, res), v1, res);
-    // }
-
-    function getFightId(uint256 hero_, uint256 boss_, bytes10 items_, address owner_) public pure returns (bytes32 id) {
-        id = keccak256(abi.encode(hero_, boss_, items_, owner_));
-    }
-
-    function _get(bytes32 src, Stat stat) internal pure returns(uint256) {
-        return _get(src, stat, 0);
-    }
-
-    /// @dev Function to get a stat given the source, the index and which stat it is.
-    function _get(bytes32 src, Stat sta, uint256 index) internal pure returns (uint256) {
-        uint8 st = uint8(sta);
-
-        if (st == 7) return uint64(uint256(src)); // Element
-        
-        bytes8 att = bytes8((src) << (index * 64));
-
-        if (st < 3)  return uint16(bytes2(att << (st * 16))); // Hp, PhyDmg or MgkDmg
-
-        return (uint16(bytes2(att << (48))) & (1 << st - 3)) >> st - 3;
-    }
-
-    function _getAll(bytes32 src, Stat st) internal pure returns (uint256 val1, uint256 val2, uint256 val3) {
-        (val1, val2, val3) = (_get(src, st,0),_get(src, st,1),_get(src, st,2));
+    function _stack(uint256 val, bytes10 src, Stat res, uint256 oppPen) internal pure returns (uint256) {
+        return _stack(val, _get(src, res), oppPen);
     }
 
     function _stack(uint256 val, uint256 oppPen, uint256 res) internal pure returns (uint256 ret) {
         ret = val * ((oppPen == 0) && (res == 1) ? 0.5e12: precision) / precision;
     }
 
+    function getFightId(uint256 hero_, uint256 boss_, bytes10 items_, address owner_) public pure returns (bytes32 id) {
+        id = keccak256(abi.encode(hero_, boss_, items_, owner_));
+    }
+    
     function _getPackedItems(uint16[5] memory items) internal pure returns(bytes10 packed) {
         packed = bytes10(abi.encodePacked(items[0], items[1], items[2], items[3], items[4]));
     }
@@ -394,7 +368,7 @@ contract MetaAndMagic {
 }
 
 interface MetaAndMagicLike {
-    function getStats(uint256 id_) external view returns(bytes32, bytes32);
+    function getStats(uint256 id_) external view returns(bytes10[6] memory stats);
     function mintDrop(uint256 bossId, address to_) external returns(uint256 id);
     function burnFrom(address from, uint256 id) external returns (bool);
 }
