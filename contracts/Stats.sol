@@ -23,6 +23,10 @@ contract AttackItemsStats is StatsLike {
         ));
     }
 
+    function getStatsArri(uint256[6] calldata atts) public pure returns (bytes10[6] memory a) {
+        a = [level10(atts[0]),level10(atts[0]),level10(atts[0]),level10(atts[0]),level10(atts[0]),level10(atts[0])];
+    } 
+
     function level(uint256 id) public pure returns (bytes8 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
         // Attack
@@ -34,6 +38,19 @@ contract AttackItemsStats is StatsLike {
         if (id == 6) (hp, atk, mgk, mod) = (0,994,0,0); // X
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
+    }
+
+    function level10(uint256 id) public pure returns (bytes10 packed) {
+        (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
+        // Attack
+        if (id == 1) (hp, atk, mgk, mod) = (0, 99,0,0); // I
+        if (id == 2) (hp, atk, mgk, mod) = (0,198,0,0); // II
+        if (id == 3) (hp, atk, mgk, mod) = (0,297,0,0); // III
+        if (id == 4) (hp, atk, mgk, mod) = (0,396,0,0); // IV
+        if (id == 5) (hp, atk, mgk, mod) = (0,495,0,0); // V
+        if (id == 6) (hp, atk, mgk, mod) = (0,994,0,0); // X
+
+        packed = bytes10(abi.encodePacked(hp,atk,mgk,mod, uint16(0)));
     }
 
     function kind(uint256 id) public pure returns (bytes8 packed) {
@@ -173,9 +190,9 @@ contract DefenseItemsStats is StatsLike {
         if (id == 1)  (hp, atk, mgk, mod) = (0,0,0,0);    // Normal
         if (id == 2)  (hp, atk, mgk, mod) = (98,0,0,0);  // Good
         if (id == 3)  (hp, atk, mgk, mod) = (197,0,0,0);  // Very Good
-        if (id == 4) (hp, atk, mgk, mod) = (296,0,0,1);  //  Fine
-        if (id == 5) (hp, atk, mgk, mod) = (395,0,0,4);  //  Superfime
-        if (id == 6) (hp, atk, mgk, mod) = (494,0,0,5);  //  Excellent
+        if (id == 4)  (hp, atk, mgk, mod) = (296,0,0,1);  //  Fine
+        if (id == 5)  (hp, atk, mgk, mod) = (395,0,0,4);  //  Superfime
+        if (id == 6)  (hp, atk, mgk, mod) = (494,0,0,5);  //  Excellent
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
@@ -469,6 +486,8 @@ contract BossDropsStats is StatsLike {
 contract HeroStats is StatsLike {
 
     function getStats(uint256[6] calldata atts) public pure override returns (bytes32 s1, bytes32 s2) {
+        if (atts[0] > 10) return specialTraits(atts[0]);
+
         s1 = bytes32(abi.encodePacked(
             level(atts[0]),
             class(atts[1]),
@@ -574,5 +593,22 @@ contract HeroStats is StatsLike {
         if (id == 6) (hp, atk, mgk, mod) = (500,500,500,15); // Mythic
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
+    }
+
+    function specialTraits(uint256 id) public pure returns (bytes32 s1, bytes32 s2) {
+        (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
+
+        if (id == 11) (hp, atk, mgk, mod) = (10000, 10000,     0, 12); // Alexander Great
+        if (id == 22) (hp, atk, mgk, mod) = ( 5000,  5000, 10000, 10); // Hou Yi
+        if (id == 33) (hp, atk, mgk, mod) = ( 5000, 10000,  5000,  6); // Fujibayashi
+        if (id == 44) (hp, atk, mgk, mod) = (15000,     0,  5000,  5); // Rasputin
+        if (id == 55) (hp, atk, mgk, mod) = (10000,     0, 10000,  3); // Merlin
+        if (id == 66) (hp, atk, mgk, mod) = (12000, 12000,     0,  9); // Mutant Ape
+        if (id == 77) (hp, atk, mgk, mod) = (14000,  7000,  7000, 15); // Brahma
+
+        bytes8 packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
+
+        s1 = bytes32(abi.encodePacked(packed, bytes8(0), bytes8(0), bytes8(0)));
+        s2 = bytes32(0);
     }
 }
