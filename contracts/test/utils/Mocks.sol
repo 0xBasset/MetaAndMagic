@@ -21,16 +21,16 @@ contract MockMetaAndMagic is MetaAndMagic {
         return _validateItems(_getPackedItems(items));
     }
 
-    function getScore(uint256 boss, uint256 hero, bytes10 packedItems) external  returns(uint256) {
-        return _calculateScore(bosses[boss].stats, hero, packedItems);
-    }
+    // function getScore(uint256 boss, uint256 hero, bytes10 packedItems) external  returns(uint256) {
+    //     return _calculateScore(boss, bosses[boss].stats, hero, packedItems, msg.sender);
+    // }
 
     // function getCombat(bytes8 boss, uint256 hero, bytes10 packedItems) external returns(Combat memory c) {
     //     c = _calc(boss, hero, packedItems);
     // }
 
-    function getScore(bytes8 boss, uint256 hero, bytes10 packedItems) external returns(uint256) {
-        return _calculateScore(boss, hero, packedItems);
+    function getScore(uint256 boss, bytes8 bossStats, uint256 hero, bytes10 packedItems) external returns(uint256) {
+        return _calculateScore(boss, bossStats, hero, packedItems, msg.sender);
     }
 
     // function _calculateScore(bytes8 bossStats, uint256 heroId, bytes10 packedItems) internal override returns (uint256) {
@@ -49,9 +49,9 @@ contract MockMetaAndMagic is MetaAndMagic {
     //     return _getResult(combat, bossStats);
     // }
 
-    // function get(bytes32 src, uint8 st, uint256 index) public returns (uint256) {
-    //     return _get(src, Stat(st), index);
-    // }
+    function get(bytes10 src, uint8 st) public pure returns (uint256) {
+        return _get(src, Stat(st));
+    }
 
      function _getRes(Combat memory combat, bytes8 bossStats) internal returns (uint256 heroAtk, uint256 bossAtk) {
         uint256 bossPhy = combat.phyRes * _get(bossStats, Stat.PHY_DMG)  / precision;
@@ -135,6 +135,10 @@ contract MockMetaAndMagic is MetaAndMagic {
         bosses[boss].topScorers = uint16(num);
     }
 
+    function setBossEntries(uint256 boss, uint256 entries) external {
+        bosses[boss].entries = uint56(entries);
+    }
+
     function setBosswinIndex(uint256 boss, uint256 winningIndex) external {
         bosses[boss].winIndex = uint56(winningIndex);
     }
@@ -143,66 +147,15 @@ contract MockMetaAndMagic is MetaAndMagic {
 
 contract HeroesMock is Heroes {
 
-    function mint(address to, uint256 id) external {
-        _mint(to, id);
-    }
-
-    mapping (uint256 => uint16[6]) public getHeroAttributes;
-    function setAttributes(uint256 id_, uint256[6] memory atts) external {
-        for (uint256 i = 0; i < atts.length; i++) {
-            getHeroAttributes[id_][i] = uint16(atts[i]);  
-         
-        }
-    }
-
-    function getStats(uint256 itemId) external view override returns(bytes32, bytes32) {
-        if (getHeroAttributes[itemId][0] == 0) return StatsLike(stats).getStats(_traits(entropySeed, itemId));
-        uint256[6] memory atts;
-        
-        atts[0] =  getHeroAttributes[itemId][0];
-        atts[1] =  getHeroAttributes[itemId][1];
-        atts[2] =  getHeroAttributes[itemId][2];
-        atts[3] =  getHeroAttributes[itemId][3];
-        atts[4] =  getHeroAttributes[itemId][4];
-        atts[5] =  getHeroAttributes[itemId][5];
-
-        return StatsLike(stats).getStats(atts);
-    }
-
 }
 
 contract ItemsMock is Items {
 
-    mapping(uint256 => uint256) bossSupply;
-    mapping(uint256 => uint16[6]) public getAttributes;
-
-    function mint(address to, uint256 id) external {
-        _mint(to, id);
+    function mintId(address to, uint256 id_) external virtual returns(uint256 id) {
+        _mint(to, id_);    
+        id = id_; 
     }
 
-    function getStats(uint256 itemId) external view override returns(bytes32, bytes32) {
-        if (getAttributes[itemId][0] == 0) return StatsLike(statsAddress[(itemId % 4) + 1]).getStats(_traits(entropySeed, itemId));
-        
-        uint256[6] memory atts;
-        atts[0] =  getAttributes[itemId][0];
-        atts[1] =  getAttributes[itemId][1];
-        atts[2] =  getAttributes[itemId][2];
-        atts[3] =  getAttributes[itemId][3];
-        atts[4] =  getAttributes[itemId][4];
-        atts[5] =  getAttributes[itemId][5];
-    }
-
-    function setAttributes(uint256 id_, uint256[6] memory atts) external {
-        for (uint256 i = 0; i < atts.length; i++) {
-            getAttributes[id_][i] = uint16(atts[i]);  
-        }
-    }
-
-    function mintDrop(uint256 bossId, address to_) external override returns (uint256 id){
-        id = 10000 + (bossId * 100) + ++bossSupply[bossId];
-        _mint(to_, id);
-    }
-    
     function mintFive(address to, uint16 fst, uint16 sc,uint16 thr,uint16 frt,uint16 fifth)  external returns(uint16[5] memory list) {
         _mint(to, fst);
         _mint(to, sc);
@@ -224,9 +177,9 @@ contract VRFMock {
     uint256 reqId;
     address consumer;
 
-
     function requestRandomWords( bytes32 , uint64 , uint16 , uint32 , uint32 ) external returns (uint256 requestId) {
         requestId = uint256(keccak256(abi.encode("REQUEST", nonce++)));
+        consumer = msg.sender;
         reqId = requestId;
     }
 

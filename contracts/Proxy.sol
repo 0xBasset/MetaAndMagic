@@ -70,6 +70,8 @@ contract Proxy {
         }
     }
 
+    receive() external payable {}
+
 
     /**
      * @dev Fallback function that delegates calls to the address returned by `_implementation()`. Will run if no other

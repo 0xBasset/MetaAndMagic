@@ -53,7 +53,7 @@ contract MetaAndMagicLens {
     function itemsOfUser(address acc) external view returns(uint256[] memory items) {
         items = new uint256[](IERC721(itemsAddress).balanceOf(acc));
         uint256 counter = 0;
-        for (uint256 i = 1; i < 3000; i++) {
+        for (uint256 i = 1; i < 10000; i++) {
             if (IERC721(itemsAddress).ownerOf(i) == acc) items[counter++] = i;
         }
     }

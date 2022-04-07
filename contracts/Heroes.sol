@@ -26,10 +26,10 @@ contract Heroes is ERC721 {
         renderer = renderer_;
     }
 
-    function getStats(uint256 id_) external view virtual returns(bytes32, bytes32) {    // [][]
+    function getStats(uint256 id_) external view virtual returns(bytes10[6] memory stats_) {    // [][]
         uint256 seed = entropySeed;
         
-        StatsLike(stats).getStats(_traits(seed, id_));
+        stats_ = StatsLike(stats).getStats(_traits(seed, id_));
     }
 
     function getTraits(uint256 id_) external view returns (uint256[6] memory traits_) {
@@ -66,11 +66,27 @@ contract Heroes is ERC721 {
         entropySeed = seed;
     }
 
+    function mint(address to, uint256 amount) external virtual returns(uint256 id) {
+        require(auth[msg.sender], "not authorized");
+        for (uint256 i = 0; i < amount; i++) {
+            id = totalSupply + 1;
+            _mint(to, id);     
+        }
+    }
+
     /*///////////////////////////////////////////////////////////////
                              TRAIT FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    function _bossTraits(uint256 seed, uint256 id_) internal pure returns (uint256[6] memory traits) {
+        traits = _traits(seed, id_);
+        
+        // Overriding kind
+        traits[1] =  13;
+    }
+
     function _traits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t ) {
+        require(seed_ != uint256(0), "seed not set");
         if (_isSpecial(id_, seed_)) return _getSpecialTraits(seed_, id_);
         
         t = [ _getTier(id_,  seed_, "LEVEL"), 
@@ -124,7 +140,7 @@ contract Heroes is ERC721 {
 
 
 interface StatsLike {
-    function getStats(uint256[6] calldata attributes) external view returns (bytes32 s1, bytes32 s2); 
+    function getStats(uint256[6] calldata attributes) external view returns (bytes10[6] memory stats_); 
 }
 
 interface RendererLike {

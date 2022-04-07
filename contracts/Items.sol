@@ -22,24 +22,24 @@ contract Items is ERC721 {
     function initialize(address stats_1, address stats_2, address stats_3, address stats_4, address stats_5, address renderer_) external {
         require(msg.sender == _owner(), "not authorized");
 
-        statsAddress[1] = stats_1;
-        statsAddress[2] = stats_2;
-        statsAddress[3] = stats_3;
-        statsAddress[4] = stats_4;
-        statsAddress[5] = stats_5;
+        statsAddress[0] = stats_1;
+        statsAddress[1] = stats_2;
+        statsAddress[2] = stats_3;
+        statsAddress[3] = stats_4;
+        statsAddress[9] = stats_5;
         
         renderer = renderer_;
 
         // Setting boss drop supplies
-        bossSupplies[2]  = 1000; 
-        bossSupplies[3]  = 900; 
-        bossSupplies[4]  = 800;
-        bossSupplies[5]  = 700;
-        bossSupplies[6]  = 600;
-        bossSupplies[7]  = 500;
-        bossSupplies[8]  = 400;
-        bossSupplies[9]  = 300;
-        bossSupplies[10] = 200;
+        bossSupplies[1] = 1000; 
+        bossSupplies[2] = 900; 
+        bossSupplies[3] = 800;
+        bossSupplies[4] = 700;
+        bossSupplies[5] = 600;
+        bossSupplies[6] = 500;
+        bossSupplies[7] = 400;
+        bossSupplies[8] = 300;
+        bossSupplies[9] = 200;
     }
 
     function setUpOracle(address vrf_, bytes32 keyHash, uint64 subscriptionId) external {
@@ -50,12 +50,12 @@ contract Items is ERC721 {
         subId    = subscriptionId;
     }
 
-    function getStats(uint256 id_) external view virtual returns(bytes32, bytes32) {    
+    function getStats(uint256 id_) external view virtual returns(bytes10[6] memory stats_) {    
         uint256 seed = entropySeed;
         
-        if (id_ > 10000) return StatsLike(statsAddress[10]).getStats(_bossTraits(seed, id_));
+        if (id_ > 10000) return stats_ = StatsLike(statsAddress[10]).getStats(_bossTraits(seed, id_));
 
-        if (!_isSpecial(id_, seed)) return StatsLike(statsAddress[(id_ % 4) + 1]).getStats(_traits(seed, id_));
+        if (!_isSpecial(id_, seed)) return stats_ = StatsLike(statsAddress[(id_ % 4)]).getStats(_traits(seed, id_));
     }
 
     function getTraits(uint256 id_) external view returns (uint256[6] memory traits_) {
@@ -66,6 +66,13 @@ contract Items is ERC721 {
                              MINT FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    function mint(address to, uint256 amount) external virtual returns(uint256 id) {
+        require(auth[msg.sender], "not authorized");
+        for (uint256 i = 0; i < amount; i++) {
+            id = totalSupply + 1;
+            _mint(to, id);     
+        }
+    }
 
     function mintDrop(uint256 boss, address to) external virtual returns(uint256 id) {
         require(auth[msg.sender], "not authorized");
@@ -138,5 +145,5 @@ contract Items is ERC721 {
 
 
 interface StatsLike {
-    function getStats(uint256[6] calldata attributes) external view returns (bytes32 s1, bytes32 s2); 
+    function getStats(uint256[6] calldata attributes) external view returns (bytes10[6] memory stats_); 
 }

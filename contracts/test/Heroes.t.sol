@@ -20,10 +20,12 @@ contract HeroesTest is DSTest {
         heroes = HeroesMock(address(new Proxy(address(new HeroesMock()))));
         heroes.initialize(address(new HeroStats()), address(0));
         heroes.setEntropy(uint256(keccak256(abi.encode("ENTROPY"))));
+
+        heroes.setAuth(address(this), true);
     }
 
-    function test_mint(uint256 id) public {
-        heroes.mint(address(this), id);
+    function test_mint() public {
+        uint256 id = heroes.mint(address(this), 1);
 
         assertEq(heroes.ownerOf(id), address(this));
         assertEq(heroes.totalSupply(), 1);
@@ -43,6 +45,4 @@ contract HeroesTest is DSTest {
     //     assertEq(heroes.balanceOf(from), 0);
     //     assertEq(heroes.balanceOf(to), 1);
     // }
-
-
 }

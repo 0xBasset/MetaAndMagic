@@ -2,7 +2,7 @@
 pragma solidity 0.8.7;
 
 /// @notice Modern and gas efficient ERC-721 + ERC-20/EIP-2612-like implementation,
-/// including the MetaData, and partially, Enumerable extensions.
+/// Modified version inspired by ERC721A
 contract ERC721 {
     /*///////////////////////////////////////////////////////////////
                                   EVENTS
@@ -19,11 +19,13 @@ contract ERC721 {
                              ERC-721 STORAGE
     //////////////////////////////////////////////////////////////*/
 
+    struct AddressData { uint128 balance; uint128 minted; }
+
     uint256 public totalSupply;
     
     mapping(address => bool)    public auth;
 
-    mapping(address => uint256) public balanceOf;
+    mapping(address => AddressData) public datas;
     
     mapping(uint256 => address) public ownerOf;
         
@@ -37,6 +39,14 @@ contract ERC721 {
 
     function owner() external view returns (address owner_) {
         return _owner();
+    }
+
+    function balanceOf(address add) external view returns(uint256 balance_) {
+        balance_ = datas[add].balance;
+    }
+
+    function minted(address add) external view returns(uint256 minted_) {
+        minted_ = datas[add].minted;
     }
     
     /*///////////////////////////////////////////////////////////////
@@ -115,8 +125,8 @@ contract ERC721 {
     function _transfer(address from, address to, uint256 tokenId) internal {
         require(ownerOf[tokenId] == from, "not owner");
 
-        balanceOf[from]--; 
-        balanceOf[to]++;
+        datas[from].balance--; 
+        datas[to].balance++;
         
         delete getApproved[tokenId];
         
@@ -133,7 +143,8 @@ contract ERC721 {
         // This is safe because the sum of all user
         // balances can't exceed type(uint256).max!
         unchecked {
-            balanceOf[to]++;
+            datas[to].balance++;
+            datas[to].minted++;
         }
         
         ownerOf[tokenId] = to;
@@ -148,7 +159,8 @@ contract ERC721 {
         require(ownerOf[tokenId] != address(0), "NOT_MINTED");
         
         totalSupply--;
-        balanceOf[owner_]--;
+        datas[owner_].balance--;
+        datas[owner_].minted--;
         
         delete ownerOf[tokenId];
                 

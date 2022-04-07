@@ -21,7 +21,7 @@ contract MetaAndMagicRenderer {
     }
 
     function _getMetadata(uint256 id, uint256[6] calldata traits, uint256 cat) internal view returns (string memory meta) {
-        string memory svg = _getSvg(cat, traits);
+        string memory svg = _getSvg(id, cat, traits);
 
         meta = 
             string(
@@ -76,8 +76,8 @@ contract MetaAndMagicRenderer {
         if (cat == 20) name = "Philosopher's Stone";
     }
 
-    function _getSvg(uint256 cat, uint256[6] memory traits) internal view returns (string memory svg) {
-        string memory content = cat == 1 ? _getHeroSvg(traits) : _getItemSvg(traits);
+    function _getSvg(uint256 id, uint256 cat, uint256[6] memory traits) internal view returns (string memory svg) {
+        string memory content = cat == 1 ? _getHeroSvg(traits) : _getItemSvg(id, traits);
 
         svg = Strings.encode(abi.encodePacked(header, content ,footer));
     }
@@ -103,15 +103,11 @@ contract MetaAndMagicRenderer {
         ));
     }
 
-    function _getItemSvg(uint256[6] memory traits) internal view returns (string memory svg) {
+    function _getItemSvg(uint256 id, uint256[6] memory traits) internal view returns (string memory svg) {
         bytes4[6] memory layers = [bytes4(0),bytes4(0),bytes4(0),bytes4(0),bytes4(0), bytes4(0)];
 
         for (uint256 i = 0; i < 6; i++) {
-            if (i == 2) {
-                // overriding rank trait
-                layers[i] = bytes4(keccak256((abi.encodePacked("item", Strings.toString(i), Strings.toString(traits[i - 1]), Strings.toString(traits[i])))));
-            }
-            layers[i] = bytes4(keccak256((abi.encodePacked("item", Strings.toString(i), Strings.toString(traits[i])))));
+            layers[i] = bytes4(keccak256((abi.encodePacked("item", Strings.toString(id % 4), Strings.toString(i), Strings.toString(traits[i])))));
         }
 
         svg =  string(abi.encodePacked(

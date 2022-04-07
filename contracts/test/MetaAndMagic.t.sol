@@ -27,17 +27,20 @@ contract MetaAndMagicBaseTest is DSTest {
         meta   = MockMetaAndMagic(address(new Proxy(address(new MockMetaAndMagic()))));
         oracle = new VRFMock();
 
+        meta.setUpOracle(address(oracle), bytes32(0), uint64(1));
+
         meta.initialize(address(heroes), address(items));
-        
         
         heroes.initialize(address(new HeroStats()), address(0));
         heroes.setEntropy(uint256(keccak256(abi.encode("HEROES_NTROPY"))));
         heroes.setAuth(address(meta), true);
+        heroes.setAuth(address(this), true);
 
         // Set up items
         items.initialize(address(new AttackItemsStats()), address(new DefenseItemsStats()), address(new SpellItemsStats()), address(new BuffItemsStats()), address(new BossDropsStats()), address(0));
         items.setEntropy(uint256(keccak256(abi.encode("ITEMS_ENTROPY"))));
         items.setAuth(address(meta), true);
+        items.setAuth(address(this), true);
     }
 
     // Helper Functions
@@ -46,26 +49,25 @@ contract MetaAndMagicBaseTest is DSTest {
     }
 
     function _addBoss() internal {
-        meta.addBoss(address(1), 100e18, 20, 10000, 1000, 1000, 3, 0);
+        meta.addBoss(address(1), 100e18, 10000, 1000, 1000, 3, 0);
     }
 
     function _addBoss(address token, uint256 amt) internal {
-        meta.addBoss(address(token), amt, 20, 10000, 1000, 1000, 3, 0);
+        meta.addBoss(address(token), amt, 10000, 1000, 1000, 3, 0);
     }
 
 }
 
 contract AddBossTest is MetaAndMagicBaseTest {
 
-    function test_AddBoss(address prizeToken, uint256 halfPrize, uint16 drops, uint16 hp_, uint16 atk_, uint16 mgk_, uint8 mod_, uint8 ele) public {
-        meta.addBoss(prizeToken, halfPrize, drops, hp_, atk_, mgk_, mod_, ele);
+    function test_AddBoss(address prizeToken, uint256 halfPrize, uint16 hp_, uint16 atk_, uint16 mgk_, uint8 mod_, uint8 ele) public {
+        meta.addBoss(prizeToken, halfPrize, hp_, atk_, mgk_, mod_, ele);
 
-        assertEq(meta.prizeTokens(2), prizeToken);
-        assertEq(meta.prizeValues(2), halfPrize);
+        assertEq(meta.prizeTokens(1), prizeToken);
+        assertEq(meta.prizeValues(1), halfPrize);
 
-        (, uint16 d, uint16 top, uint128 hs,,)= meta.bosses(2);
+        (, uint16 top, uint128 hs,,)= meta.bosses(1);
 
-        assertEq(d, drops);
         assertEq(hs, 0);
         assertEq(top, 0);
     }
@@ -132,11 +134,11 @@ contract ValidateItemTest is MetaAndMagicBaseTest {
     }
 
     function _mintItems(uint16 one, uint16 two, uint16 three, uint16 four, uint16 five) internal returns (uint16[5] memory list) {
-        if (one != 0) items.mint(address(this), one);
-        if (two != 0) items.mint(address(this), two);
-        if (three != 0) items.mint(address(this), three);
-        if (four != 0) items.mint(address(this), four);
-        if (five != 0) items.mint(address(this), five);
+        if (one != 0) items.mintId(address(this), one);
+        if (two != 0) items.mintId(address(this), two);
+        if (three != 0) items.mintId(address(this), three);
+        if (four != 0) items.mintId(address(this), four);
+        if (five != 0) items.mintId(address(this), five);
         list = [one, two, three, four, five];
     }
 
@@ -144,11 +146,10 @@ contract ValidateItemTest is MetaAndMagicBaseTest {
 
 contract StakeTest is MetaAndMagicBaseTest {
 
-    function testStake_success(uint16 heroId) external {
-        if (heroId == 0) heroId++;
+    function testStake_success() external {
+        _addBoss();
 
-        heroes.mint(address(this), heroId);
-        heroes.approve(address(meta), heroId);
+        uint256 heroId = heroes.mint(address(this), 1);
 
         meta.stake(heroId);
 
@@ -158,17 +159,15 @@ contract StakeTest is MetaAndMagicBaseTest {
         assertEq(highestScore, 0);
     }
 
-    function testStake_notApproved(uint16 heroId) external {
-        heroes.mint(address(this), heroId);
+    function testStake_failIfNotStarted() external {
+        uint256 heroId = heroes.mint(address(this), 1);
 
-        vm.expectRevert(bytes("NOT_APPROVED"));
-        meta.stake(heroId);
-
-        heroes.approve(address(meta), heroId);
+        vm.expectRevert("not started");
         meta.stake(heroId);
     }
 
-    function _testStake_canUnstake(uint16 heroId) external {
+    function testStake_canUnstake() external {
+        uint256 heroId = heroes.mint(address(this), 1);
         _addBoss();
 
         heroes.mint(address(this), heroId);
@@ -184,7 +183,9 @@ contract StakeTest is MetaAndMagicBaseTest {
         assertEq(highestScore, 0);     
     }    
 
-    function _testStake_failWithNotOwner(uint16 heroId) external {
+    function testStake_failWithNotOwner() external {
+        uint256 heroId = heroes.mint(address(this), 1);
+
         _addBoss();
 
         heroes.mint(address(this), heroId);
@@ -204,7 +205,9 @@ contract StakeTest is MetaAndMagicBaseTest {
         assertEq(highestScore, 0);     
     }    
 
-    function _testStake_failIfFought(uint16 heroId) external {
+    function testStake_failIfFought() external {
+        uint256 heroId = heroes.mint(address(this), 1);
+
         _addBoss();
 
         heroes.mint(address(this), heroId);
@@ -234,121 +237,79 @@ contract StakeTest is MetaAndMagicBaseTest {
 
 contract FightTest is MetaAndMagicBaseTest {
 
-    uint256 boss   = 2;
+    uint256 boss   = 1;
     uint256 heroId = 1;
 
     uint16[5] list; 
-    uint16[5] list2; 
 
     bytes10 itm;
     bytes10 itm2;
 
+    bytes8  bossStats = 0x0009000900090000;
+
     function setUp() public override {
         super.setUp();
         _addBoss();
+        meta.setBossStats(boss, bossStats);
 
         heroes.mint(address(this), heroId);
         heroes.approve(address(meta), heroId);
 
         meta.stake(heroId);
-        list = items.mintFive(address(this), 5, 4, 3, 2, 1);
-        itm = _getPackedItems(list);
 
-        list2 = items.mintFive(address(this), 10, 9, 8, 7, 6);
-        itm2 = _getPackedItems(list2);
+        list = items.mintFive(address(this), 5, 4, 3, 2, 1);
+
+        list = [5,0,0,0,0];
+        itm  = _getPackedItems(list);
+
+        list = [5,4,3,2,1];
+        itm2 = _getPackedItems(list);
     }
 
     function test_fight_success() external {
-        bytes32 id = meta.fight(heroId, itm);
+        uint256 score = meta.getScore(boss, bossStats, heroId, itm);
+        bytes32 id    = meta.fight(heroId, itm);
 
        (uint256 hero, uint256 boss_, bytes10 items_, uint256 start, uint256 count, bool scoreClaimed , bool bossClaimed ) = meta.fights(id);
 
-        assertEq(hero, heroId);
-        assertEq(boss_, boss);
+        assertEq(hero,    heroId);
+        assertEq(boss_,   boss);
         assertEq(items_ , itm);
-        assertEq(start, 1);
-        assertEq(count, 10);
+        assertEq(start,   1);
+        assertEq(count,   score);
         
         assertTrue(!scoreClaimed);
         assertTrue(!bossClaimed);
 
-        uint256 score = meta.getScore(boss, heroId, itm);
-
-        (,,uint16 topS,uint128 hs,uint256 entries, uint256 winningIndex) = meta.bosses(boss);
+        (,uint16 topS,uint128 hs, uint256 entries, uint256 winningIndex) = meta.bosses(boss);
         
         assertEq(score, hs);
-        // assertEq(score, nextScore);
         assertEq(topS, 1);
-        // assertEq(entries, nextScore);
+        assertEq(entries, score);
         assertEq(winningIndex, 0);
     }
     
     function test_fight_replaceHeroHighScore() external {
-        bytes32 id = meta.fight(heroId, itm);
+        uint256 score1 = meta.getScore(boss, bossStats, heroId, itm);
+        bytes32 id     = meta.fight(heroId, itm);
 
         ( , , , uint32 start, uint32 count, , ) = meta.fights(id);
 
         assertEq(start, 1);
-        assertEq(count, 10);
+        assertEq(count, score1);
 
-        uint256 secondScore = 14;
-        // meta.setNextScore(secondScore);
-
-        bytes32 id2 = meta.fight(heroId, itm2);
+        uint256 score2 = meta.getScore(boss, bossStats, heroId, itm2);
+        bytes32 id2    = meta.fight(heroId, itm2);
 
         ( , , , start, count,,) = meta.fights(id2);
 
-        assertEq(start, 11);
-        assertEq(count, 4);
+        assertEq(start, score1 + 1);
+        assertEq(count, score2 - score1);
  
-        (,, uint256 top ,uint256 hs,uint256 entries,  uint256 winningIndex) = meta.bosses(boss);
-        assertEq(hs, secondScore);
+        (,uint256 top ,uint256 hs,uint256 entries,  uint256 winningIndex) = meta.bosses(boss);
+        assertEq(hs, score2);
         assertEq(top, 1);
-        assertEq(entries, 14);
-        assertEq(winningIndex, 0);
-    }
-
-    function test_fight_topScores() external {
-
-        uint256 tops = 25;
-        for (uint16 i = 2; i < tops; i++) {
-            // mint hero
-            heroes.mint(address(this), i);
-            heroes.approve(address(meta), i); 
-
-            uint16[5] memory deck = items.mintFive(address(this), i * 100 + i, i * 90 + i, i * 80 + i, i * 70 + i, i * 60+ i);
-            bytes10 d = _getPackedItems(deck);
-            
-            meta.stake(i);   
-            meta.fight(i, d);
-        }
-
-        (,, uint256 top ,uint256 hs,uint256 entries,  uint256 winningIndex) = meta.bosses(boss);
-
-        assertEq(hs, 10);
-        assertEq(top, tops - 2);
-        assertEq(entries, (tops - 2) * 10);
-        assertEq(winningIndex, 0);
-    }
-
-    function test_fight_replaceBossHighScore() external {
-
-        uint256 tops = 25;
-        for (uint16 i = 2; i < tops; i++) {
-            // mint hero
-            heroes.mint(address(this), i);
-            heroes.approve(address(meta), i); 
-
-            uint16[5] memory deck = items.mintFive(address(this), i * 100 + i, i * 90 + i, i * 80 + i, i * 70 + i, i * 60+ i);
-            bytes10 d = _getPackedItems(deck);
-            
-            meta.stake(i);   
-            meta.fight(i, d);
-        }
-
-        (,, uint256 top ,uint256 hs,,uint256 winningIndex) = meta.bosses(boss);
-        assertEq(hs, 24 * 100);
-        assertEq(top, 1);
+        assertEq(entries, score2);
         assertEq(winningIndex, 0);
     }
 
@@ -362,7 +323,7 @@ contract FightTest is MetaAndMagicBaseTest {
 }
 
 contract ClaimBossDropTest is MetaAndMagicBaseTest {
-    uint256 boss   = 2;
+    uint256 boss   = 1;
     uint256 heroId = 1;
 
     uint16[5] list = [5,4,3,2,1];  
@@ -408,11 +369,6 @@ contract ClaimBossDropTest is MetaAndMagicBaseTest {
         vm.expectRevert("already claimed");
         meta.getBossDrop(heroId, boss, itm);
     }     
-
-    function test_claimBossDrop_failForInvalidFight() external {
-        vm.expectRevert("non existent fight");
-        meta.getBossDrop(heroId + 1, boss, itm);
-    }
 
     function test_claimBossDrop_failFightNotWon() external {
         // Setting OP boss
@@ -463,7 +419,7 @@ contract ClaimHighestScoreTest is MetaAndMagicBaseTest {
     function test_claimHSDrop_success() external {
         _addBoss();
 
-        uint256 score = meta.getScore(bossStats, heroId, itm);
+        uint256 score = meta.getScore(boss, bossStats, heroId, itm);
 
         meta.setBossStats(boss, bossStats);
         meta.setBossHighScore(boss, score, 1);
@@ -483,7 +439,7 @@ contract ClaimHighestScoreTest is MetaAndMagicBaseTest {
     function test_claimHSDrop_failAlreadyClaimed() external {
         _addBoss();
 
-        uint256 score = meta.getScore(bossStats, heroId, itm);
+        uint256 score = meta.getScore(boss, bossStats, heroId, itm);
 
         meta.setBossStats(boss, bossStats);
         meta.setBossHighScore(boss, score, 1);
@@ -502,7 +458,7 @@ contract ClaimHighestScoreTest is MetaAndMagicBaseTest {
     function test_claimHSDrop_failWrongHS() external {
         _addBoss();
 
-        uint256 score = meta.getScore(bossStats, heroId, itm);
+        uint256 score = meta.getScore(boss, bossStats, heroId, itm);
 
         meta.setBossStats(boss, bossStats);
         meta.setBossHighScore(boss, score +1, 1);
@@ -528,7 +484,7 @@ contract ClaimHighestScoreTest is MetaAndMagicBaseTest {
     function test_claimHSDrop_successSplittingPrize() external {
         _addBoss();
 
-        uint256 score = meta.getScore(bossStats, heroId, itm);
+        uint256 score = meta.getScore(boss,bossStats, heroId, itm);
 
         meta.setBossStats(boss, bossStats);
         meta.setBossHighScore(boss, score, 16);
@@ -683,73 +639,140 @@ contract ClaimRaffleTest is MetaAndMagicBaseTest {
     }  
 }
 
-// contract GetStatsTest is MetaAndMagicBaseTest {
+contract GetRaffleResult is MetaAndMagicBaseTest {
+    uint256 boss   = 1;
+    uint256 heroId = 1;
 
-//     function setUp() public override {
-//         super.setUp();
-//     }
+    uint256 prize = 100e18;
 
-//     function test_get_attributes() public {
-//         heroes.setAttributes(1, [uint256(5),5,1,5,4,15]);
+    uint16[5] list = [5,4,3,2,1];  
+    bytes10 itm;
 
-//         (bytes32 s1, bytes32 s2) = heroes.getStats(1);
+    bytes8 bossStats = 0x0001000100010000;
 
-//         assertTrue(s1 != bytes32(0));
-//         assertTrue(s2 != bytes32(0));
+    bytes32 fightId;
 
-//         //Level (V) atts
-//         assertEq(meta.get(s1,0,0), 500); // hp
-//         assertEq(meta.get(s1,1,0), 0);   // atk
-//         assertEq(meta.get(s1,2,0), 0);   //mgk
-//         assertEq(meta.get(s1,3,0), 0);   // mgk_res
-//         assertEq(meta.get(s1,4,0), 0);   // mgk_pem
-//         assertEq(meta.get(s1,5,0), 0);   // phy_res
-//         assertEq(meta.get(s1,6,0), 0);   // phy_pen
+    MockERC20 token;
 
-//         // Class (Mage) atts
-//         assertEq(meta.get(s1,0,1), 1000); // hp
-//         assertEq(meta.get(s1,1,1), 0);   // atk
-//         assertEq(meta.get(s1,2,1), 1000);   //mgk
-//         assertEq(meta.get(s1,3,1), 1);   // mgk_res
-//         assertEq(meta.get(s1,4,1), 1);   // mgk_pem
-//         assertEq(meta.get(s1,5,1), 0);   // phy_res
-//         assertEq(meta.get(s1,6,1), 0);   // phy_pen
+    function setUp() public override {
+        super.setUp();
 
-//         // Rank (novice) atts
-//         assertEq(meta.get(s1,0,2), 99); // hp
-//         assertEq(meta.get(s1,1,2), 0);   // atk
-//         assertEq(meta.get(s1,2,2), 0);   //mgk
-//         assertEq(meta.get(s1,3,2), 0);   // mgk_res
-//         assertEq(meta.get(s1,4,2), 0);   // mgk_pem
-//         assertEq(meta.get(s1,5,2), 0);   // phy_res
-//         assertEq(meta.get(s1,6,2), 0);   // phy_pen
+        token = new MockERC20();
 
-//         // Rarity (epic) atts
-//         assertEq(meta.get(s2,0,0), 500); // hp
-//         assertEq(meta.get(s2,1,0), 500);   // atk
-//         assertEq(meta.get(s2,2,0), 500);   //mgk
-//         assertEq(meta.get(s2,3,0), 1);   // mgk_res
-//         assertEq(meta.get(s2,4,0), 0);   // mgk_pem
-//         assertEq(meta.get(s2,5,0), 1);   // phy_res
-//         assertEq(meta.get(s2,6,0), 1);   // phy_pen
+        _addBoss(address(token), prize);
 
-//         // Pet (Sphinx) atts
-//         assertEq(meta.get(s2,0,1), 4000); // hp
-//         assertEq(meta.get(s2,1,1), 4000); // atk
-//         assertEq(meta.get(s2,2,1), 4000);   //mgk
-//         assertEq(meta.get(s2,3,1), 1);   // mgk_res
-//         assertEq(meta.get(s2,4,1), 1);   // mgk_pem
-//         assertEq(meta.get(s2,5,1), 1);   // phy_res
-//         assertEq(meta.get(s2,6,1), 1);   // phy_pen
+        itm = _getPackedItems(list);
 
-//         // Item (elixir) atts
-//         assertEq(meta.get(s2,0,2), 1500); // hp
-//         assertEq(meta.get(s2,1,2), 0);    // atk
-//         assertEq(meta.get(s2,2,2), 0);    //mgk
-//         assertEq(meta.get(s2,3,2), 0);    // mgk_res
-//         assertEq(meta.get(s2,4,2), 0);    // mgk_pem
-//         assertEq(meta.get(s2,5,2), 1);    // phy_res
-//         assertEq(meta.get(s2,6,2), 0);    // phy_pen
-//     }
+        fightId = meta.getFightId(heroId, boss, itm, address(this));
+    }
+
+    function test_getRaffle_sucess(uint56 entries) external {
+        if (entries == 0) entries++;
+
+        meta.setBossEntries(1, entries);
+
+        // Move to boss 2
+        _addBoss();
+
+        meta.requestRaffleResult(boss);
+
+        assertTrue(meta.requests(boss) != 0);
+
+        oracle.fulfill();
+
+        (,,, uint256 entries_, uint256 winInd) = meta.bosses(boss);
+
+        assertEq(entries_, entries);
+        assertTrue(winInd != 0);
+        assertTrue(winInd <= entries);
+    } 
+
+    function test_getRaffle_FailFOrCurrentBoss() external {
+        vm.expectRevert("not finished");
+        meta.requestRaffleResult(boss);
+    } 
+
+    function test_getRaffle_FailClaimTwice(uint56 entries) external {
+        if (entries == 0) entries++;
+
+        meta.setBossEntries(1, entries);
+
+        // Move to boss 2
+        _addBoss();
+
+        meta.requestRaffleResult(boss);
+
+        assertTrue(meta.requests(boss) != 0);
+
+        vm.expectRevert("already requested");
+        meta.requestRaffleResult(boss);
+    } 
+}
+
+contract GetStatsTest is MetaAndMagicBaseTest {
+
+    function setUp() public override {
+        super.setUp();
+    }
+
+    function test_get_attributes() public {
+        // Traits for hero 1: [4,7,3,1,1,0]
+
+        bytes10[6] memory stats = heroes.getStats(1);
+
+        //Level (V) atts
+        assertEq(meta.get(stats[0],0), 396); // hp
+        assertEq(meta.get(stats[0],1), 0);   // atk
+        assertEq(meta.get(stats[0],2), 0);   //mgk
+        assertEq(meta.get(stats[0],3), 0);   // mgk_res
+        assertEq(meta.get(stats[0],4), 0);   // mgk_pem
+        assertEq(meta.get(stats[0],5), 0);   // phy_res
+        assertEq(meta.get(stats[0],6), 0);   // phy_pen
+
+        // Class (Mage) atts
+        assertEq(meta.get(stats[1],0), 4000); // hp
+        assertEq(meta.get(stats[1],1), 2000);   // atk
+        assertEq(meta.get(stats[1],2), 2000);   //mgk
+        assertEq(meta.get(stats[1],3), 1);   // mgk_res
+        assertEq(meta.get(stats[1],4), 1);   // mgk_pem
+        assertEq(meta.get(stats[1],5), 1);   // phy_res
+        assertEq(meta.get(stats[1],6), 1);   // phy_pen
+
+        // // Rank (novice) atts
+        // assertEq(meta.get(s1,0,2), 99); // hp
+        // assertEq(meta.get(s1,1,2), 0);   // atk
+        // assertEq(meta.get(s1,2,2), 0);   //mgk
+        // assertEq(meta.get(s1,3,2), 0);   // mgk_res
+        // assertEq(meta.get(s1,4,2), 0);   // mgk_pem
+        // assertEq(meta.get(s1,5,2), 0);   // phy_res
+        // assertEq(meta.get(s1,6,2), 0);   // phy_pen
+
+        // // Rarity (epic) atts
+        // assertEq(meta.get(s2,0,0), 500); // hp
+        // assertEq(meta.get(s2,1,0), 500);   // atk
+        // assertEq(meta.get(s2,2,0), 500);   //mgk
+        // assertEq(meta.get(s2,3,0), 1);   // mgk_res
+        // assertEq(meta.get(s2,4,0), 0);   // mgk_pem
+        // assertEq(meta.get(s2,5,0), 1);   // phy_res
+        // assertEq(meta.get(s2,6,0), 1);   // phy_pen
+
+        // // Pet (Sphinx) atts
+        // assertEq(meta.get(s2,0,1), 4000); // hp
+        // assertEq(meta.get(s2,1,1), 4000); // atk
+        // assertEq(meta.get(s2,2,1), 4000);   //mgk
+        // assertEq(meta.get(s2,3,1), 1);   // mgk_res
+        // assertEq(meta.get(s2,4,1), 1);   // mgk_pem
+        // assertEq(meta.get(s2,5,1), 1);   // phy_res
+        // assertEq(meta.get(s2,6,1), 1);   // phy_pen
+
+        // // Item (elixir) atts
+        // assertEq(meta.get(s2,0,2), 1500); // hp
+        // assertEq(meta.get(s2,1,2), 0);    // atk
+        // assertEq(meta.get(s2,2,2), 0);    //mgk
+        // assertEq(meta.get(s2,3,2), 0);    // mgk_res
+        // assertEq(meta.get(s2,4,2), 0);    // mgk_pem
+        // assertEq(meta.get(s2,5,2), 1);    // phy_res
+        // assertEq(meta.get(s2,6,2), 0);    // phy_pen
+    }
     
-// }
+}
