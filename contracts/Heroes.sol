@@ -36,6 +36,10 @@ contract Heroes is ERC721 {
         return _traits(entropySeed, id_);
     }
 
+    function isSpecial(uint256 id) external view returns(bool sp) {
+        return _isSpecial(id, entropySeed);
+    }
+
     function setUpOracle(address vrf_, bytes32 keyHash, uint64 subscriptionId) external {
         require(msg.sender == _owner());
 
@@ -89,12 +93,12 @@ contract Heroes is ERC721 {
                _getTier(id_,  seed_, "PET"),
                _getItem(id_,  seed_, "ITEM")];
             
-        if (id_ > 3000) t[1] = 13;
+        if (id_ > 3000) t[1] = 8;
     }
 
     function _getSpecialTraits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t) {
-        uint256 rdn = uint256(keccak256(abi.encode(seed_, "SPECIAL"))) % 2_992 + 1;
-        uint256 spc = id_ - rdn + 1;
+        uint256 rdn = uint256(keccak256(abi.encode(seed_, "SPECIAL"))) % 2_993 + 1;
+        uint256 spc = id_ - rdn;
         
         uint256 traitIndcator = spc * 10 + spc;
 
@@ -127,7 +131,7 @@ contract Heroes is ERC721 {
     }
 
     function _isSpecial(uint256 id, uint256 seed) internal pure returns (bool special) {
-        uint256 rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 2_992 + 1;
+        uint256 rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 2_993 + 1;
         if (id > rdn && id <= rdn + 7) return true;
     }
 

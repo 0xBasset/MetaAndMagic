@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: UNLIMITCENSED
 pragma solidity 0.8.7;
 
-import "../../modules/ds-test/src/test.sol";
+import "../modules/ds-test/src/test.sol";
 
 import "./utils/Mocks.sol";
+
+import "./utils/MockMetaAndMagic.sol";
 
 import "./utils/MockERC20.sol";
 
 import "./utils/Interfaces.sol";
 
-import "../Proxy.sol";
+import "../contracts/Proxy.sol";
 
 
 contract MetaAndMagicBaseTest is DSTest {

@@ -4,7 +4,7 @@ pragma solidity 0.8.7;
 /// @dev Contract responsible for handling metadata requests for both Heroes and Items address
 contract MetaAndMagicRenderer {
 
-    mapping(uint256 => address) decks;
+    mapping(uint256 => address) decks; // 
     mapping(bytes4 => address) svgs; // svg to trait indicator to address that stores it
 
     string constant heroDesc = unicode"Meta & Magic Heroes is a collection of 3,000 genesis heroes that give players access to fight in a 100% on-chain NFT game. ⛓️ Can you defeat the bosses to win? 🏆 Season I 😈 Equip weapons 🗡️ Cast spells 🔥 ERC-721A standard 🍒";
@@ -12,16 +12,32 @@ contract MetaAndMagicRenderer {
     string constant header = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="mm" width="100%" height="100%" version="1.1" viewBox="0 0 64 64">';
     string constant footer = '<style>#hero{shape-rendering: crispedges;image-rendering: -webkit-crisp-edges;image-rendering: -moz-crisp-edges;image-rendering: crisp-edges;image-rendering: pixelated;-ms-interpolation-mode: nearest-neighbor;}</style></svg>';
 
-    function getUri(uint256 id, uint256[6] calldata traits, uint256 cat) external view returns (string memory meta) {
+    event log(string val);
+
+    function getUri(uint256 id, uint256[6] calldata traits, uint256 cat) external returns (string memory meta) {
         meta = _getMetadata(id, traits, cat);
     }
 
-    function setSvg(bytes4 sig, address impl) external {
-        svgs[sig] = impl;
+    function setSvgs(bytes4[] calldata sigs, address impl) external {
+        for (uint256 i = 0; i < sigs.length; i++) {
+            svgs[sigs[i]] = impl;   
+        }
     }
 
-    function _getMetadata(uint256 id, uint256[6] calldata traits, uint256 cat) internal view returns (string memory meta) {
+    function setDeck(uint256 cat, address deck) external {
+        decks[cat] = deck;
+    }
+
+    // Categories Documentation
+    // 1 - Hero
+    // 2 - Items
+    // 3 - Hero Boss Drop
+    // 4 - Items Boss Drop
+    // 5 - 20 Are 1-of-1 following the order laid out in _getUniqueName
+
+    function _getMetadata(uint256 id, uint256[6] calldata traits, uint256 cat) internal returns (string memory meta) {
         string memory svg = _getSvg(id, cat, traits);
+        emit log(_getName(id, cat));
 
         meta = 
             string(
@@ -30,8 +46,8 @@ contract MetaAndMagicRenderer {
                     Strings.encode(
                         abi.encodePacked(
                             '{"name":',  _getName(id, cat),
-                            ',"description":',cat % 2 == 1 ? heroDesc : itemDesc,
-                            ',"image": "data:image/svg+xml;base64,', svg,
+                            ',"description":"',cat % 2 == 1 ? heroDesc : itemDesc,
+                            '","image": "data:image/svg+xml;base64,', svg,
                             '","attributes":[', _getAttributes(cat, traits),']}')
                         )
                     )
@@ -42,9 +58,9 @@ contract MetaAndMagicRenderer {
     function _getName(uint256 id, uint256 cat) internal pure returns (string memory name) {
         string memory category;
 
-        if (cat == 1) category = string(abi.encodePacked('Hero #', Strings.toString(id), '"'));
-        if (cat == 2) category = string(abi.encodePacked('Item #', Strings.toString(id), '"'));
-        if (cat == 3 || cat == 4) category = string(abi.encodePacked('Boss Drop #', Strings.toString(id), '"'));
+        if (cat == 1) category = string(abi.encodePacked('Hero #', Strings.toString(id)));
+        if (cat == 2) category = string(abi.encodePacked('Item #', Strings.toString(id)));
+        if (cat == 3 || cat == 4) category = string(abi.encodePacked('Boss Drop #', Strings.toString(id)));
         if (cat >= 5) category = _getUniqueName(cat);
 
         name = string(abi.encodePacked('"',category,'"'));
@@ -53,7 +69,7 @@ contract MetaAndMagicRenderer {
     function _getAttributes(uint256 cat, uint256[6] calldata traits) internal view returns (string memory atts) {
         if (cat > 4) return string(abi.encodePacked('{"trait_type":"1-of-1","value":"',_getUniqueName(cat),'"}'));
 
-        string[6] memory names = IDecks(decks[cat]).getTraitsNames(traits);
+        string[6] memory names = IDecks(decks[cat % 2 == 0 ? 2 : 1]).getTraitsNames(traits);
 
         return string(abi.encodePacked(names[0],',', names[1],',', names[2],',', names[3],',', names[4],',', names[5]));
     }
@@ -76,38 +92,35 @@ contract MetaAndMagicRenderer {
         if (cat == 20) name = "Philosopher's Stone";
     }
 
-    function _getSvg(uint256 id, uint256 cat, uint256[6] memory traits) internal view returns (string memory svg) {
-        string memory content = cat == 1 ? _getHeroSvg(traits) : _getItemSvg(id, traits);
+
+    function _getSvg(uint256 id, uint256 cat, uint256[6] memory traits) internal returns (string memory svg) {
+        string memory content = cat > 4 ? _getSingleSvg(cat) : _getLayeredSvg(id, cat, traits);
 
         svg = Strings.encode(abi.encodePacked(header, content ,footer));
     }
 
-    function _getHeroSvg(uint256[6] memory traits) internal view returns (string memory svg) {
-        bytes4[6] memory layers = [bytes4(0),bytes4(0),bytes4(0),bytes4(0),bytes4(0), bytes4(0)];
-
-        for (uint256 i = 0; i < 6; i++) {
-            if (i == 2) {
-                // overriding rank trait
-                layers[i] = bytes4(keccak256((abi.encodePacked("hero", Strings.toString(i), Strings.toString(traits[i - 1]), Strings.toString(traits[i])))));
-            }
-            layers[i] = bytes4(keccak256((abi.encodePacked("hero", Strings.toString(i), Strings.toString(traits[i])))));
-        }
-
-        svg =  string(abi.encodePacked(
-            wrapTag(call(svgs[layers[0]], layers[0])),
-            wrapTag(call(svgs[layers[1]], layers[1])),
-            wrapTag(call(svgs[layers[2]], layers[2])),
-            wrapTag(call(svgs[layers[3]], layers[3])),
-            wrapTag(call(svgs[layers[4]], layers[4])),
-            wrapTag(call(svgs[layers[5]], layers[5]))
-        ));
+    function _getSingleSvg(uint256 cat) internal view returns (string memory svg) {
+        bytes4 sig = bytes4(keccak256(abi.encodePacked(string((abi.encodePacked("one", Strings.toString(cat), '()'))))));
+        svg = wrapTag(call(svgs[sig], sig));
     }
 
-    function _getItemSvg(uint256 id, uint256[6] memory traits) internal view returns (string memory svg) {
+    function _getLayeredSvg(uint256 id, uint256 cat, uint256[6] memory traits) internal returns (string memory svg) {
         bytes4[6] memory layers = [bytes4(0),bytes4(0),bytes4(0),bytes4(0),bytes4(0), bytes4(0)];
 
         for (uint256 i = 0; i < 6; i++) {
-            layers[i] = bytes4(keccak256((abi.encodePacked("item", Strings.toString(id % 4), Strings.toString(i), Strings.toString(traits[i])))));
+            // Hero
+            if (cat == 1 || cat == 3) {
+                layers[i] = bytes4(keccak256(abi.encodePacked((string(abi.encodePacked("hero", Strings.toString(i), Strings.toString(traits[i]),'()'))))));
+                if (i == 2) {
+                    // overriding rank trait
+                    layers[i] = bytes4(keccak256(abi.encodePacked(string((abi.encodePacked("hero", Strings.toString(i), Strings.toString(traits[i - 1]), Strings.toString(traits[i]),'()'))))));
+                }
+            }
+            if (cat == 2 || cat == 4) {
+                layers[i] = bytes4(keccak256(abi.encodePacked(string((abi.encodePacked("item", Strings.toString(cat == 2 ? id % 4 : 4), Strings.toString(i), Strings.toString(traits[i]),'()'))))));
+
+                emit log(string((abi.encodePacked("item", Strings.toString(cat == 2 ? id % 4 : 4), Strings.toString(i), Strings.toString(traits[i]),'()'))));
+            }
         }
 
         svg =  string(abi.encodePacked(

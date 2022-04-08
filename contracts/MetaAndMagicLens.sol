@@ -27,7 +27,7 @@ contract MetaAndMagicLens {
     function unstakedHeroesOf(address acc) external view returns (uint256[] memory unstaked) {
         unstaked = new uint256[](IERC721(heroesAddress).balanceOf(acc));
         uint256 counter = 0;
-        for (uint256 i = 1; i < 3000; i++) {
+        for (uint256 i = 1; i < 3101; i++) {
             if (IERC721(heroesAddress).ownerOf(i) == acc) unstaked[counter++] = i;
         }
     }
@@ -53,7 +53,7 @@ contract MetaAndMagicLens {
     function itemsOfUser(address acc) external view returns(uint256[] memory items) {
         items = new uint256[](IERC721(itemsAddress).balanceOf(acc));
         uint256 counter = 0;
-        for (uint256 i = 1; i < 10000; i++) {
+        for (uint256 i = 1; i < 15401; i++) {
             if (IERC721(itemsAddress).ownerOf(i) == acc) items[counter++] = i;
         }
     }

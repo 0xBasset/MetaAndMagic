@@ -87,7 +87,7 @@ contract MetaAndMagic {
         delete heroes[heroId];
     }
 
-    function _fight(uint256 heroId, bytes10 items) public returns(bytes32 fightId) {
+    function fight(uint256 heroId, bytes10 items) public returns(bytes32 fightId) {
         Heroes memory hero = heroes[heroId];
         require(msg.sender == hero.owner, "not owner");
 
@@ -134,8 +134,6 @@ contract MetaAndMagic {
         fights[fightId] = fh;
     }
 
-    event De(bytes32 h);
-    event De(uint256 h);
 
     function getBossDrop(uint256 heroId_, uint boss_, bytes10 items_) external returns (uint256 bossItemId){
         bytes32 fightId = getFightId(heroId_, boss_, items_, msg.sender);

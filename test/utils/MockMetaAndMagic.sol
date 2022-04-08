@@ -1,21 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
-import { MetaAndMagic, MetaAndMagicLike } from "../../MetaAndMagic.sol";
-import { Heroes }       from "../../Heroes.sol";  
-import { Items }        from "../../Items.sol";
-import { Proxy }        from "../../Proxy.sol";
-import { ERC721 }       from "../../ERC721.sol";
-import "../../Stats.sol";
+import { MetaAndMagic, MetaAndMagicLike } from "../../contracts/MetaAndMagic.sol";
+
 
 contract MockMetaAndMagic is MetaAndMagic {
-
-    uint256 nextScore;
-
-    // Exposing internal functions
-    function fight(uint256 heroId, bytes10 items) external returns(bytes32 fightId) {
-        return _fight(heroId, items);
-    }
 
     function validateItems(uint16[5] memory items) external view {
         return _validateItems(_getPackedItems(items));
@@ -143,51 +132,4 @@ contract MockMetaAndMagic is MetaAndMagic {
         bosses[boss].winIndex = uint56(winningIndex);
     }
   
-}
-
-contract HeroesMock is Heroes {
-
-}
-
-contract ItemsMock is Items {
-
-    function mintId(address to, uint256 id_) external virtual returns(uint256 id) {
-        _mint(to, id_);    
-        id = id_; 
-    }
-
-    function mintFive(address to, uint16 fst, uint16 sc,uint16 thr,uint16 frt,uint16 fifth)  external returns(uint16[5] memory list) {
-        _mint(to, fst);
-        _mint(to, sc);
-        _mint(to, thr);
-        _mint(to, frt);
-        _mint(to, fifth);
-
-        list = [fst,sc,thr,frt, fifth];
-    }
-}
-
-interface VRFConsumer {
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWord) external;
-}
-
-contract VRFMock {
-
-    uint256 nonce;
-    uint256 reqId;
-    address consumer;
-
-    function requestRandomWords( bytes32 , uint64 , uint16 , uint32 , uint32 ) external returns (uint256 requestId) {
-        requestId = uint256(keccak256(abi.encode("REQUEST", nonce++)));
-        consumer = msg.sender;
-        reqId = requestId;
-    }
-
-    function fulfill() external {
-        uint256[] memory words = new uint256[](1);
-        words[0] = uint256(keccak256(abi.encode("REQUEST", reqId, consumer, nonce++)));
-        VRFConsumer(consumer).fulfillRandomWords(reqId, words);
-    }
-
-
 }

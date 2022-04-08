@@ -491,6 +491,7 @@ contract HeroStats is StatsLike {
         if (classId == 5) (hp, atk, mgk, mod) = (1000,   0,1000,3);  // Mage
         if (classId == 6) (hp, atk, mgk, mod) = (2000,2000,   0,9);  // Zombie
         if (classId == 7) (hp, atk, mgk, mod) = (4000,2000,2000,15); // God
+        if (classId == 8) (hp, atk, mgk, mod) = (5000,3000,3000,15); // Oracle
 
         packed = bytes10(abi.encodePacked(hp,atk,mgk,mod, uint16(0)));
     }

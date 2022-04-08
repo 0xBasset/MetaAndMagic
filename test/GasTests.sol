@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLIMITCENSED
 pragma solidity 0.8.7;
 
-import "../../modules/ds-test/src/test.sol";
+import "../modules/ds-test/src/test.sol";
 
-import "../Stats.sol";
+import "../contracts/Stats.sol";
 
 contract GasTests is DSTest {
 

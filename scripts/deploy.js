@@ -59,8 +59,8 @@ async function main() {
 
   let metaRenderer;
 
-  let heroes = await deployProxied("Heroes");
-  let items  = await deployProxied("Items");
+  let heroes = await deployProxied("HeroesMock");
+  let items  = await deployProxied("ItemsMock");
   let meta   = await deployProxied("MetaAndMagic");
 
   // Config everything
