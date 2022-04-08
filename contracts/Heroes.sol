@@ -78,13 +78,6 @@ contract Heroes is ERC721 {
                              TRAIT FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function _bossTraits(uint256 seed, uint256 id_) internal pure returns (uint256[6] memory traits) {
-        traits = _traits(seed, id_);
-        
-        // Overriding kind
-        traits[1] =  13;
-    }
-
     function _traits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t ) {
         require(seed_ != uint256(0), "seed not set");
         if (_isSpecial(id_, seed_)) return _getSpecialTraits(seed_, id_);
@@ -95,6 +88,8 @@ contract Heroes is ERC721 {
                _getTier(id_,  seed_, "RARITY"), 
                _getTier(id_,  seed_, "PET"),
                _getItem(id_,  seed_, "ITEM")];
+            
+        if (id_ > 3000) t[1] = 13;
     }
 
     function _getSpecialTraits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t) {

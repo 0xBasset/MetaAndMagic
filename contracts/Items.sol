@@ -53,9 +53,7 @@ contract Items is ERC721 {
     function getStats(uint256 id_) external view virtual returns(bytes10[6] memory stats_) {    
         uint256 seed = entropySeed;
         
-        if (id_ > 10000) return stats_ = StatsLike(statsAddress[10]).getStats(_bossTraits(seed, id_));
-
-        if (!_isSpecial(id_, seed)) return stats_ = StatsLike(statsAddress[(id_ % 4)]).getStats(_traits(seed, id_));
+        if (!_isSpecial(id_, seed)) return stats_ = StatsLike(statsAddress[id_ > 10000 ? 9 : (id_ % 4)]).getStats(_traits(seed, id_));
     }
 
     function getTraits(uint256 id_) external view returns (uint256[6] memory traits_) {
@@ -77,7 +75,7 @@ contract Items is ERC721 {
     function mintDrop(uint256 boss, address to) external virtual returns(uint256 id) {
         require(auth[msg.sender], "not authorized");
 
-        id = boss * 10_000 + bossSupplies[boss]--; // Note boss drops are predictable because the entropy seed is known
+        id = _bossDropStart(boss) + bossSupplies[boss]--; // Note boss drops are predictable because the entropy seed is known
 
         _mint(to, id);
     }
@@ -93,21 +91,30 @@ contract Items is ERC721 {
                              TRAIT FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function _traits(uint256 seed, uint256 id_) internal pure returns (uint256[6] memory traits) {
-        traits = [_getTier(id_,    seed, "LEVEL"), 
-                  _getTier(id_,    seed, "KIND"), 
-                  _getTier(id_,    seed, "MATERIAL"), 
-                  _getTier(id_,    seed, "RARITY"), 
-                  _getTier(id_,    seed, "QUALITY"),
-                  _getElement(id_, seed, "ELEMENT")];
+    function _traits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory traits) {
+        require(seed_ != uint256(0), "seed not set");
+        if (_isSpecial(id_, seed_)) return _getSpecialTraits(seed_, id_);
+
+        traits = [_getTier(id_,   seed_, "LEVEL"), 
+                  _getTier(id_,    seed_, "KIND"), 
+                  _getTier(id_,    seed_, "MATERIAL"), 
+                  _getTier(id_,    seed_, "RARITY"), 
+                  _getTier(id_,    seed_, "QUALITY"),
+                  _getElement(id_, seed_, "ELEMENT")];
+
+        uint256 boss = _getBossForId(id_);
+        if (boss > 0) traits[1] = 10 + boss; 
     }
-    
-    function _bossTraits(uint256 seed, uint256 id_) internal pure returns (uint256[6] memory traits) {
-        traits = _traits(seed, id_);
+
+    function _getSpecialTraits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t) {
+        uint256 rdn = uint256(keccak256(abi.encode(seed_, "SPECIAL"))) % 2_992 + 1;
+        uint256 spc = id_ - rdn + 1;
         
-        // Overriding kind
-        traits[1] =  id_ / 10_000;
+        uint256 traitIndcator = spc * 10 + spc;
+
+        t = [traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator];
     }
+
 
     function _getTier(uint256 id_, uint256 seed, bytes32 salt) internal pure returns (uint256 t_) {
         uint256 rdn = uint256(keccak256(abi.encode(id_, seed, salt))) % 100_0000 + 1; 
@@ -124,6 +131,32 @@ contract Items is ERC721 {
 
         if (rdn <= 25_0000) return 0;
         return (rdn % 5) + 1;
+    }
+
+    function _bossDropStart(uint256 boss) internal pure returns(uint256 start) {
+        if (boss == 1) start = 10001;
+        if (boss == 2) start = 11001;
+        if (boss == 3) start = 11901;
+        if (boss == 4) start = 12701;
+        if (boss == 5) start = 13401;
+        if (boss == 6) start = 14001;
+        if (boss == 7) start = 14501;
+        if (boss == 8) start = 14901;
+        if (boss == 9) start = 15201;
+    } 
+
+
+    function _getBossForId(uint256 id) internal pure returns(uint256 boss) {
+        if (id <= 10000) return 0;
+        if (id <= 11000) return 1;
+        if (id <= 11900) return 2;
+        if (id <= 12700) return 3;
+        if (id <= 13400) return 4;
+        if (id <= 14000) return 5;
+        if (id <= 14500) return 6;
+        if (id <= 14900) return 7;
+        if (id <= 15200) return 8;
+        if (id <= 15400) return 9;
     }
 
     function _isSpecial(uint256 id, uint256 seed) internal pure returns (bool special) {

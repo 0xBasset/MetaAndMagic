@@ -78,6 +78,23 @@ contract AttackItemsStats is StatsLike {
 
         packed = bytes10(abi.encodePacked(hp,atk,mgk,mod, uint16(0)));
     }
+
+    function specialTraits(uint256 id) public pure returns (bytes10[6] memory stats) {
+        (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
+
+        if (id == 11) (hp, atk, mgk, mod) = (   0,   3750, 1500, 10); // Excalibur of King Arthur
+        if (id == 22) (hp, atk, mgk, mod) = ( 5000,  4500, 2250, 10); // Mjolnir of Thor
+        if (id == 33) (hp, atk, mgk, mod) = ( 8258,     0,   0,  8); // Headband of Wukong
+        if (id == 44) (hp, atk, mgk, mod) = (11250,     0,   0,  8); // Achilleus armor
+        if (id == 55) (hp, atk, mgk, mod) = (    0,  1500, 3750, 10); // Avada Kedavra
+        if (id == 66) (hp, atk, mgk, mod) = (    0,  2250, 4500, 10); // Kamehameha
+        if (id == 77) (hp, atk, mgk, mod) = ( 5000,  1000, 1000, 15); // Urim and Thummim
+        if (id == 88) (hp, atk, mgk, mod) = ( 6000,  1000, 1000, 15); // Philosphers stone
+
+        bytes10 packed = bytes10(abi.encodePacked(hp,atk,mgk,mod, uint16(0)));
+
+        stats = [packed, bytes10(0), bytes10(0), bytes10(0), bytes10(0), bytes10(0)];
+    }
 }
 
 contract DefenseItemsStats is StatsLike {
@@ -155,6 +172,23 @@ contract DefenseItemsStats is StatsLike {
 
         packed = bytes10(abi.encodePacked(hp,atk,mgk,mod, uint16(0)));
     }
+
+    function specialTraits(uint256 id) public pure returns (bytes10[6] memory stats) {
+        (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
+
+        if (id == 11) (hp, atk, mgk, mod) = (   0,   3750, 1500, 10); // Excalibur of King Arthur
+        if (id == 22) (hp, atk, mgk, mod) = ( 5000,  4500, 2250, 10); // Mjolnir of Thor
+        if (id == 33) (hp, atk, mgk, mod) = ( 8258,     0,   0,  8); // Headband of Wukong
+        if (id == 44) (hp, atk, mgk, mod) = (11250,     0,   0,  8); // Achilleus armor
+        if (id == 55) (hp, atk, mgk, mod) = (    0,  1500, 3750, 10); // Avada Kedavra
+        if (id == 66) (hp, atk, mgk, mod) = (    0,  2250, 4500, 10); // Kamehameha
+        if (id == 77) (hp, atk, mgk, mod) = ( 5000,  1000, 1000, 15); // Urim and Thummim
+        if (id == 88) (hp, atk, mgk, mod) = ( 6000,  1000, 1000, 15); // Philosphers stone
+
+        bytes10 packed = bytes10(abi.encodePacked(hp,atk,mgk,mod, uint16(0)));
+
+        stats = [packed, bytes10(0), bytes10(0), bytes10(0), bytes10(0), bytes10(0)];
+    }
 }
 
 contract SpellItemsStats is StatsLike {
@@ -231,11 +265,29 @@ contract SpellItemsStats is StatsLike {
 
         packed = bytes10(abi.encodePacked(hp,atk,mgk,mod, uint16(0)));
     }
+
+    function specialTraits(uint256 id) public pure returns (bytes10[6] memory stats) {
+        (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
+
+        if (id == 11) (hp, atk, mgk, mod) = (   0,   3750, 1500, 10); // Excalibur of King Arthur
+        if (id == 22) (hp, atk, mgk, mod) = ( 5000,  4500, 2250, 10); // Mjolnir of Thor
+        if (id == 33) (hp, atk, mgk, mod) = ( 8258,     0,   0,  8); // Headband of Wukong
+        if (id == 44) (hp, atk, mgk, mod) = (11250,     0,   0,  8); // Achilleus armor
+        if (id == 55) (hp, atk, mgk, mod) = (    0,  1500, 3750, 10); // Avada Kedavra
+        if (id == 66) (hp, atk, mgk, mod) = (    0,  2250, 4500, 10); // Kamehameha
+        if (id == 77) (hp, atk, mgk, mod) = ( 5000,  1000, 1000, 15); // Urim and Thummim
+        if (id == 88) (hp, atk, mgk, mod) = ( 6000,  1000, 1000, 15); // Philosphers stone
+
+        bytes10 packed = bytes10(abi.encodePacked(hp,atk,mgk,mod, uint16(0)));
+
+        stats = [packed, bytes10(0), bytes10(0), bytes10(0), bytes10(0), bytes10(0)];
+    }
 }
 
 contract BuffItemsStats is StatsLike {
 
     function getStats(uint256[6] calldata atts) public pure override returns (bytes10[6] memory stats) {
+        if (atts[0] > 10) return specialTraits(atts[0]);
         stats = [level(atts[0]), kind(atts[1]), vintage(atts[2]), rarity(atts[3]), quality(atts[4]), potency(atts[5])];
     }
 
@@ -323,11 +375,27 @@ contract BuffItemsStats is StatsLike {
         packed = bytes10(abi.encodePacked(hp,atk,mgk,mod, uint16(0)));
     }
 
+    function specialTraits(uint256 id) public pure returns (bytes10[6] memory stats) {
+        (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
+
+        if (id == 11) (hp, atk, mgk, mod) = (   0,   3750, 1500, 10); // Excalibur of King Arthur
+        if (id == 22) (hp, atk, mgk, mod) = ( 5000,  4500, 2250, 10); // Mjolnir of Thor
+        if (id == 33) (hp, atk, mgk, mod) = ( 8258,     0,   0,  8); // Headband of Wukong
+        if (id == 44) (hp, atk, mgk, mod) = (11250,     0,   0,  8); // Achilleus armor
+        if (id == 55) (hp, atk, mgk, mod) = (    0,  1500, 3750, 10); // Avada Kedavra
+        if (id == 66) (hp, atk, mgk, mod) = (    0,  2250, 4500, 10); // Kamehameha
+        if (id == 77) (hp, atk, mgk, mod) = ( 5000,  1000, 1000, 15); // Urim and Thummim
+        if (id == 88) (hp, atk, mgk, mod) = ( 6000,  1000, 1000, 15); // Philosphers stone
+
+        bytes10 packed = bytes10(abi.encodePacked(hp,atk,mgk,mod, uint16(0)));
+
+        stats = [packed, bytes10(0), bytes10(0), bytes10(0), bytes10(0), bytes10(0)];
+    }
 }
 
 contract BossDropsStats is StatsLike {
 
-     function getStats(uint256[6] calldata atts) public pure override returns (bytes10[6] memory stats) {
+    function getStats(uint256[6] calldata atts) public pure override returns (bytes10[6] memory stats) {
         stats = [level(atts[0]), kind(atts[1]), rarity(atts[2]), quality(atts[3]), bytes10(0), bytes10(uint80(atts[5]))];
     }
 
@@ -349,15 +417,15 @@ contract BossDropsStats is StatsLike {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
  
         // Todo fill according to latest tokenomics
-        if (id == 1)  (hp, atk, mgk, mod) = (0,1500,1500,0);      // Dogemons Tail
-        if (id == 2)  (hp, atk, mgk, mod) = (5000,0,0,0);     // Lunar Rings
-        if (id == 3)  (hp, atk, mgk, mod) = (0,2000,2000,2);     // Etherhead
-        if (id == 4)  (hp, atk, mgk, mod) = (10000,0,0,9);   // Axie Wings
-        if (id == 5)  (hp, atk, mgk, mod) = (0,3000,3000,8);  // Circulonimbus
-        if (id == 6)  (hp, atk, mgk, mod) = (15000,0,0,10); // Vitalik's Horn
-        if (id == 7)  (hp, atk, mgk, mod) = (0,4000,4000,10); // Sand Sacle
-        if (id == 8)  (hp, atk, mgk, mod) = (20000,0,0,10); // Lunar crystal
-        if (id == 9)  (hp, atk, mgk, mod) = (0,5000,5000,10); // Polybeast Shards
+        if (id == 11)  (hp, atk, mgk, mod) = (0,1500,1500,0);      // Dogemons Tail
+        if (id == 12)  (hp, atk, mgk, mod) = (5000,0,0,0);     // Lunar Rings
+        if (id == 13)  (hp, atk, mgk, mod) = (0,2000,2000,2);     // Etherhead
+        if (id == 14)  (hp, atk, mgk, mod) = (10000,0,0,9);   // Axie Wings
+        if (id == 15)  (hp, atk, mgk, mod) = (0,3000,3000,8);  // Circulonimbus
+        if (id == 16)  (hp, atk, mgk, mod) = (15000,0,0,10); // Vitalik's Horn
+        if (id == 17)  (hp, atk, mgk, mod) = (0,4000,4000,10); // Sand Sacle
+        if (id == 18)  (hp, atk, mgk, mod) = (20000,0,0,10); // Lunar crystal
+        if (id == 19)  (hp, atk, mgk, mod) = (0,5000,5000,10); // Polybeast Shards
 
         packed = bytes10(abi.encodePacked(hp,atk,mgk,mod, uint16(0)));
     }
