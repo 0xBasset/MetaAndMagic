@@ -40,7 +40,7 @@ contract AttackItemsStats is StatsLike {
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
     }
 
-    function level10(uint256 id) public pure returns (bytes10 packed) {
+   function level10(uint256 id) public pure returns (bytes10 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
         // Attack
         if (id == 1) (hp, atk, mgk, mod) = (0, 99,0,0); // I
@@ -191,7 +191,7 @@ contract DefenseItemsStats is StatsLike {
         if (id == 2)  (hp, atk, mgk, mod) = (98,0,0,0);  // Good
         if (id == 3)  (hp, atk, mgk, mod) = (197,0,0,0);  // Very Good
         if (id == 4)  (hp, atk, mgk, mod) = (296,0,0,1);  //  Fine
-        if (id == 5)  (hp, atk, mgk, mod) = (395,0,0,4);  //  Superfime
+        if (id == 5)  (hp, atk, mgk, mod) = (395,0,0,4);  //  Superfine
         if (id == 6)  (hp, atk, mgk, mod) = (494,0,0,5);  //  Excellent
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));
@@ -476,7 +476,7 @@ contract BossDropsStats is StatsLike {
         if (id == 2) (hp, atk, mgk, mod) = (0,100,0,0); // Good
         if (id == 3) (hp, atk, mgk, mod) = (0,200,0,0); // Very Good
         if (id == 4) (hp, atk, mgk, mod) = (0,300,0,0); // Fine
-        if (id == 5) (hp, atk, mgk, mod) = (0,400,0,0); // Superfime
+        if (id == 5) (hp, atk, mgk, mod) = (0,400,0,0); // Superfine
         if (id == 6) (hp, atk, mgk, mod) = (0,500,0,0); // Excellent
 
         packed = bytes8(abi.encodePacked(hp,atk,mgk,mod));

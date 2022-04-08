@@ -69,11 +69,11 @@ contract MetaAndMagicRenderer {
         if (cat == 12) name = "Achilleus Armor";
         if (cat == 13) name = "Merlin";
         if (cat == 14) name = "Avada Kedavra";
-        if (cat == 15) name = "Mutant Apr";
+        if (cat == 15) name = "Mutant Ape";
         if (cat == 16) name = "Kamehameha";
         if (cat == 17) name = "Brahma";
         if (cat == 18) name = "Urim and Thummim";
-        if (cat == 20) name = "Phylosopher's stone";
+        if (cat == 20) name = "Philosopher's Stone";
     }
 
     function _getSvg(uint256 cat, uint256[6] memory traits) internal view returns (string memory svg) {
