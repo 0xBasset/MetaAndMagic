@@ -1,26 +1,6 @@
 const hre = require("hardhat");
 
-
-const contracts = {
-  hardhat: {
-    "vrfCoord":"0x271682DEB8C4E0901D1a1550aD2e64D568E69909",
-    "linkToken": "0x514910771af9ca656af840dff83e8264ecf986ca", 
-    "keyHash":"0x8af398995b04c28e9951adb9721ef74c74f93e6a478f39e7e0777be13527e7ef", // using 200 gwei for now
-    "subId":1
-  },
-  rinkeby: {
-    "vrfCoord":"0x6168499c0cffcacd319c818142124b7a15e857ab",
-    "linkToken": "0x01be23585060835e02b77ef475b0cc51aa1e0709", 
-    "keyHash":"0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc",
-    "subId":1
-  },
-  mainnet: {
-    "vrfCoord":"0x271682DEB8C4E0901D1a1550aD2e64D568E69909",
-    "linkToken": "0x514910771af9ca656af840dff83e8264ecf986ca", 
-    "keyHash":"0x8af398995b04c28e9951adb9721ef74c74f93e6a478f39e7e0777be13527e7ef", // using 200 gwei for now
-    "subId":1
-  },
-}
+const contracts = require("../contracts.json")
 
 async function deployProxied(contractName) {
   console.log("Deploying", contractName)

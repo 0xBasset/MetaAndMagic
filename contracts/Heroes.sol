@@ -9,10 +9,13 @@ contract Heroes is ERC721 {
     string constant public name   = "Meta&Magic-Heroes";
     string constant public symbol = "M&M-HEROES";
 
+    mapping(uint256 => uint256) bossSupplies;
+
     address stats;
     address renderer;
 
     uint256 entropySeed;
+
 
     // Oracle information
     address VRFcoord;
@@ -24,6 +27,8 @@ contract Heroes is ERC721 {
 
         stats    = stats_;
         renderer = renderer_;
+
+        bossSupplies[10] = 100;
     }
 
     function getStats(uint256 id_) external view virtual returns(bytes10[6] memory stats_) {    // [][]
@@ -50,11 +55,7 @@ contract Heroes is ERC721 {
 
     function tokenURI(uint256 id) external view returns (string memory) {
         uint256 seed = entropySeed;
-
-        uint256 category = 1;
-        if (_isSpecial(id, seed)) category = 3;  
-
-        return RendererLike(renderer).getUri(id, _traits(seed, id), category);
+        return RendererLike(renderer).getUri(id, _traits(seed, id), _getCategory(id,seed));
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -76,6 +77,14 @@ contract Heroes is ERC721 {
             id = totalSupply + 1;
             _mint(to, id);     
         }
+    }
+
+    function mintDrop(uint256 boss, address to) external virtual returns(uint256 id) {
+        require(auth[msg.sender], "not authorized");
+
+        id = 3000 + bossSupplies[boss]--; // Note boss drops are predictable because the entropy seed is known
+
+        _mint(to, id);
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -133,6 +142,19 @@ contract Heroes is ERC721 {
     function _isSpecial(uint256 id, uint256 seed) internal pure returns (bool special) {
         uint256 rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 2_993 + 1;
         if (id > rdn && id <= rdn + 7) return true;
+    }
+
+    function _getSpecialCategory(uint256 id, uint256 seed) internal pure returns (uint256 spc) {
+        uint256 rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 2_993 + 1;
+        uint256 num = id - rdn;
+        spc = num + 4 + (num - 1);
+    }
+
+    function _getCategory(uint256 id, uint256 seed) internal pure returns (uint256 cat) {
+        // Boss Drop
+        if (id > 3000) return cat = 3;
+        if (_isSpecial(id, seed)) _getSpecialCategory(id, seed);
+        return 1;
     }
 
 }

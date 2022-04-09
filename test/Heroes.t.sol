@@ -34,19 +34,19 @@ contract HeroesTest is DSTest {
         assertEq(heroes.balanceOf(address(this)), 1);
     }
 
-    function test_isSpecial() public {
+    // function test_isSpecial() public {
 
-        for (uint i = 0; i < 3001; i++) {
-            if (heroes.isSpecial(i)) {
-                emit log_named_uint("spe", i);
+    //     for (uint i = 0; i < 3001; i++) {
+    //         if (heroes.isSpecial(i)) {
+    //             emit log_named_uint("spe", i);
 
-                uint256[6] memory traits = heroes.getTraits(i);
+    //             uint256[6] memory traits = heroes.getTraits(i);
 
-                for (uint256 j = 0; j < 6; j++) {
-                    emit log_named_uint("tt", traits[j]);
-                }
-            }
-        }
+    //             for (uint256 j = 0; j < 6; j++) {
+    //                 emit log_named_uint("tt", traits[j]);
+    //             }
+    //         }
+    //     }
 
-    }
+    // }
 }

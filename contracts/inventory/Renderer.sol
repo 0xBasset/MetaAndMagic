@@ -12,9 +12,7 @@ contract MetaAndMagicRenderer {
     string constant header = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="mm" width="100%" height="100%" version="1.1" viewBox="0 0 64 64">';
     string constant footer = '<style>#hero{shape-rendering: crispedges;image-rendering: -webkit-crisp-edges;image-rendering: -moz-crisp-edges;image-rendering: crisp-edges;image-rendering: pixelated;-ms-interpolation-mode: nearest-neighbor;}</style></svg>';
 
-    event log(string val);
-
-    function getUri(uint256 id, uint256[6] calldata traits, uint256 cat) external returns (string memory meta) {
+    function getUri(uint256 id, uint256[6] calldata traits, uint256 cat) external view returns (string memory meta) {
         meta = _getMetadata(id, traits, cat);
     }
 
@@ -39,9 +37,8 @@ contract MetaAndMagicRenderer {
     // 4 - Items Boss Drop
     // 5 - 20 Are 1-of-1 following the order laid out in _getUniqueName
 
-    function _getMetadata(uint256 id, uint256[6] calldata traits, uint256 cat) internal returns (string memory meta) {
+    function _getMetadata(uint256 id, uint256[6] calldata traits, uint256 cat) internal view returns (string memory meta) {
         string memory svg = _getSvg(id, cat, traits);
-        emit log(_getName(id, cat));
 
         meta = 
             string(
@@ -97,7 +94,7 @@ contract MetaAndMagicRenderer {
     }
 
 
-    function _getSvg(uint256 id, uint256 cat, uint256[6] memory traits) internal returns (string memory svg) {
+    function _getSvg(uint256 id, uint256 cat, uint256[6] memory traits) internal view returns (string memory svg) {
         string memory content = cat > 4 ? _getSingleSvg(cat) : _getLayeredSvg(id, cat, traits);
 
         svg = Strings.encode(abi.encodePacked(header, content ,footer));
@@ -108,7 +105,7 @@ contract MetaAndMagicRenderer {
         svg = wrapTag(call(svgs[sig], sig));
     }
 
-    function _getLayeredSvg(uint256 id, uint256 cat, uint256[6] memory traits) internal returns (string memory svg) {
+    function _getLayeredSvg(uint256 id, uint256 cat, uint256[6] memory traits) internal view returns (string memory svg) {
         bytes4[6] memory layers = [bytes4(0),bytes4(0),bytes4(0),bytes4(0),bytes4(0), bytes4(0)];
 
         for (uint256 i = 0; i < 6; i++) {
@@ -122,8 +119,6 @@ contract MetaAndMagicRenderer {
             }
             if (cat == 2 || cat == 4) {
                 layers[i] = bytes4(keccak256(abi.encodePacked(string((abi.encodePacked("item", Strings.toString(cat == 2 ? id % 4 : 4), Strings.toString(i), Strings.toString(traits[i]),'()'))))));
-
-                emit log(string((abi.encodePacked("item", Strings.toString(cat == 2 ? id % 4 : 4), Strings.toString(i), Strings.toString(traits[i]),'()'))));
             }
         }
 

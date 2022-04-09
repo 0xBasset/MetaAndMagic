@@ -160,8 +160,21 @@ contract Items is ERC721 {
     }
 
     function _isSpecial(uint256 id, uint256 seed) internal pure returns (bool special) {
-        uint256 rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 9_991 + 1;
+        uint256 rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 9_992 + 1;
         if (id > rdn && id <= rdn + 8) return true;
+    }
+
+    function _getSpecialCategory(uint256 id, uint256 seed) internal pure returns (uint256 spc) {
+        uint256 rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 2_992 + 1;
+        uint256 num = id - rdn;
+        spc = num + 5 + (num - 1);
+    }
+
+    function _getCategory(uint256 id, uint256 seed) internal pure returns (uint256 cat) {
+        // Boss Drop
+        if (id > 10000) return cat = 4;
+        if (_isSpecial(id, seed)) _getSpecialCategory(id, seed);
+        return 2;
     }
 
     // TODO add chainlink
