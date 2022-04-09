@@ -28,10 +28,15 @@ async function deployProxied(contractName) {
   let impl = await Factory.deploy();
   console.log(impl.address)
 
+  await new Promise(resolve => setTimeout(resolve, 5000));
+
   console.log("Deploying Proxy")
   const ProxyFac = await hre.ethers.getContractFactory("Proxy");
   let proxy = await ProxyFac.deploy(impl.address);
   console.log(proxy.address)
+
+  await new Promise(resolve => setTimeout(resolve, 5000));
+
 
   let a = await hre.ethers.getContractAt(contractName, proxy.address);
   return a;
@@ -42,6 +47,7 @@ async function deploy(contractName) {
   const Factory = await hre.ethers.getContractFactory(contractName);
   let impl = await Factory.deploy();
   console.log(impl.address)
+  await new Promise(resolve => setTimeout(resolve, 5000));
   return impl
 }
 
@@ -69,10 +75,14 @@ async function main() {
   await meta.setUpOracle(contracts[hre.network.name].vrfCoord,contracts[hre.network.name].keyHash,contracts[hre.network.name].subId)
   console.log("Done meta")
 
+ await new Promise(resolve => setTimeout(resolve, 1000));
+
   await heroes.initialize(statsHero.address,statsHero.address) // todo replace with actual renderer
   await heroes.setUpOracle(contracts[hre.network.name].vrfCoord,contracts[hre.network.name].keyHash,contracts[hre.network.name].subId);
   await heroes.setAuth(meta.address, true);
   console.log("Done heroes")
+
+  await new Promise(resolve => setTimeout(resolve, 1000));
 
   await items.initialize(statsAtk.address, statsDef.address, statsSpell.address, statsBuff.address, statsBoss.address, statsBoss.address); // todo replace with renderer
   await items.setUpOracle(contracts[hre.network.name].vrfCoord,contracts[hre.network.name].keyHash,contracts[hre.network.name].subId);

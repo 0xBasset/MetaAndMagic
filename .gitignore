@@ -2,5 +2,5 @@ cache/
 out/
 hh-cache/
 .env
-node-modules/
 artifacts/
+node_modules/

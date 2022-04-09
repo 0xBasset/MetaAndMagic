@@ -22,7 +22,7 @@ async function deploy(contractName) {
   const Factory = await hre.ethers.getContractFactory(contractName);
   let impl = await Factory.deploy();
   console.log(impl.address)
-  await impl.deployed();
+  await new Promise(resolve => setTimeout(resolve, 8000));
   return impl
 }
 
@@ -38,14 +38,16 @@ async function main() {
         const Contract = await hre.ethers.getContractFactory(inventoryContracts[i], "0xc41494Fc8890c05848d2Aa26281b13449a1A8928");
 
         let inv = await deploy(inventoryContracts[i]);
-
+        await new Promise(resolve => setTimeout(resolve, 8000));
         let sigs = []
         Contract.interface.fragments.forEach((frag) => {
           sigs.push(Contract.interface.encodeFunctionData(frag));
           // renderer.setSvg(Contract.interface.encodeFunctionData(frag), inv.address);
         })
+          await new Promise(resolve => setTimeout(resolve, 8000));
         renderer.setSvgs(sigs, inv.address)
     }
+
 
    let hDeck = await deploy("HeroesDeck");
    let iDeck = await deploy("ItemsDeck")
