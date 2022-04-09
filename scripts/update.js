@@ -58,6 +58,7 @@ async function main() {
 
   let contracts = deployedContracts[hre.network.name]
 
+    await updateProxy("ItemsMock", contracts["ItemsMock"])
 
 }
 

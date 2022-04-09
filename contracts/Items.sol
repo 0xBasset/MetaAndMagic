@@ -60,6 +60,12 @@ contract Items is ERC721 {
         return _traits(entropySeed, id_);
     }
 
+    function tokenURI(uint256 id) external view returns (string memory) {
+        uint256 seed = entropySeed;
+        return RendererLike(renderer).getUri(id, _traits(seed, id), _getCategory(id,seed));
+    }
+
+
     /*///////////////////////////////////////////////////////////////
                              MINT FUNCTIONS
     //////////////////////////////////////////////////////////////*/
@@ -189,6 +195,9 @@ contract Items is ERC721 {
 
 }
 
+interface RendererLike {
+    function getUri(uint256 id, uint256[6] calldata traits, uint256 cat) external view returns (string memory meta);
+}
 
 interface StatsLike {
     function getStats(uint256[6] calldata attributes) external view returns (bytes10[6] memory stats_); 
