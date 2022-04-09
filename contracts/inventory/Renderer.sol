@@ -18,6 +18,10 @@ contract MetaAndMagicRenderer {
         meta = _getMetadata(id, traits, cat);
     }
 
+    function setSvg(bytes4 sig, address impl) external {
+            svgs[sig] = impl;   
+    }
+
     function setSvgs(bytes4[] calldata sigs, address impl) external {
         for (uint256 i = 0; i < sigs.length; i++) {
             svgs[sigs[i]] = impl;   
