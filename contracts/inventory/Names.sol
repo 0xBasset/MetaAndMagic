@@ -3,7 +3,7 @@ pragma solidity 0.8.7;
 
 contract HeroesDeck {
 
-    function getTraitsNames(uint256[6] calldata atts) public pure returns(string[6] memory names) {
+    function getTraitsNames(uint256, uint256[6] calldata atts) public pure returns(string[6] memory names) {
         names[0] = level(atts[0]);
         names[1] = class(atts[1]);
         names[2] = rank(atts[2]);
@@ -105,13 +105,13 @@ contract HeroesDeck {
 
 contract ItemsDeck {
 
-    function getTraitsNames(uint256[6] calldata atts) public pure returns(string[6] memory names) {
+    function getTraitsNames(uint256 id, uint256[6] calldata atts) public pure returns(string[6] memory names) {
         names[0] = level(atts[0]);
-        names[1] = kind(atts[1]);
-        names[2] = material(atts[2]);
+        names[1] = kind(id, atts[1]);
+        names[2] = material(id, atts[2]);
         names[3] = rarity(atts[3]);
         names[4] = quality(atts[4]);
-        names[5] = element(atts[5]);
+        names[5] = element(id, atts[5]);
     }
     
     function level(uint256 id) public pure returns (string memory str) {
@@ -126,9 +126,9 @@ contract ItemsDeck {
         str = string(abi.encodePacked('{"trait_type": "Level", "value":"', name ,'"}'));
     }
 
-    function kind(uint256 id) public pure returns (string memory str) {
+    function kind(uint256 tokenId, uint256 id) public pure returns (string memory str) {
         string memory name;
-        uint256 class = id % 4;
+        uint256 class = tokenId % 4;
         if (class == 0) {
             if (id == 1) name = "Dagger";
             if (id == 2) name = "Sword";
@@ -165,14 +165,14 @@ contract ItemsDeck {
             if (id == 6) name = "Cornucopia"; 
         }
 
-        str = string(abi.encodePacked('{"trait_type": "Kind", "value":"', name ,'"}'));
+        str = string(abi.encodePacked('{"trait_type": "Type", "value":"', name ,'"}'));
     }
 
-    function material(uint256 id) public pure returns(string memory str) {
+    function material(uint256 tokenId, uint256 id) public pure returns(string memory str) {
         string memory name;
         string memory trait;
 
-        uint256 class = id % 4;
+        uint256 class = tokenId % 4;
 
         if (class < 2) {
             if (id == 1)return "Wood";
@@ -234,11 +234,11 @@ contract ItemsDeck {
         str = string(abi.encodePacked('{"trait_type": "Quality", "value":"', name ,'"}'));
     }
 
-    function element(uint256 id) public pure returns (string memory str) {
+    function element(uint256 tokenId, uint256 id) public pure returns (string memory str) {
         string memory name;
         string memory trait;
 
-        uint256 class = id % 4;
+        uint256 class = tokenId % 4;
 
         if (class < 3) {
             if (id == 0) name = "None";

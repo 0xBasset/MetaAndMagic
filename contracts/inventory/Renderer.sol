@@ -49,7 +49,7 @@ contract MetaAndMagicRenderer {
                             '{"name":',  _getName(id, cat),
                             ',"description":"',cat % 2 == 1 ? heroDesc : itemDesc,
                             '","image": "data:image/svg+xml;base64,', svg,
-                            '","attributes":[', _getAttributes(cat, traits),']}')
+                            '","attributes":[', _getAttributes(id, cat, traits),']}')
                         )
                     )
                 );
@@ -60,17 +60,26 @@ contract MetaAndMagicRenderer {
         string memory category;
 
         if (cat == 1) category = string(abi.encodePacked('Hero #', Strings.toString(id)));
-        if (cat == 2) category = string(abi.encodePacked('Item #', Strings.toString(id)));
+
+        if (cat == 2) {
+            uint class = id % 4;
+            string memory className;
+            if (class <= 1) className = class == 0 ? "Attack" : "Defense"; 
+            if (class > 1)  className = class == 2 ? "Spell" : "Buff"; 
+            category = string(abi.encodePacked(className, ' Item #', Strings.toString(id)));
+        }
+
+
         if (cat == 3 || cat == 4) category = string(abi.encodePacked('Boss Drop #', Strings.toString(id)));
         if (cat >= 5) category = _getUniqueName(cat);
 
         name = string(abi.encodePacked('"',category,'"'));
     }
 
-    function _getAttributes(uint256 cat, uint256[6] calldata traits) internal view returns (string memory atts) {
+    function _getAttributes(uint256 id, uint256 cat, uint256[6] calldata traits) internal view returns (string memory atts) {
         if (cat > 4) return string(abi.encodePacked('{"trait_type":"1-of-1","value":"',_getUniqueName(cat),'"}'));
 
-        string[6] memory names = IDecks(decks[cat % 2 == 0 ? 2 : 1]).getTraitsNames(traits);
+        string[6] memory names = IDecks(decks[cat % 2 == 0 ? 2 : 1]).getTraitsNames(id, traits);
 
         return string(abi.encodePacked(names[0],',', names[1],',', names[2],',', names[3],',', names[4],',', names[5]));
     }
@@ -226,5 +235,5 @@ library Strings {
 }
 
 interface IDecks {
-    function getTraitsNames(uint256[6] calldata atts) external pure returns(string[6] memory names);
+    function getTraitsNames(uint256 id, uint256[6] calldata atts) external pure returns(string[6] memory names);
 }

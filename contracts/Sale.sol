@@ -1,32 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
-contract Sale {
+contract MetaAndMagicSale {
 
-    uint256 constant WL_ITEM_PRICE = 0.1  ether;
-    uint256 constant PS_ITEM_PRICE = 0.2  ether;
-    uint256 constant WL_HERO_PRICE = 0.25 ether;
-    uint256 constant PS_HERO_PRICE = 0.5  ether;
     uint256 constant PS_MAX  = 1;
 
-
-    uint8 stage; // 0 -> init, 1 -> item wl sale, 2 -> items hero sale, 3 -> items public sale, 4 -> hero wl, 5 -> hero ps, 6 -> finalized
-
-    address admin;
-    address heroesAddress; 
-    address itemsAddress;
-
-    uint256 itemsLeft;
-    uint256 heroesLeft;
-
+    uint8   stage; // 0 -> init, 1 -> item wl sale, 2 -> items hero sale, 3 -> items public sale, 4 -> hero wl, 5 -> hero ps, 6 -> finalized
     bytes32 root;
 
+    Sale heroes;
+    Sale items;
 
-    constructor() {
-        admin = msg.sender;
+    struct Sale { address token; uint32  left; uint32  priceWl; uint32  pricePS; }
 
-        itemsLeft  = 10_000;
-        heroesLeft = 3_000;
+    function initialize(address heroes_, address items_) external {
+        require(msg.sender == _owner(), "not allowed");
+
+        heroes = Sale(heroes_, 3_000,  25, 50);
+        items  = Sale(items_,  10_000, 10, 20);
     }
 
     // ADMIN FUNCTION
@@ -34,6 +25,10 @@ contract Sale {
         require(msg.sender == _owner(), "not allowed");
 
         stage++;
+    }
+
+    function setRoot(bytes32 root_) external {
+        root = root_;
     }
 
     function withdraw(address destination) external {
@@ -44,44 +39,60 @@ contract Sale {
     }
 
     function mint() external payable returns(uint256 id) {
-        require(stage == 3 ||stage == 5, "not on public sale");
-        bool isItems = stage == 3;
+        uint256 cacheStage = stage; 
+
+        require(cacheStage == 3 ||cacheStage == 5, "not on public sale");
+
+        Sale memory sale = cacheStage == 3 ? items : heroes;
         
         // Make sure use sent enough money
-        require((isItems ? PS_ITEM_PRICE : PS_HERO_PRICE) == msg.value, "not enough sent");
+        require(uint256(sale.pricePS) * 1e16 == msg.value, "not enough sent");
 
         // Make sure that user is only minting the allowed amount
-        uint256 minted  = IERC721MM(isItems ? itemsAddress : heroesAddress).minted(msg.sender);
+        uint256 minted  = IERC721MM(sale.token).minted(msg.sender);
         require(minted < PS_MAX, "already minted");
 
         // Effects
-        isItems ? itemsLeft-- : heroesLeft--;   
+        sale.left--;   
+
+        if (cacheStage == 3) {
+            items  = sale;
+        } else {
+            heroes = sale;
+        }
 
         // Interactions
-        id = IERC721MM(isItems ? itemsAddress : heroesAddress).mint(msg.sender, 1);
+        id = IERC721MM(sale.token).mint(msg.sender, 1);
     }
 
     function mint(uint256 allowedAmount, uint8 stage_, uint256 amount,  bytes32[] calldata proof_) external payable returns(uint256 id){
-        bool isItems = stage == 3;
+        uint256 cacheStage = stage; 
+        Sale memory sale   = cacheStage < 4 ? items : heroes;
 
         // Make sure use sent enough money 
         require(amount > 0, "zero amount");
-        require((isItems ? WL_ITEM_PRICE : WL_HERO_PRICE ) * amount == msg.value, "not enough sent");
+        require(uint256(sale.priceWl) * 1e16 * amount == msg.value, "not enough sent");
 
         // Make sure sale is open
-        require(stage_ == stage, "wrong stage");
+        require(stage_ == cacheStage, "wrong stage");
 
         // Make sure that user is only minting the allowed amount
-        uint256 minted  = IERC721MM(isItems ? itemsAddress : heroesAddress).minted(msg.sender);
+        uint256 minted  = IERC721MM(sale.token).minted(msg.sender);
         require(minted + amount <= allowedAmount, "already minted");
 
-        bytes32 leaf_ = keccak256(abi.encode(itemsAddress, allowedAmount, stage_, msg.sender));
+        bytes32 leaf_ = keccak256(abi.encode(allowedAmount, stage_, msg.sender));
         require(_verify(proof_, root, leaf_), "not on list");
 
         // Effects
-        isItems ? itemsLeft -= amount : heroesLeft -= amount;
+        sale.left -= uint32(amount);
 
-        id = IERC721MM(isItems ? itemsAddress : heroesAddress).mint(msg.sender, amount);
+        if (cacheStage < 4) {
+            items = sale;
+        } else {
+            heroes = sale;
+        }
+
+        id = IERC721MM(sale.token).mint(msg.sender, amount);
     }
 
     function _verify(bytes32[] memory proof_, bytes32 root_, bytes32 leaf_) internal pure returns (bool allowed) {

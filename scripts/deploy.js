@@ -48,6 +48,7 @@ async function main() {
   let heroes = await deployProxied("HeroesMock");
   let items  = await deployProxied("ItemsMock");
   let meta   = await deployProxied("MetaAndMagic");
+  let sale   = await deployProxied("MetaAndMagicSale");
 
   // Config everything
   console.log("Setting up")
@@ -60,6 +61,7 @@ async function main() {
   await heroes.initialize(statsHero.address,statsHero.address) // todo replace with actual renderer
   await heroes.setUpOracle(contracts[hre.network.name].vrfCoord,contracts[hre.network.name].keyHash,contracts[hre.network.name].subId);
   await heroes.setAuth(meta.address, true);
+  await heroes.setAuth(sale.address, true);
   console.log("Done heroes")
 
   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -67,6 +69,7 @@ async function main() {
   await items.initialize(statsAtk.address, statsDef.address, statsSpell.address, statsBuff.address, statsBoss.address, statsBoss.address); // todo replace with renderer
   await items.setUpOracle(contracts[hre.network.name].vrfCoord,contracts[hre.network.name].keyHash,contracts[hre.network.name].subId);
   await items.setAuth(items.address, true);
+  await items.setAuth(sale.address, true);
   console.log("Done items")
 
   await lens.initialize(heroes.address, items.address);

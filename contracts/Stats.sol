@@ -468,6 +468,7 @@ contract HeroStats is StatsLike {
     }
 
      // HERO STATS
+    
     function level(uint256 id) public pure returns (bytes10 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
 

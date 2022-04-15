@@ -60,6 +60,10 @@ contract Items is ERC721 {
         return _traits(entropySeed, id_);
     }
 
+    function getTraitsD(uint256 id_) external returns (uint256[6] memory traits_) {
+        return _getSpecialTraitsD(entropySeed, id_);
+    }
+
     function tokenURI(uint256 id) external view returns (string memory) {
         uint256 seed = entropySeed;
         return RendererLike(renderer).getUri(id, _traits(seed, id), _getCategory(id,seed));
@@ -113,12 +117,26 @@ contract Items is ERC721 {
     }
 
     function _getSpecialTraits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t) {
-        uint256 rdn = uint256(keccak256(abi.encode(seed_, "SPECIAL"))) % 2_992 + 1;
+        uint256 rdn = uint256(keccak256(abi.encode(seed_, "SPECIAL"))) % 9_992 + 1;
         uint256 spc = id_ - rdn + 1;
         
         uint256 traitIndcator = spc * 10 + spc;
 
         t = [traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator];
+    }
+
+    event log_named_uint(string key, uint256 val);
+
+    function _getSpecialTraitsD(uint256 seed_, uint256 id_) internal returns (uint256[6] memory t) {
+        uint256 rdn = uint256(keccak256(abi.encode(seed_, "SPECIAL"))) % 9_992 + 1;
+
+        emit log_named_uint("rdn", rdn);
+        emit log_named_uint("id_", id_);
+        uint256 spc = id_ - rdn + 1;
+        
+        // uint256 traitIndcator = spc * 10 + spc;
+
+        // t = [traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator];
     }
 
 
@@ -135,7 +153,7 @@ contract Items is ERC721 {
     function _getElement(uint256 id_, uint256 seed, bytes32 salt) internal pure returns (uint256 class_) {
         uint256 rdn = uint256(keccak256(abi.encode(id_, seed, salt))) % 100_0000 + 1; 
 
-        if (rdn <= 25_0000) return 0;
+        if (rdn <= 75_0000) return 0;
         return (rdn % 5) + 1;
     }
 

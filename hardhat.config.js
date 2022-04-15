@@ -29,7 +29,6 @@ module.exports = {
 			accounts: [
 				{
 					privateKey: PRIVATE_KEY,
-					balance: "10000000000000000000000000000000",
 				},
 			],
 		},

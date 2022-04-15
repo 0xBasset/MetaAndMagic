@@ -213,13 +213,18 @@ contract MetaAndMagic {
             }
         }
     }
+    function getScore(bytes32 fightId, address player) external view returns(uint256 score) {
+        Fight memory fh   = fights[fightId];
+        require(fh.boss != 0);
+        score = _calculateScore(fh.boss, bosses[fh.boss].stats, fh.heroId, fh.items,player);
+    }
 
     function getResult(uint256 boss_, uint256 rdn) external {
         Boss memory boss = bosses[boss_];
         bosses[boss_].winIndex = uint56(rdn % uint256(boss.entries) + 1);
     }
 
-    function _calculateScore(uint256 boss, bytes8 bossStats, uint256 heroId, bytes10 packedItems, address fighter) internal virtual returns (uint256) {
+    function _calculateScore(uint256 boss, bytes8 bossStats, uint256 heroId, bytes10 packedItems, address fighter) internal view virtual returns (uint256) {
         bytes10[6] memory stats = MetaAndMagicLike(heroesAddress).getStats(heroId);
 
         // Start with empty combat
@@ -321,7 +326,7 @@ contract MetaAndMagic {
         return _stack(val, _get(src, res), oppPen);
     }
 
-    function _stack(uint256 val, uint256 oppPen, uint256 res) internal pure returns (uint256 ret) {
+    function _stack(uint256 val, uint256 res, uint256 oppPen) internal pure returns (uint256 ret) {
         ret = val * ((oppPen == 0) && (res == 1) ? 0.5e12: precision) / precision;
     }
 

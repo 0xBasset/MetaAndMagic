@@ -1,4 +1,3 @@
-const { ethers } = require("hardhat");
 const hre = require("hardhat");
 
 const deployedContracts = require("../contracts.json")
@@ -32,37 +31,27 @@ async function deploy(contractName) {
   return impl
 }
 
-async function updateProxy(contractName, address) {
-    console.log("Deploying", contractName)
-    const ImplFact = await hre.ethers.getContractFactory(contractName);
-    let impl = await ImplFact.deploy();
-    console.log(impl.address)
-    await impl.deployed();
-
-    console.log("Updating Impl")
-    let a = await hre.ethers.getContractAt("Proxy", address);
-
-    await a.setImplementation(impl.address);
-
-    let im = await hre.ethers.getContractAt(contractName, address);
-    return im
-}
-
-async function getContract(contractName, address) {
-    let a = await hre.ethers.getContractAt(contractName,address)
-    return a;
-}
-
 async function main() {
   await hre.run("compile");
 
   let contracts = deployedContracts[hre.network.name]
 
- 
-  let renderer = await getContract("MetaAndMagicRenderer", contracts["MetaAndMagicRenderer"]);
+  let heroes = await deployProxied("HeroesMock");
+  let items  = await deployProxied("ItemsMock");
+  let sale   = await deployProxied("MetaAndMagicSale");
 
-  await renderer.setDeck(1, contracts["HeroDeck"]);
-  await renderer.setDeck(2, contracts["ItemsDeck"]);
+  // Config everything
+  console.log("Setting up")
+
+  await heroes.initialize(contracts["HeroStats"],contracts["MetaAndMagicRenderer"]) // todo replace with actual renderer
+  await heroes.setAuth(sale.address, true);
+  console.log("Done heroes")
+
+  await items.initialize(contracts["AttackItemsStats"], contracts["DefenseItemsStats"],contracts["SpellItemsStats"] , contracts["BuffItemsStats"], contracts["BossDropsStats"], contracts["MetaAndMagicRenderer"]); // todo replace with renderer
+  await items.setAuth(sale.address, true);
+  console.log("Done items")
+
+  await sale.initialize(heroes.address, items.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
