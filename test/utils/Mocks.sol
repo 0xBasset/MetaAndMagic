@@ -17,6 +17,10 @@ contract HeroesMock is Heroes {
         }
     }
 
+    function getSpecialSart() external view returns (uint256 rdn) {
+        rdn = uint256(keccak256(abi.encode(entropySeed, "SPECIAL"))) % 9_993 + 1;
+    }
+
 }
 
 contract ItemsMock is Items {
@@ -41,6 +45,10 @@ contract ItemsMock is Items {
         _mint(to, fifth);
 
         list = [fst,sc,thr,frt, fifth];
+    }
+
+    function getSpecialSart() external view returns (uint256 rdn) {
+        rdn = uint256(keccak256(abi.encode(entropySeed, "SPECIAL"))) % 9_992 + 1;
     }
 }
 

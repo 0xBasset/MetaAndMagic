@@ -7,13 +7,24 @@ import "../contracts/inventory/Renderer.sol";
 import "../contracts/inventory/Names.sol";
 import "../contracts/inventory/SingleInventory.sol";
 
+import "../contracts/Mocks.sol";
+
+import "../contracts/Proxy.sol";
+
 
 contract RendererTest is DSTest {
 
     MetaAndMagicRenderer renderer;
     SingleInventory      inv;
+    ItemsMock            items;
+    HeroesMock           heroes;
 
     function setUp() external {
+        items  = ItemsMock(address(new Proxy(address(new ItemsMock()))));
+        heroes = new HeroesMock();
+
+        items.setEntropy(14939537241763278366545887256611457859659144253696778057464814769031071232383);
+
         renderer = new MetaAndMagicRenderer();
         inv = new SingleInventory();
 
@@ -23,6 +34,7 @@ contract RendererTest is DSTest {
         renderer.setDeck(1, address(new HeroesDeck()));
         renderer.setDeck(2, address(new ItemsDeck()));
 
+        items.initialize(address(1), address(1), address(1), address(1), address(1), address(renderer));
     }
 
     function test_getMetadata_hero() external {
@@ -32,20 +44,21 @@ contract RendererTest is DSTest {
     }
 
     function test_getMetadata_item() external {
-        uint256[6] memory traits = [uint256(4),4,4,4,4,4];
 
-        string memory meta = renderer.getUri(1, traits, 2);
+        // renderer.helper(11899, 4, [uint256(2), 12, 4, 5, 4, 5]);
 
+        string memory meta = items.tokenURI(11899);
+        
         emit log(meta);
     }
 
-    function test_getMetadata_heroBossDrop() external {
-        uint256[6] memory traits = [uint256(2),8,2,2,2,2];
+    // function test_getMetadata_heroBossDrop() external {
+    //     uint256[6] memory traits = [uint256(2),8,2,2,2,2];
 
-        string memory meta = renderer.getUri(3001, traits, 3);
+    //     string memory meta = renderer.getUri(3001, traits, 3);
 
-        emit log(meta);
-    }
+    //     emit log(meta);
+    // }
 
     // function test_getMetadata_itemsBossDrop() external {
     //     uint256[6] memory traits = [uint256(2),11,2,2,2,2];
@@ -53,11 +66,11 @@ contract RendererTest is DSTest {
     //     string memory meta = renderer.getUri(10001, traits, 4);
     // }
 
-    function test_getMetadata_hero1o1() external {
-        uint256[6] memory traits = [uint256(8),8,8,8,8,8];
+    // function test_getMetadata_hero1o1() external {
+    //     uint256[6] memory traits = [uint256(8),8,8,8,8,8];
 
-        string memory meta = renderer.getUri(10001, traits, 5);
-    }
+    //     string memory meta = renderer.getUri(10001, traits, 5);
+    // }
 
 
     // Awful

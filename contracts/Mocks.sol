@@ -7,20 +7,38 @@ import { Items }        from "../contracts/Items.sol";
 
 contract HeroesMock is Heroes {
 
+    uint256 mockminted;
+
+    function setMinted(uint256 minted_) external {
+        mockminted = minted_;
+    }
+
     function mintFree(address to, uint256 amount) external virtual returns(uint256 id) {
         for (uint256 i = 0; i < amount; i++) {
-            id = totalSupply + 1;
+            id = mockminted++;
             _mint(to, id);     
         }
     }
+
+    function getSpecialSart() external view returns (uint256 rdn) {
+        rdn = uint256(keccak256(abi.encode(entropySeed, "SPECIAL"))) % 2_993 + 1;
+    }
+
 
 }
 
 contract ItemsMock is Items {
 
+    uint256 mockminted;
+
+    function setMinted(uint256 minted_) external {
+        mockminted = minted_;
+    }
+
+
     function mintFree(address to, uint256 amount) external virtual returns(uint256 id) {
         for (uint256 i = 0; i < amount; i++) {
-            id = totalSupply + 1;
+            id = mockminted++;
             _mint(to, id);     
         }
     }
@@ -38,6 +56,10 @@ contract ItemsMock is Items {
         _mint(to, fifth);
 
         list = [fst,sc,thr,frt, fifth];
+    }
+
+    function getSpecialSart() external view returns (uint256 rdn) {
+        rdn = uint256(keccak256(abi.encode(entropySeed, "SPECIAL"))) % 9_992 + 1;
     }
 }
 

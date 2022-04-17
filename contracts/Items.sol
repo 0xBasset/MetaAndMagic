@@ -60,10 +60,6 @@ contract Items is ERC721 {
         return _traits(entropySeed, id_);
     }
 
-    function getTraitsD(uint256 id_) external returns (uint256[6] memory traits_) {
-        return _getSpecialTraitsD(entropySeed, id_);
-    }
-
     function tokenURI(uint256 id) external view returns (string memory) {
         uint256 seed = entropySeed;
         return RendererLike(renderer).getUri(id, _traits(seed, id), _getCategory(id,seed));
@@ -113,12 +109,14 @@ contract Items is ERC721 {
                   _getElement(id_, seed_, "ELEMENT")];
 
         uint256 boss = _getBossForId(id_);
-        if (boss > 0) traits[1] = 10 + boss; 
+        if (boss > 0) {
+            traits[1] = 10 + boss;
+            traits[4] = 0; // Quality is overriden
+        } 
     }
 
     function _getSpecialTraits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t) {
-        uint256 rdn = uint256(keccak256(abi.encode(seed_, "SPECIAL"))) % 9_992 + 1;
-        uint256 spc = id_ - rdn + 1;
+        uint256 spc = id_ - _getRndForSpecial(seed_) + 1;
         
         uint256 traitIndcator = spc * 10 + spc;
 
@@ -126,18 +124,6 @@ contract Items is ERC721 {
     }
 
     event log_named_uint(string key, uint256 val);
-
-    function _getSpecialTraitsD(uint256 seed_, uint256 id_) internal returns (uint256[6] memory t) {
-        uint256 rdn = uint256(keccak256(abi.encode(seed_, "SPECIAL"))) % 9_992 + 1;
-
-        emit log_named_uint("rdn", rdn);
-        emit log_named_uint("id_", id_);
-        uint256 spc = id_ - rdn + 1;
-        
-        // uint256 traitIndcator = spc * 10 + spc;
-
-        // t = [traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator];
-    }
 
 
     function _getTier(uint256 id_, uint256 seed, bytes32 salt) internal pure returns (uint256 t_) {
@@ -184,21 +170,24 @@ contract Items is ERC721 {
     }
 
     function _isSpecial(uint256 id, uint256 seed) internal pure returns (bool special) {
-        uint256 rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 9_992 + 1;
+        uint256 rdn = _getRndForSpecial(seed);
         if (id > rdn && id <= rdn + 8) return true;
     }
 
     function _getSpecialCategory(uint256 id, uint256 seed) internal pure returns (uint256 spc) {
-        uint256 rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 2_992 + 1;
-        uint256 num = id - rdn;
+        uint256 num = id - _getRndForSpecial(seed);
         spc = num + 5 + (num - 1);
     }
 
     function _getCategory(uint256 id, uint256 seed) internal pure returns (uint256 cat) {
         // Boss Drop
         if (id > 10000) return cat = 4;
-        if (_isSpecial(id, seed)) _getSpecialCategory(id, seed);
+        if (_isSpecial(id, seed)) return _getSpecialCategory(id, seed);
         return 2;
+    }
+
+    function _getRndForSpecial(uint256 seed) internal pure returns (uint256 rdn) {
+        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 9_992 + 1;
     }
 
     // TODO add chainlink

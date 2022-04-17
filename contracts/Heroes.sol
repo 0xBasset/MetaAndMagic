@@ -106,8 +106,7 @@ contract Heroes is ERC721 {
     }
 
     function _getSpecialTraits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t) {
-        uint256 rdn = uint256(keccak256(abi.encode(seed_, "SPECIAL"))) % 2_993 + 1;
-        uint256 spc = id_ - rdn;
+        uint256 spc = id_ - _getRndForSpecial(seed_);
         
         uint256 traitIndcator = spc * 10 + spc;
 
@@ -140,21 +139,24 @@ contract Heroes is ERC721 {
     }
 
     function _isSpecial(uint256 id, uint256 seed) internal pure returns (bool special) {
-        uint256 rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 2_993 + 1;
+        uint256 rdn = _getRndForSpecial(seed);
         if (id > rdn && id <= rdn + 7) return true;
     }
 
     function _getSpecialCategory(uint256 id, uint256 seed) internal pure returns (uint256 spc) {
-        uint256 rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 2_993 + 1;
-        uint256 num = id - rdn;
+        uint256 num = id - _getRndForSpecial(seed);
         spc = num + 4 + (num - 1);
     }
 
     function _getCategory(uint256 id, uint256 seed) internal pure returns (uint256 cat) {
         // Boss Drop
         if (id > 3000) return cat = 3;
-        if (_isSpecial(id, seed)) _getSpecialCategory(id, seed);
+        if (_isSpecial(id, seed)) return _getSpecialCategory(id, seed);
         return 1;
+    }
+
+    function _getRndForSpecial(uint256 seed) internal pure returns (uint256 rdn) {
+        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 2_993 + 1;
     }
 
 }
