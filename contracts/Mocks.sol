@@ -73,7 +73,7 @@ contract ItemsMock is Items {
 }
 
 interface VRFConsumer {
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWord) external;
+    function rawFulfillRandomWords(uint256 requestId, uint256[] memory randomWord) external;
 }
 
 contract VRFMock {
@@ -91,7 +91,7 @@ contract VRFMock {
     function fulfill() external {
         uint256[] memory words = new uint256[](1);
         words[0] = uint256(keccak256(abi.encode("REQUEST", reqId, consumer, nonce++)));
-        VRFConsumer(consumer).fulfillRandomWords(reqId, words);
+        VRFConsumer(consumer).rawFulfillRandomWords(reqId, words);
     }
 
 

@@ -4,6 +4,10 @@ pragma solidity 0.8.7;
 import "../modules/ds-test/src/test.sol";
 
 import "../contracts/Mocks.sol";
+import "../contracts/Proxy.sol";
+
+import "../contracts/Stats.sol";
+
 
 import "./utils/MockMetaAndMagic.sol";
 
