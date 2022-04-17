@@ -196,30 +196,30 @@ contract MetaAndMagic {
 
     function requestRaffleResult(uint256 boss_) external {
         require(boss_ < currentBoss,  "not finished");
-        require(requests[boss_] == 0, "already requested");
+        require(requests[boss_] == 0 || msg.sender == _owner(), "already requested");
 
-        uint256 reqId = VRFCoordinatorV2Interface(VRFcoord).requestRandomWords(keyhash, subId, 1, 200000, 1);
+        uint256 reqId = VRFCoordinatorV2Interface(VRFcoord).requestRandomWords(keyhash, subId, 3, 200000, 1);
         requests[boss_] = reqId;
     }
 
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWord) external {
+    function rawFulfillRandomWords(uint256 requestId, uint256[] memory randomWords) external {
         require(msg.sender == VRFcoord, "not allowed");
-
         for (uint256 index = currentBoss; index > 0; index--) {
             if (requests[index] == requestId) {
                 Boss memory boss = bosses[index];
 
-                bosses[index].winIndex = uint56(randomWord[0] % uint256(boss.entries) + 1); // 1 -> raffleEntry
+                bosses[index].winIndex = uint56(randomWords[0] % uint256(boss.entries) + 1); // 1 -> raffleEntry
             }
         }
+   }
+
+    function getScore(bytes32 fightId, address player) external view returns(uint256 score) {
+        Fight memory fh   = fights[fightId];
+        require(fh.boss != 0);
+        score = _calculateScore(fh.boss, bosses[fh.boss].stats, fh.heroId, fh.items,player);
     }
 
-    function getResult(uint256 boss_, uint256 rdn) external {
-        Boss memory boss = bosses[boss_];
-        bosses[boss_].winIndex = uint56(rdn % uint256(boss.entries) + 1);
-    }
-
-    function _calculateScore(uint256 boss, bytes8 bossStats, uint256 heroId, bytes10 packedItems, address fighter) internal virtual returns (uint256) {
+    function _calculateScore(uint256 boss, bytes8 bossStats, uint256 heroId, bytes10 packedItems, address fighter) internal view virtual returns (uint256) {
         bytes10[6] memory stats = MetaAndMagicLike(heroesAddress).getStats(heroId);
 
         // Start with empty combat
@@ -321,7 +321,7 @@ contract MetaAndMagic {
         return _stack(val, _get(src, res), oppPen);
     }
 
-    function _stack(uint256 val, uint256 oppPen, uint256 res) internal pure returns (uint256 ret) {
+    function _stack(uint256 val, uint256 res, uint256 oppPen) internal pure returns (uint256 ret) {
         ret = val * ((oppPen == 0) && (res == 1) ? 0.5e12: precision) / precision;
     }
 
@@ -335,10 +335,6 @@ contract MetaAndMagic {
 
     function _validateItems(bytes10 packedItems) internal view {
         uint16[5] memory items = _unpackItems(packedItems);
-        
-        // Check 0 index
-        require(items[0] != 0, "invalid items");
-        require(IERC721(itemsAddress).ownerOf(items[0]) == msg.sender, "not item owner");
         
         for (uint256 i = 1; i < items.length; i++) {
             require(items[i - 1] == 0 ? items[i] == 0 : items[i - 1] > items[i], "invalid items"); 

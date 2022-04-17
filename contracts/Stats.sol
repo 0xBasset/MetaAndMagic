@@ -73,7 +73,7 @@ contract AttackItemsStats is StatsLike {
         if (id == 2) (hp, atk, mgk, mod) = (0,100,0,0);  // Good
         if (id == 3) (hp, atk, mgk, mod) = (0,200,0,0);  // Very Good
         if (id == 4) (hp, atk, mgk, mod) = (0,300,0,0);  // Fine
-        if (id == 5) (hp, atk, mgk, mod) = (0,400,0,0);  // Superfime
+        if (id == 5) (hp, atk, mgk, mod) = (0,400,0,0);  // Superfine
         if (id == 6) (hp, atk, mgk, mod) = (0,500,0,0);  // Excellent
 
         packed = bytes10(abi.encodePacked(hp,atk,mgk,mod, uint16(0)));
@@ -468,6 +468,7 @@ contract HeroStats is StatsLike {
     }
 
      // HERO STATS
+    
     function level(uint256 id) public pure returns (bytes10 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
 

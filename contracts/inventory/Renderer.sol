@@ -49,7 +49,7 @@ contract MetaAndMagicRenderer {
                             '{"name":',  _getName(id, cat),
                             ',"description":"',cat % 2 == 1 ? heroDesc : itemDesc,
                             '","image": "data:image/svg+xml;base64,', svg,
-                            '","attributes":[', _getAttributes(cat, traits),']}')
+                            '","attributes":[', _getAttributes(id, cat, traits),']}')
                         )
                     )
                 );
@@ -60,17 +60,26 @@ contract MetaAndMagicRenderer {
         string memory category;
 
         if (cat == 1) category = string(abi.encodePacked('Hero #', Strings.toString(id)));
-        if (cat == 2) category = string(abi.encodePacked('Item #', Strings.toString(id)));
+
+        if (cat == 2) {
+            uint class = id % 4;
+            string memory className;
+            if (class <= 1) className = class == 0 ? "Attack" : "Defense"; 
+            if (class > 1)  className = class == 2 ? "Spell" : "Buff"; 
+            category = string(abi.encodePacked(className, ' Item #', Strings.toString(id)));
+        }
+
+
         if (cat == 3 || cat == 4) category = string(abi.encodePacked('Boss Drop #', Strings.toString(id)));
         if (cat >= 5) category = _getUniqueName(cat);
 
         name = string(abi.encodePacked('"',category,'"'));
     }
 
-    function _getAttributes(uint256 cat, uint256[6] calldata traits) internal view returns (string memory atts) {
+    function _getAttributes(uint256 id, uint256 cat, uint256[6] calldata traits) internal view returns (string memory atts) {
         if (cat > 4) return string(abi.encodePacked('{"trait_type":"1-of-1","value":"',_getUniqueName(cat),'"}'));
 
-        string[6] memory names = IDecks(decks[cat % 2 == 0 ? 2 : 1]).getTraitsNames(traits);
+        string[6] memory names = IDecks(decks[cat % 2 == 0 ? 2 : 1]).getTraitsNames(id, traits);
 
         return string(abi.encodePacked(names[0],',', names[1],',', names[2],',', names[3],',', names[4],',', names[5]));
     }
@@ -102,8 +111,33 @@ contract MetaAndMagicRenderer {
 
     function _getSingleSvg(uint256 cat) internal view returns (string memory svg) {
         bytes4 sig = bytes4(keccak256(abi.encodePacked(string((abi.encodePacked("one", Strings.toString(cat), '()'))))));
-        svg = wrapTag(call(svgs[sig], sig));
+        svg = wrapSingleTag(call(svgs[sig], sig));
     }
+
+    // function helper(uint256 id, uint256 cat, uint256[6] memory traits) public {
+    //     bytes4[6] memory layers = [bytes4(0),bytes4(0),bytes4(0),bytes4(0),bytes4(0), bytes4(0)];
+
+    //     for (uint256 i = 0; i < 6; i++) {
+    //         // Hero
+    //         if (cat == 1 || cat == 3) {
+    //             layers[i] = bytes4(keccak256(abi.encodePacked((string(abi.encodePacked("hero", Strings.toString(i), Strings.toString(traits[i]),'()'))))));
+    //             if (i == 2) {
+    //                 // overriding rank trait
+    //                 layers[i] = bytes4(keccak256(abi.encodePacked(string((abi.encodePacked("hero", Strings.toString(i), Strings.toString(traits[i - 1]), Strings.toString(traits[i]),'()'))))));
+    //             }
+    //         }
+    //         if (cat == 2 || cat == 4) {
+    //             emit log(string((abi.encodePacked("item", Strings.toString(cat == 2 ? id % 4 : 4), Strings.toString(i), Strings.toString(traits[i]),'()'))));
+    //             layers[i] = bytes4(keccak256(abi.encodePacked(string((abi.encodePacked("item", Strings.toString(cat == 2 ? id % 4 : 4), Strings.toString(i), Strings.toString(traits[i]),'()'))))));
+    //         }
+    //     }
+
+    //     emit log_bytes(layers[4]);
+
+    // }
+
+    // event log(string val);
+    // event log_bytes(bytes32 val);
 
     function _getLayeredSvg(uint256 id, uint256 cat, uint256[6] memory traits) internal view returns (string memory svg) {
         bytes4[6] memory layers = [bytes4(0),bytes4(0),bytes4(0),bytes4(0),bytes4(0), bytes4(0)];
@@ -140,6 +174,10 @@ contract MetaAndMagicRenderer {
 
     function wrapTag(string memory uri) internal pure returns (string memory) {
         return string(abi.encodePacked('<image x="0" y="0" width="64" height="64" image-rendering="pixelated" preserveAspectRatio="xMidYMid" xlink:href="data:image/png;base64,', uri, '"/>'));
+    }
+
+    function wrapSingleTag(string memory uri) internal pure returns (string memory) {
+        return string(abi.encodePacked('<image x="0" y="0" width="100%" height="100%" image-rendering="pixelated" preserveAspectRatio="xMidYMid" xlink:href="data:image/png;base64,', uri, '"/>'));
     }
     
 }
@@ -226,5 +264,5 @@ library Strings {
 }
 
 interface IDecks {
-    function getTraitsNames(uint256[6] calldata atts) external pure returns(string[6] memory names);
+    function getTraitsNames(uint256 id, uint256[6] calldata atts) external pure returns(string[6] memory names);
 }

@@ -7,20 +7,42 @@ import { Items }        from "../contracts/Items.sol";
 
 contract HeroesMock is Heroes {
 
+    uint256 mockminted;
+
+    function setMinted(uint256 minted_) external {
+        mockminted = minted_;
+    }
+
     function mintFree(address to, uint256 amount) external virtual returns(uint256 id) {
         for (uint256 i = 0; i < amount; i++) {
-            id = totalSupply + 1;
+            id = mockminted++;
             _mint(to, id);     
         }
     }
+
+    function setEntropy(uint256 seed) external {
+        entropySeed = seed;
+    }
+
+    function getSpecialSart() external view returns (uint256 rdn) {
+        rdn = uint256(keccak256(abi.encode(entropySeed, "SPECIAL"))) % 2_993 + 1;
+    }
+
 
 }
 
 contract ItemsMock is Items {
 
+    uint256 mockminted;
+
+    function setMinted(uint256 minted_) external {
+        mockminted = minted_;
+    }
+
+
     function mintFree(address to, uint256 amount) external virtual returns(uint256 id) {
         for (uint256 i = 0; i < amount; i++) {
-            id = totalSupply + 1;
+            id = mockminted++;
             _mint(to, id);     
         }
     }
@@ -39,10 +61,19 @@ contract ItemsMock is Items {
 
         list = [fst,sc,thr,frt, fifth];
     }
+
+    function setEntropy(uint256 seed) external {
+        entropySeed = seed;
+    }
+
+
+    function getSpecialSart() external view returns (uint256 rdn) {
+        rdn = uint256(keccak256(abi.encode(entropySeed, "SPECIAL"))) % 9_992 + 1;
+    }
 }
 
 interface VRFConsumer {
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWord) external;
+    function rawFulfillRandomWords(uint256 requestId, uint256[] memory randomWord) external;
 }
 
 contract VRFMock {
@@ -60,7 +91,7 @@ contract VRFMock {
     function fulfill() external {
         uint256[] memory words = new uint256[](1);
         words[0] = uint256(keccak256(abi.encode("REQUEST", reqId, consumer, nonce++)));
-        VRFConsumer(consumer).fulfillRandomWords(reqId, words);
+        VRFConsumer(consumer).rawFulfillRandomWords(reqId, words);
     }
 
 

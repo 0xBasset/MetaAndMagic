@@ -3,7 +3,9 @@ pragma solidity 0.8.7;
 
 import "../modules/ds-test/src/test.sol";
 
-import "./utils/Mocks.sol";
+import "../contracts/Mocks.sol";
+import "../contracts/Stats.sol";
+
 
 import "./utils/MockMetaAndMagic.sol";
 
@@ -108,10 +110,6 @@ contract ValidateItemTest is MetaAndMagicBaseTest {
         meta.validateItems(items_);
 
         items_ = _mintItems(1, 200, 111, 0, 5);
-        vm.expectRevert(bytes("invalid items"));
-        meta.validateItems(items_);
-
-        items_ = _mintItems(0, 0, 0, 0, 0);
         vm.expectRevert(bytes("invalid items"));
         meta.validateItems(items_);
 
@@ -706,6 +704,7 @@ contract GetRaffleResult is MetaAndMagicBaseTest {
 
         assertTrue(meta.requests(boss) != 0);
 
+        vm.prank(address(9));
         vm.expectRevert("already requested");
         meta.requestRaffleResult(boss);
     } 

@@ -3,15 +3,14 @@ pragma solidity 0.8.7;
 
 contract MetaAndMagicLens {
 
-    address admin;
-    address heroesAddress;
-    address itemsAddress;
+    address public meta;
+    address public heroesAddress;
+    address public itemsAddress;
 
-    constructor() { admin = msg.sender; }
+    function initialize(address meta_, address heroes_, address items_) external {
+        require(msg.sender == _owner());
 
-    function initialize(address heroes_, address items_) external {
-        require(msg.sender == admin);
-
+        meta          = meta_;
         heroesAddress = heroes_;
         itemsAddress  = items_;
     }
@@ -38,14 +37,14 @@ contract MetaAndMagicLens {
         uint256 size = 0;
 
         for (uint256 i = 1; i < 3000; i++) {
-            (address owner,,) = IMetaAndMagicLike(heroesAddress).heroes(i);
+            (address owner,,) = IMetaAndMagicLike(meta).heroes(i);
             if (owner == acc){
                 helper[size++] = i;
             }
         }
 
         staked = new uint256[](size);
-        for (uint256 i = 1; i < size; i++) {
+        for (uint256 i = 0; i < size; i++) {
             staked[i] = helper[i];
         } 
     }
@@ -55,6 +54,13 @@ contract MetaAndMagicLens {
         uint256 counter = 0;
         for (uint256 i = 1; i < 15401; i++) {
             if (IERC721(itemsAddress).ownerOf(i) == acc) items[counter++] = i;
+        }
+    }
+
+    function _owner() internal view returns (address owner_) {
+        bytes32 slot = bytes32(0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103);
+        assembly {
+            owner_ := sload(slot)
         }
     }
 }

@@ -109,22 +109,26 @@ contract Items is ERC721 {
                   _getElement(id_, seed_, "ELEMENT")];
 
         uint256 boss = _getBossForId(id_);
-        if (boss > 0) traits[1] = 10 + boss; 
+        if (boss > 0) {
+            traits[1] = 10 + boss;
+            traits[4] = 0; // Quality is overriden
+        } 
     }
 
     function _getSpecialTraits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t) {
-        uint256 rdn = uint256(keccak256(abi.encode(seed_, "SPECIAL"))) % 2_992 + 1;
-        uint256 spc = id_ - rdn + 1;
+        uint256 spc = id_ - _getRndForSpecial(seed_) + 1;
         
         uint256 traitIndcator = spc * 10 + spc;
 
         t = [traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator];
     }
 
+    event log_named_uint(string key, uint256 val);
+
 
     function _getTier(uint256 id_, uint256 seed, bytes32 salt) internal pure returns (uint256 t_) {
         uint256 rdn = uint256(keccak256(abi.encode(id_, seed, salt))) % 100_0000 + 1; 
-        if (rdn <= 29_9333) return 1;
+        if (rdn <= 28_9333) return 1;
         if (rdn <= 52_8781) return 2;
         if (rdn <= 71_8344) return 3;
         if (rdn <= 85_8022) return 4;
@@ -135,7 +139,7 @@ contract Items is ERC721 {
     function _getElement(uint256 id_, uint256 seed, bytes32 salt) internal pure returns (uint256 class_) {
         uint256 rdn = uint256(keccak256(abi.encode(id_, seed, salt))) % 100_0000 + 1; 
 
-        if (rdn <= 25_0000) return 0;
+        if (rdn <= 75_0000) return 0;
         return (rdn % 5) + 1;
     }
 
@@ -166,27 +170,38 @@ contract Items is ERC721 {
     }
 
     function _isSpecial(uint256 id, uint256 seed) internal pure returns (bool special) {
-        uint256 rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 9_992 + 1;
+        uint256 rdn = _getRndForSpecial(seed);
         if (id > rdn && id <= rdn + 8) return true;
     }
 
     function _getSpecialCategory(uint256 id, uint256 seed) internal pure returns (uint256 spc) {
-        uint256 rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 2_992 + 1;
-        uint256 num = id - rdn;
+        uint256 num = id - _getRndForSpecial(seed);
         spc = num + 5 + (num - 1);
     }
 
     function _getCategory(uint256 id, uint256 seed) internal pure returns (uint256 cat) {
         // Boss Drop
         if (id > 10000) return cat = 4;
-        if (_isSpecial(id, seed)) _getSpecialCategory(id, seed);
+        if (_isSpecial(id, seed)) return _getSpecialCategory(id, seed);
         return 2;
     }
 
-    // TODO add chainlink
-    function setEntropy(uint256 seed) external {
-        entropySeed = seed;
+    function _getRndForSpecial(uint256 seed) internal pure returns (uint256 rdn) {
+        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 9_992 + 1;
     }
+
+    function requestEntropy() external {
+        require(msg.sender == _owner(), "not auth");
+        require(entropySeed == 0,       "already requested");
+
+        VRFCoordinatorV2Interface(VRFcoord).requestRandomWords(keyhash, subId, 3, 200000, 1);
+    }
+
+    function rawFulfillRandomWords(uint256 , uint256[] memory randomWords) external {
+        require(msg.sender == VRFcoord, "not allowed");
+        require(entropySeed == 0);
+        entropySeed = randomWords[0];
+   }
 
     function setAuth(address add_, bool auth_) external {
         require(_owner() == msg.sender, "not authorized");
@@ -201,4 +216,14 @@ interface RendererLike {
 
 interface StatsLike {
     function getStats(uint256[6] calldata attributes) external view returns (bytes10[6] memory stats_); 
+}
+
+interface VRFCoordinatorV2Interface {
+    function requestRandomWords(
+    bytes32 keyHash,
+    uint64 subId,
+    uint16 minimumRequestConfirmations,
+    uint32 callbackGasLimit,
+    uint32 numWords
+  ) external returns (uint256 requestId);
 }

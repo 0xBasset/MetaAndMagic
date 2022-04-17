@@ -10,13 +10,14 @@ contract MockMetaAndMagic is MetaAndMagic {
         return _validateItems(_getPackedItems(items));
     }
 
-    // function getScore(uint256 boss, uint256 hero, bytes10 packedItems) external  returns(uint256) {
-    //     return _calculateScore(boss, bosses[boss].stats, hero, packedItems, msg.sender);
-    // }
+    function getScore(uint256 boss, uint256 hero, bytes10 packedItems) external  returns(uint256) {
+        return _calculateScore(boss, bosses[boss].stats, hero, packedItems, msg.sender);
+    }
 
-    // function getCombat(bytes8 boss, uint256 hero, bytes10 packedItems) external returns(Combat memory c) {
-    //     c = _calc(boss, hero, packedItems);
-    // }
+    function getCombat(uint256 boss, bytes8 bossStats, uint256 hero, bytes10 packedItems) external returns(Combat memory c) {
+        // c = _calc(boss, hero, packedItems);
+        c = _calc(boss, bossStats, hero, packedItems, msg.sender);
+    }
 
     function getScore(uint256 boss, bytes8 bossStats, uint256 hero, bytes10 packedItems) external returns(uint256) {
         return _calculateScore(boss, bossStats, hero, packedItems, msg.sender);
@@ -30,28 +31,55 @@ contract MockMetaAndMagic is MetaAndMagic {
     //     }
     // }
 
-    // function getRes(Combat memory combat, bytes8 bossStats) external returns (uint256 heroAtk, uint256 bossAtk) {
-    //     return _getRes(combat, bossStats);
-    // }
+    function getRes(Combat memory combat, bytes8 bossStats, uint256 hero, uint256 boss, bytes10 packedItems) external returns (uint256 heroAtk, uint256 bossAtk) {
+        uint256 crit =  _critical(hero,boss,packedItems,msg.sender);
+        return _getRes(combat, bossStats, crit);
+    }
 
-    // function getResult(Combat memory combat, bytes8 bossStats) external returns (uint256) {
-    //     return _getResult(combat, bossStats);
-    // }
+    function getResult(Combat memory combat, bytes8 bossStats, uint256 hero, uint256 boss, bytes10 packedItems) external returns (uint256) {
+       uint256 crit =  _critical(hero,boss,packedItems,msg.sender);
+        return _getResult(combat, bossStats, crit);
+    }
 
     function get(bytes10 src, uint8 st) public pure returns (uint256) {
         return _get(src, Stat(st));
     }
 
-     function _getRes(Combat memory combat, bytes8 bossStats) internal returns (uint256 heroAtk, uint256 bossAtk) {
-        uint256 bossPhy = combat.phyRes * _get(bossStats, Stat.PHY_DMG)  / precision;
-        uint256 bossMgk = combat.mgkRes * _get(bossStats, Stat.MGK_DMG) * precision / precision;
+    function _getRes(Combat memory combat, bytes8 bossStats, uint256 crit) internal returns (uint256 heroAtk, uint256 bossAtk) {
+        uint256 bossPhy         = combat.phyRes * _get(bossStats, Stat.PHY_DMG) / precision;
+        uint256 bossMgk         = combat.mgkRes * _get(bossStats, Stat.MGK_DMG) / precision;
+        uint256 totalHeroAttack = combat.phyDmg + combat.mgkDmg + ((combat.phyDmg + combat.mgkDmg) * crit / 1e18);
 
+        emit log_named_uint("bossPhy", bossPhy);
+        emit log_named_uint("bossMgk", bossMgk);
+        emit log_named_uint("totalHeroAttack", totalHeroAttack);
+        
         heroAtk = combat.phyDmg + combat.mgkDmg; // total boss HP
         bossAtk = bossPhy + bossMgk;
     }
 
     event log(string bv);
     event log_named_uint(string bv, uint256 vas);
+
+    function _calc(uint256 boss, bytes8 bossStats, uint256 heroId, bytes10 packedItems, address fighter) internal virtual returns (Combat memory combat) {
+        bytes10[6] memory stats = MetaAndMagicLike(heroesAddress).getStats(heroId);
+
+        // Start with empty combat
+        combat = Combat(0,0,0,precision,precision);
+        
+        // Tally Hero modifies the combat memory inplace
+        _tally(combat, stats, bossStats);
+
+        uint16[5] memory items_ = _unpackItems(packedItems);
+        for (uint256 i = 0; i < 5; i++) {
+            if (items_[i] == 0) break;
+            stats = MetaAndMagicLike(itemsAddress).getStats(items_[i]);
+            _tally(combat, stats, bossStats);
+        }
+        
+        // uint256 crit = _critical(heroId,boss,packedItems,fighter);
+        // return _getResult(combat, bossStats, crit);
+    }
 
     // function _calc(bytes8 bossStats, uint256 heroId, bytes10 packedItems) internal returns (Combat memory combat) {
     //     (bytes32 s1_, bytes32 s2_) = MetaAndMagicLike(heroesAddress).getStats(heroId);
