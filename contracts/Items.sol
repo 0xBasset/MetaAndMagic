@@ -128,7 +128,7 @@ contract Items is ERC721 {
 
     function _getTier(uint256 id_, uint256 seed, bytes32 salt) internal pure returns (uint256 t_) {
         uint256 rdn = uint256(keccak256(abi.encode(id_, seed, salt))) % 100_0000 + 1; 
-        if (rdn <= 29_9333) return 1;
+        if (rdn <= 28_9333) return 1;
         if (rdn <= 52_8781) return 2;
         if (rdn <= 71_8344) return 3;
         if (rdn <= 85_8022) return 4;
@@ -190,10 +190,18 @@ contract Items is ERC721 {
         rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 9_992 + 1;
     }
 
-    // TODO add chainlink
-    function setEntropy(uint256 seed) external {
-        entropySeed = seed;
+    function requestEntropy() external {
+        require(msg.sender == _owner(), "not auth");
+        require(entropySeed == 0,       "already requested");
+
+        VRFCoordinatorV2Interface(VRFcoord).requestRandomWords(keyhash, subId, 3, 200000, 1);
     }
+
+    function rawFulfillRandomWords(uint256 , uint256[] memory randomWords) external {
+        require(msg.sender == VRFcoord, "not allowed");
+        require(entropySeed == 0);
+        entropySeed = randomWords[0];
+   }
 
     function setAuth(address add_, bool auth_) external {
         require(_owner() == msg.sender, "not authorized");
@@ -208,4 +216,14 @@ interface RendererLike {
 
 interface StatsLike {
     function getStats(uint256[6] calldata attributes) external view returns (bytes10[6] memory stats_); 
+}
+
+interface VRFCoordinatorV2Interface {
+    function requestRandomWords(
+    bytes32 keyHash,
+    uint64 subId,
+    uint16 minimumRequestConfirmations,
+    uint32 callbackGasLimit,
+    uint32 numWords
+  ) external returns (uint256 requestId);
 }

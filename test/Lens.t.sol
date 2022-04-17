@@ -3,7 +3,7 @@ pragma solidity 0.8.7;
 
 import "../modules/ds-test/src/test.sol";
 
-import "./utils/Mocks.sol";
+import "../contracts/Mocks.sol";
 
 import "./utils/MockMetaAndMagic.sol";
 

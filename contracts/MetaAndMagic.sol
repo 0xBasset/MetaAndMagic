@@ -196,32 +196,27 @@ contract MetaAndMagic {
 
     function requestRaffleResult(uint256 boss_) external {
         require(boss_ < currentBoss,  "not finished");
-        require(requests[boss_] == 0, "already requested");
+        require(requests[boss_] == 0 || msg.sender == _owner(), "already requested");
 
-        uint256 reqId = VRFCoordinatorV2Interface(VRFcoord).requestRandomWords(keyhash, subId, 1, 200000, 1);
+        uint256 reqId = VRFCoordinatorV2Interface(VRFcoord).requestRandomWords(keyhash, subId, 3, 200000, 1);
         requests[boss_] = reqId;
     }
 
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWord) external {
+    function rawFulfillRandomWords(uint256 requestId, uint256[] memory randomWords) external {
         require(msg.sender == VRFcoord, "not allowed");
-
         for (uint256 index = currentBoss; index > 0; index--) {
             if (requests[index] == requestId) {
                 Boss memory boss = bosses[index];
 
-                bosses[index].winIndex = uint56(randomWord[0] % uint256(boss.entries) + 1); // 1 -> raffleEntry
+                bosses[index].winIndex = uint56(randomWords[0] % uint256(boss.entries) + 1); // 1 -> raffleEntry
             }
         }
-    }
+   }
+
     function getScore(bytes32 fightId, address player) external view returns(uint256 score) {
         Fight memory fh   = fights[fightId];
         require(fh.boss != 0);
         score = _calculateScore(fh.boss, bosses[fh.boss].stats, fh.heroId, fh.items,player);
-    }
-
-    function getResult(uint256 boss_, uint256 rdn) external {
-        Boss memory boss = bosses[boss_];
-        bosses[boss_].winIndex = uint56(rdn % uint256(boss.entries) + 1);
     }
 
     function _calculateScore(uint256 boss, bytes8 bossStats, uint256 heroId, bytes10 packedItems, address fighter) internal view virtual returns (uint256) {

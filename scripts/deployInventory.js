@@ -30,10 +30,10 @@ async function main() {
   await hre.run("compile");
 
   const inventoryContracts = ["HeroRankAssassin","HeroRankMonk","HeroRankMage","HeroRankZombie","HeroRankGod", "HeroRankOracle","HeroLevel","HeroClass","HeroRankWarrior","HeroRankMarksman","HeroRarity","HeroPet", "HeroItem","HeroOne","ItemAttackLevel", "ItemAttackKind","ItemAttackMaterial","ItemAttackRarity","ItemAttackQuality","ItemAttackElement","ItemDefenseLevel","ItemDefenseType","ItemDefenseMaterial","ItemDefenseRarity","ItemDefenseQuality","ItemDefenseElement","ItemSpellLevel","ItemSpellType", "ItemSpellEnergy","ItemSpellRarity","ItemSpellQuality","ItemSpellElement","ItemBuffLevel","ItemBuffType","ItemBuffVintage","ItemBuffRarity","ItemBuffQuality","ItemBuffPotency","BossDropLevel","BossDropType","BossDropRarity","BossDropQuality","BossDropElement","ItemOne"]
+    
+  // renderer = await deployProxied("MetaAndMagicRenderer");
 
-    // renderer = await deployProxied("MetaAndMagicRenderer");
-
-    let n = 93;
+    let n = 258;
 
     renderer = await hre.ethers.getContractAt("MetaAndMagicRenderer", "0x9E899A10bF2ab5927cAFCed5d1a06f634c31CbB4"); 
 
@@ -54,13 +54,13 @@ async function main() {
         n++
     }
 
-   let hDeck = await deploy("HeroesDeck", n);
-   n++
-   let iDeck = await deploy("ItemsDeck", n)
-   n++
-   renderer.setDeck(1, hDeck.address, {nonce:n});
-   n++
-   renderer.setDeck(2, iDeck.address, {nonce:n});
+  //  let hDeck = await deploy("HeroesDeck", n);
+  //  n++
+  //  let iDeck = await deploy("ItemsDeck", n)
+  //  n++
+  //  renderer.setDeck(1, hDeck.address, {nonce:n});
+  //  n++
+  //  renderer.setDeck(2, iDeck.address, {nonce:n});
 }
 
 // We recommend this pattern to be able to use async/await everywhere

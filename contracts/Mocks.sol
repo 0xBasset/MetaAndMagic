@@ -20,6 +20,10 @@ contract HeroesMock is Heroes {
         }
     }
 
+    function setEntropy(uint256 seed) external {
+        entropySeed = seed;
+    }
+
     function getSpecialSart() external view returns (uint256 rdn) {
         rdn = uint256(keccak256(abi.encode(entropySeed, "SPECIAL"))) % 2_993 + 1;
     }
@@ -57,6 +61,11 @@ contract ItemsMock is Items {
 
         list = [fst,sc,thr,frt, fifth];
     }
+
+    function setEntropy(uint256 seed) external {
+        entropySeed = seed;
+    }
+
 
     function getSpecialSart() external view returns (uint256 rdn) {
         rdn = uint256(keccak256(abi.encode(entropySeed, "SPECIAL"))) % 9_992 + 1;

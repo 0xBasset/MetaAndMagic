@@ -80,7 +80,7 @@ contract HeroesDeck {
     function item(uint256 id) public pure returns (string memory str) {
         string memory name;
         if (id == 0) name = "None";
-        if (id == 1)  name = "Ddagger";
+        if (id == 1)  name = "Dagger";
         if (id == 2)  name = "Sword";
         if (id == 3)  name = "Hammer";
         if (id == 4)  name = "Spear";
@@ -141,8 +141,8 @@ contract ItemsDeck {
         if (class == 1) {
             if (id == 1) name = "Leather";
             if (id == 2) name = "Split Mail";
-            if (id == 3) name = "Chain Mali";
-            if (id == 4) name = "Sccale Mail";
+            if (id == 3) name = "Chain Mail";
+            if (id == 4) name = "Scale Mail";
             if (id == 5) name = "Half Plate";
             if (id == 6) name = "Full Plate"; 
         }
@@ -201,7 +201,7 @@ contract ItemsDeck {
             if (id == 2) name = "Annum";
             if (id == 3) name = "Decade";
             if (id == 4) name = "Century";
-            if (id == 5) name = "Millenium";
+            if (id == 5) name = "Millennium";
             if (id == 6) name = "Beginning of Time"; 
 
             trait = "Vintage";
@@ -228,7 +228,7 @@ contract ItemsDeck {
         if (id == 2) name = "Good";
         if (id == 3) name = "Very Good";
         if (id == 4) name = "Fine";
-        if (id == 5) name = "Superfime";
+        if (id == 5) name = "Superfine";
         if (id == 6) name = "Excellent";
 
         str = string(abi.encodePacked('{"trait_type": "Quality", "value":"', name ,'"}'));
