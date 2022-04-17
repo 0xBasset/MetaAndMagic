@@ -44,7 +44,7 @@ contract MetaAndMagicLens {
         }
 
         staked = new uint256[](size);
-        for (uint256 i = 1; i < size; i++) {
+        for (uint256 i = 0; i < size; i++) {
             staked[i] = helper[i];
         } 
     }

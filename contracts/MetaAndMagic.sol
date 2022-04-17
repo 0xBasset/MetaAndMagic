@@ -341,10 +341,6 @@ contract MetaAndMagic {
     function _validateItems(bytes10 packedItems) internal view {
         uint16[5] memory items = _unpackItems(packedItems);
         
-        // Check 0 index
-        require(items[0] != 0, "invalid items");
-        require(IERC721(itemsAddress).ownerOf(items[0]) == msg.sender, "not item owner");
-        
         for (uint256 i = 1; i < items.length; i++) {
             require(items[i - 1] == 0 ? items[i] == 0 : items[i - 1] > items[i], "invalid items"); 
             if (items[i] != 0) require(IERC721(itemsAddress).ownerOf(items[i]) == msg.sender, "not item owner");

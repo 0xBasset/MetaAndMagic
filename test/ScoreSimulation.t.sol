@@ -46,11 +46,11 @@ contract CalculateScoreTest is MetaAndMagicBaseTest {
 
     function test_scoreSimulation_boss() external {
 
-        bossId =7;
+        bossId =4;
         // _simulate(1,bossId);    
         // _simulate(2,bossId);    
-        // _simulate(3,bossId);    
-        _simulate(4,bossId);    
+        _simulate(3,bossId);    
+        // _simulate(4,bossId);    
     }
 
     function _simulate(uint256 deckStrengh, uint256 boss) internal {
@@ -64,7 +64,7 @@ contract CalculateScoreTest is MetaAndMagicBaseTest {
         uint256 wins;
         uint256 losses;
         emit log_named_string("///////////  Deck: ", deckStrengh == 1 ? "WEAK" : deckStrengh == 2 ? "AVG" : "STRONG");
-        for (uint256 j = 0; j < runs; j++) {
+        for (uint256 j = 498; j < runs; j++) {
             emit log_named_uint("fight: ", j);
             uint256 entropy = uint256(keccak256(abi.encode(j, "ENTROPY")));
             emit log("---------------------------------------------------");
@@ -125,16 +125,16 @@ contract CalculateScoreTest is MetaAndMagicBaseTest {
             bossStats = bytes8(abi.encodePacked(uint16(bossHp),uint16(bossAtk),uint16(bossMgk), uint8(bossEle), uint8(bossMod)));
 
             MetaAndMagic.Combat memory c = meta.getCombat(boss, bossStats, 1, _getPackedItems(items_));
-            // uint256 score = meta.getScore(bossStats, 1, _getPackedItems(items_));
-            // emit log("Combat Numbers: ");
-            // emit log_named_uint("   | Total hero HP", c.hp);
-            // emit log_named_uint("   | Total hero phy_dmg", c.phyDmg);
-            // emit log_named_uint("   | Total hero mgk_dmg", c.mgkDmg);
-            // emit log("");
-            // emit log("    Stacked variables (1e12 == 1)");
-            // emit log_named_uint("   | Hero stacked phy_res", c.phyRes);
-            // emit log_named_uint("   | Hero stacked mgk_res", c.mgkRes);
-            // emit log("");
+            // uint256 score = meta.getScSore(bossStats, 1, _getPackedItems(items_));
+            emit log("Combat Numbers: ");
+            emit log_named_uint("   | Total hero HP", c.hp);
+            emit log_named_uint("   | Total hero phy_dmg", c.phyDmg);
+            emit log_named_uint("   | Total hero mgk_dmg", c.mgkDmg);
+            emit log("");
+            emit log("    Stacked variables (1e12 == 1)");
+            emit log_named_uint("   | Hero stacked phy_res", c.phyRes);
+            emit log_named_uint("   | Hero stacked mgk_res", c.mgkRes);
+            emit log("");
 
             (uint256 heroAttack, uint256 bossPhny) = meta.getRes(c, bossStats, heroId, bossId, _getPackedItems(items_));
             emit log_named_uint("Hero Attack", heroAttack);

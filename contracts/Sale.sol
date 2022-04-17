@@ -16,8 +16,8 @@ contract MetaAndMagicSale {
     function initialize(address heroes_, address items_) external {
         require(msg.sender == _owner(), "not allowed");
 
-        heroes = Sale(heroes_, 3_000,  25, 50);
-        items  = Sale(items_,  10_000, 10, 20);
+        heroes = Sale(heroes_, 3_000,  25, 38);
+        items  = Sale(items_,  10_000, 10, 15);
     }
 
     // ADMIN FUNCTION
