@@ -5,8 +5,11 @@ import { ERC721 } from "./ERC721.sol";
 
 contract Items is ERC721 {
 
-    string constant public name   = "Meta&Magic-Items";
-    string constant public symbol = "M&M-ITEMS";
+    // TODO
+    string constant public name   = "SKADAKLALSDK";
+    string constant public symbol = "ASD";
+    // string constant public name   = "Meta&Magic-Items";
+    // string constant public symbol = "M&M-ITEMS";
 
     address renderer;
     uint256 entropySeed;
@@ -137,6 +140,8 @@ contract Items is ERC721 {
     }
 
     function _getElement(uint256 id_, uint256 seed, bytes32 salt) internal pure returns (uint256 class_) {
+        if (id_ % 4 == 3) return _getTier(id_, seed, "POTENCY");
+        
         uint256 rdn = uint256(keccak256(abi.encode(id_, seed, salt))) % 100_0000 + 1; 
 
         if (rdn <= 75_0000) return 0;
@@ -186,7 +191,7 @@ contract Items is ERC721 {
         return 2;
     }
 
-    function _getRndForSpecial(uint256 seed) internal pure returns (uint256 rdn) {
+    function _getRndForSpecial(uint256 seed) internal pure virtual returns (uint256 rdn) {
         rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 9_992 + 1;
     }
 

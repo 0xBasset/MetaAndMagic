@@ -21,9 +21,10 @@ contract RendererTest is DSTest {
 
     function setUp() external {
         items  = ItemsMock(address(new Proxy(address(new ItemsMock()))));
-        heroes = new HeroesMock();
+        heroes = HeroesMock(address(new Proxy(address(new HeroesMock()))));
 
         items.setEntropy(14939537241763278366545887256611457859659144253696778057464814769031071232383);
+        heroes.setEntropy(14939537241763278366545887256611457859659144253696778057464814769031071232383);
 
         renderer = new MetaAndMagicRenderer();
         inv = new SingleInventory();
@@ -34,20 +35,24 @@ contract RendererTest is DSTest {
         renderer.setDeck(1, address(new HeroesDeck()));
         renderer.setDeck(2, address(new ItemsDeck()));
 
+        heroes.initialize(address(1), address(renderer));
         items.initialize(address(1), address(1), address(1), address(1), address(1), address(renderer));
     }
 
     function test_getMetadata_hero() external {
-        uint256[6] memory traits = [uint256(2),2,2,2,2,2];
 
-        string memory meta = renderer.getUri(1, traits, 1);
+        emit log_named_uint("start", heroes.getSpecialSart());
+
+        string memory meta = heroes.tokenURI(49);
+
+         emit log(meta);
     }
 
     function test_getMetadata_item() external {
 
         // renderer.helper(11899, 4, [uint256(2), 12, 4, 5, 4, 5]);
 
-        string memory meta = items.tokenURI(11899);
+        string memory meta = items.tokenURI(49);
         
         emit log(meta);
     }

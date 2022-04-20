@@ -6,8 +6,11 @@ import { ERC721 } from "./ERC721.sol";
 
 contract Heroes is ERC721 {
 
-    string constant public name   = "Meta&Magic-Heroes";
-    string constant public symbol = "M&M-HEROES";
+    // TODO
+    string constant public name   = "ASDERER";
+    string constant public symbol = "GSD";
+    // string constant public name   = "Meta&Magic-Heroes";
+    // string constant public symbol = "M&M-HEROES";
 
     mapping(uint256 => uint256) bossSupplies;
 
@@ -164,7 +167,7 @@ contract Heroes is ERC721 {
         return 1;
     }
 
-    function _getRndForSpecial(uint256 seed) internal pure returns (uint256 rdn) {
+    function _getRndForSpecial(uint256 seed) internal pure virtual returns (uint256 rdn) {
         rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 2_993 + 1;
     }
 

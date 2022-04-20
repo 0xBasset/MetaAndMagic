@@ -5,11 +5,11 @@ contract MetaAndMagicSale {
 
     uint256 constant PS_MAX  = 1;
 
-    uint8   stage; // 0 -> init, 1 -> item wl sale, 2 -> items hero sale, 3 -> items public sale, 4 -> hero wl, 5 -> hero ps, 6 -> finalized
-    bytes32 root;
+    uint8   public stage; // 0 -> init, 1 -> item wl sale, 2 -> items hero sale, 3 -> items public sale, 4 -> hero wl, 5 -> hero ps, 6 -> finalized
+    bytes32 public root;
 
-    Sale heroes;
-    Sale items;
+    Sale public heroes;
+    Sale public items;
 
     struct Sale { address token; uint32  left; uint32  priceWl; uint32  pricePS; }
 
@@ -27,6 +27,7 @@ contract MetaAndMagicSale {
         stage++;
     }
 
+    // TODO add acl
     function setRoot(bytes32 root_) external {
         root = root_;
     }

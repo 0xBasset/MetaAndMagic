@@ -500,11 +500,12 @@ contract HeroStats is StatsLike {
     function pet(uint256 petId) public pure returns (bytes10 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
 
-        if (petId == 1) (hp, atk, mgk, mod) = (999,999,999,0);  // Fairy
-        if (petId == 2) (hp, atk, mgk, mod) = (1998,1998,1998,5);  // Kitsune
-        if (petId == 3) (hp, atk, mgk, mod) = (2997,2997,2997,10); // Unicorn
-        if (petId == 4) (hp, atk, mgk, mod) = (3996,3996,3996,15); // Sphinx
-        if (petId == 5) (hp, atk, mgk, mod) = (4995,4995,4995,15); // Dragon
+        if (petId == 1) (hp, atk, mgk, mod) = (0,0,0,0);           // None
+        if (petId == 2) (hp, atk, mgk, mod) = (999,999,999,0);     // Fairy
+        if (petId == 3) (hp, atk, mgk, mod) = (1998,1998,1998,5);  // Kitsune
+        if (petId == 4) (hp, atk, mgk, mod) = (2997,2997,2997,10); // Unicorn
+        if (petId == 5) (hp, atk, mgk, mod) = (3996,3996,3996,15); // Sphinx
+        if (petId == 6) (hp, atk, mgk, mod) = (4995,4995,4995,15); // Dragon
 
         packed = bytes10(abi.encodePacked(hp,atk,mgk,mod, uint16(0)));
     }

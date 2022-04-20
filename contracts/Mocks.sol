@@ -25,9 +25,12 @@ contract HeroesMock is Heroes {
     }
 
     function getSpecialSart() external view returns (uint256 rdn) {
-        rdn = uint256(keccak256(abi.encode(entropySeed, "SPECIAL"))) % 2_993 + 1;
+        rdn = _getRndForSpecial(entropySeed);
     }
 
+    function _getRndForSpecial(uint256 seed) internal pure override returns (uint256 rdn) {
+        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 100 + 1;
+    }
 
 }
 
@@ -66,9 +69,12 @@ contract ItemsMock is Items {
         entropySeed = seed;
     }
 
-
     function getSpecialSart() external view returns (uint256 rdn) {
-        rdn = uint256(keccak256(abi.encode(entropySeed, "SPECIAL"))) % 9_992 + 1;
+        rdn = _getRndForSpecial(entropySeed);
+    }
+
+    function _getRndForSpecial(uint256 seed) internal pure override returns (uint256 rdn) {
+        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 100 + 1;
     }
 }
 

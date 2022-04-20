@@ -7,8 +7,12 @@ contract MetaAndMagicRenderer {
     mapping(uint256 => address) decks; // 
     mapping(bytes4 => address) svgs; // svg to trait indicator to address that stores it
 
-    string constant heroDesc = unicode"Meta & Magic Heroes is a collection of 3,000 genesis heroes that give players access to fight in a 100% on-chain NFT game. ⛓️ Can you defeat the bosses to win? 🏆 Season I 😈 Equip weapons 🗡️ Cast spells 🔥 ERC-721A standard 🍒";
-    string constant itemDesc = unicode"Meta & Magic Items is a collection of 10,000 relic items that aid the genesis heroes in the battles against the ten dark entities. ⛓   Can you defeat the bosses to win? 🏆 Season I 😈 Equip weapons 🗡️ Cast spells 🔥 ERC-721A standard 🍒";
+    // string constant heroDesc = unicode"Meta & Magic Heroes is a collection of 3,000 genesis heroes that give players access to fight in a 100% on-chain NFT game. ⛓️ Can you defeat the bosses to win? 🏆 Season I 😈 Equip weapons 🗡️ Cast spells 🔥 ERC-721A standard 🍒";
+    // string constant itemDesc = unicode"Meta & Magic Items is a collection of 10,000 relic items that aid the genesis heroes in the battles against the ten dark entities. ⛓   Can you defeat the bosses to win? 🏆 Season I 😈 Equip weapons 🗡️ Cast spells 🔥 ERC-721A standard 🍒";
+   
+    string constant heroDesc = unicode"aaaa";
+    string constant itemDesc = unicode"bbbb";
+   
     string constant header = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="mm" width="100%" height="100%" version="1.1" viewBox="0 0 64 64">';
     string constant footer = '<style>#hero{shape-rendering: crispedges;image-rendering: -webkit-crisp-edges;image-rendering: -moz-crisp-edges;image-rendering: crisp-edges;image-rendering: pixelated;-ms-interpolation-mode: nearest-neighbor;}</style></svg>';
 
@@ -66,7 +70,7 @@ contract MetaAndMagicRenderer {
             string memory className;
             if (class <= 1) className = class == 0 ? "Attack" : "Defense"; 
             if (class > 1)  className = class == 2 ? "Spell" : "Buff"; 
-            category = string(abi.encodePacked(className, ' Item #', Strings.toString(id)));
+            category = string(abi.encodePacked(className, ' #', Strings.toString(id)));
         }
 
 
@@ -77,7 +81,7 @@ contract MetaAndMagicRenderer {
     }
 
     function _getAttributes(uint256 id, uint256 cat, uint256[6] calldata traits) internal view returns (string memory atts) {
-        if (cat > 4) return string(abi.encodePacked('{"trait_type":"1-of-1","value":"',_getUniqueName(cat),'"}'));
+        if (cat > 4) return string(abi.encodePacked('{"trait_type":"One-of-One","value":"',_getUniqueName(cat),'"}'));
 
         string[6] memory names = IDecks(decks[cat % 2 == 0 ? 2 : 1]).getTraitsNames(id, traits);
 

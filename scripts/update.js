@@ -58,7 +58,10 @@ async function main() {
 
   let contracts = deployedContracts[hre.network.name]
 
-  await updateProxy("MetaAndMagic",  contracts["MetaAndMagic"]);
+  let renderer = await getContract("MetaAndMagicRenderer", contracts["MetaAndMagicRenderer"]);
+
+  let hdeck = await deploy("HeroesDeck")
+  renderer.setDeck(1, hdeck.address)
 
 }
 

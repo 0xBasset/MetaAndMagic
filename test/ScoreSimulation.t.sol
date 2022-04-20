@@ -39,14 +39,15 @@ contract CalculateScoreTest is MetaAndMagicBaseTest {
         itemsDeck = new ItemsDeck();
 
         bosses[1]  = Bosses(5000,4000,0,0,0);
+        bosses[4]  = Bosses(6500,3500,4500,6,1);
     }
 
     function test_scoreSimulation_boss() external {
 
-        bossId =1;
+        bossId =4;
         // _simulate(1,bossId);    
         // _simulate(2,bossId);    
-        // _simulate(3,bossId);    
+        _simulate(3,bossId);    
         // _simulate(4,bossId);    
     }
 
