@@ -29,7 +29,7 @@ contract HeroesMock is Heroes {
     }
 
     function _getRndForSpecial(uint256 seed) internal pure override returns (uint256 rdn) {
-        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 100 + 1;
+        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 10 + 1;
     }
 
 }
@@ -74,7 +74,7 @@ contract ItemsMock is Items {
     }
 
     function _getRndForSpecial(uint256 seed) internal pure override returns (uint256 rdn) {
-        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 100 + 1;
+        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 10 + 1;
     }
 }
 

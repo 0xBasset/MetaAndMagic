@@ -251,7 +251,7 @@ contract FightTest is MetaAndMagicBaseTest {
         _addBoss();
         meta.setBossStats(boss, bossStats);
 
-        heroes.mint(address(this), heroId, 2);
+        heroes.mint(address(this), 30, 2);
 
         meta.stake(heroId);
 
@@ -316,6 +316,16 @@ contract FightTest is MetaAndMagicBaseTest {
 
         vm.expectRevert(bytes("already fought"));
         meta.fight(heroId, itm);
+    }
+
+    function test_fightWithOneHeroes() external {
+
+        heroes.mint(address(this), 20, 2);
+        // meta.stake(2);
+        for (uint256 i = 2; i < 19; i++) {
+            meta.stake(i);
+            meta.fight(i, bytes10(0));
+        }
     }
 
 }
