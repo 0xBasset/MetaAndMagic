@@ -58,11 +58,7 @@ async function main() {
 
   let contracts = deployedContracts[hre.network.name]
 
-  let renderer = await getContract("MetaAndMagicRenderer", contracts["MetaAndMagicRenderer"]);
-
-  let hdeck = await deploy("HeroesDeck")
-  renderer.setDeck(1, hdeck.address)
-
+  updateProxy("MetaAndMagicSale", contracts["MetaAndMagicSale"]);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

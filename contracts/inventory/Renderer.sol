@@ -5,8 +5,9 @@ pragma solidity 0.8.7;
 contract MetaAndMagicRenderer {
 
     mapping(uint256 => address) decks; // 
-    mapping(bytes4 => address) svgs; // svg to trait indicator to address that stores it
+    mapping(bytes4 => address)  svgs; // svg to trait indicator to address that stores it
 
+    // Todo
     // string constant heroDesc = unicode"Meta & Magic Heroes is a collection of 3,000 genesis heroes that give players access to fight in a 100% on-chain NFT game. ⛓️ Can you defeat the bosses to win? 🏆 Season I 😈 Equip weapons 🗡️ Cast spells 🔥 ERC-721A standard 🍒";
     // string constant itemDesc = unicode"Meta & Magic Items is a collection of 10,000 relic items that aid the genesis heroes in the battles against the ten dark entities. ⛓   Can you defeat the bosses to win? 🏆 Season I 😈 Equip weapons 🗡️ Cast spells 🔥 ERC-721A standard 🍒";
    
@@ -18,6 +19,10 @@ contract MetaAndMagicRenderer {
 
     function getUri(uint256 id, uint256[6] calldata traits, uint256 cat) external view returns (string memory meta) {
         meta = _getMetadata(id, traits, cat);
+    }
+
+    function getPlaceholder(uint256 cat) external pure returns (string memory meta){
+        meta = _getPlaceholderMetadata(cat);
     }
 
     function setSvg(bytes4 sig, address impl) external {
@@ -59,6 +64,23 @@ contract MetaAndMagicRenderer {
                 );
     }
 
+    function _getPlaceholderMetadata(uint256 cat) internal pure returns (string memory meta) {
+        meta = 
+            string(
+                abi.encodePacked(
+                    "data:application/json;base64,",
+                    Strings.encode(
+                        abi.encodePacked(
+                            '{"name":', cat == 1 ? 'Unrevealed Hero' : 'Unrevealed Item',
+                            ',"description":"',cat == 1 ? heroDesc : itemDesc,
+                            '","image": "', cat == 1 ?'https://bafybeiejxuylnujaxbarjogla2fi7qhougbvuzrdhy6r4zhwqj7onbyz2i.ipfs.infura-ipfs.io/' : 'https://bafybeiftizk7brkixhhxbj3ooz7qnh46hdqligeg64m76fhkf54clnvk6i.ipfs.infura-ipfs.io/',
+                            '","attributes":[]}')
+                        )
+                    )
+                );
+    }
+
+
 
     function _getName(uint256 id, uint256 cat) internal pure returns (string memory name) {
         string memory category;
@@ -91,17 +113,17 @@ contract MetaAndMagicRenderer {
     function _getUniqueName(uint256 cat) internal pure returns (string memory name) {
         if (cat == 5)  name = "Alexander the Great";
         if (cat == 6)  name = "Excalibur of King Arthur";
-        if (cat == 7)  name = "Hou Yi";
+        if (cat == 7)  name = "Brahma";
         if (cat == 8)  name = "Mjolnir of Thor";
-        if (cat == 9)  name = "Fujibayashi Nagato";
+        if (cat == 9)  name = "Mutant Ape";
         if (cat == 10) name = "Headband of Wukong";
-        if (cat == 11) name = "Rasputin";
-        if (cat == 12) name = "Achilleus Armor";
-        if (cat == 13) name = "Merlin";
+        if (cat == 11) name = "Fujibayashi Nagato";
+        if (cat == 12) name = "Achilles Armor";
+        if (cat == 13) name = "Hou Yi";
         if (cat == 14) name = "Avada Kedavra";
-        if (cat == 15) name = "Mutant Ape";
+        if (cat == 15) name = "Merlin";
         if (cat == 16) name = "Kamehameha";
-        if (cat == 17) name = "Brahma";
+        if (cat == 17) name = "Rasputin";
         if (cat == 18) name = "Urim and Thummim";
         if (cat == 20) name = "Philosopher's Stone";
     }

@@ -29,7 +29,7 @@ contract HeroesTest is DSTest {
     }
 
     function test_mint() public {
-        uint256 id = heroes.mint(address(this), 1);
+        uint256 id = heroes.mint(address(this), 1, 2);
 
         assertEq(heroes.ownerOf(id), address(this));
         assertEq(heroes.totalSupply(), 1);

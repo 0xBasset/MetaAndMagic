@@ -8,6 +8,8 @@ interface StatsLike {
 contract AttackItemsStats is StatsLike {
 
     function getStats(uint256[6] calldata atts) public pure override returns (bytes10[6] memory stats) {
+        if (atts[0] > 10) return specialTraits(atts[0]);
+
         stats = [level(atts[0]), kind(atts[1]), material(atts[2]), rarity(atts[3]), quality(atts[4]), bytes10(uint80(atts[5]))];
     }
 
@@ -100,6 +102,8 @@ contract AttackItemsStats is StatsLike {
 contract DefenseItemsStats is StatsLike {
 
     function getStats(uint256[6] calldata atts) public pure override returns (bytes10[6] memory stats) {
+        if (atts[0] > 10) return specialTraits(atts[0]);
+
         stats = [level(atts[0]), kind(atts[1]), material(atts[2]), rarity(atts[3]), quality(atts[4]), bytes10(uint80(atts[5]))];
     }
 
@@ -194,6 +198,8 @@ contract DefenseItemsStats is StatsLike {
 contract SpellItemsStats is StatsLike {
 
     function getStats(uint256[6] calldata atts) public pure override returns (bytes10[6] memory stats) {
+        if (atts[0] > 10) return specialTraits(atts[0]);
+        
         stats = [level(atts[0]), kind(atts[1]), energy(atts[2]), rarity(atts[3]), quality(atts[4]), bytes10(uint80(atts[5]))];
     }
 

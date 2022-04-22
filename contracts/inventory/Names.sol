@@ -245,7 +245,7 @@ contract ItemsDeck {
             if (id == 1) name = "Water";
             if (id == 2) name = "Fire";
             if (id == 3) name = "Air";
-            if (id == 4) name = "Lightining";
+            if (id == 4) name = "Lightning";
             if (id == 5) name = "Earth";
 
             trait = "Element";

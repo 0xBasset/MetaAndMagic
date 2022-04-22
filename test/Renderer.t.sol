@@ -43,18 +43,16 @@ contract RendererTest is DSTest {
 
         emit log_named_uint("start", heroes.getSpecialSart());
 
-        string memory meta = heroes.tokenURI(49);
+        string memory meta = heroes.tokenURI(1);
 
-         emit log(meta);
     }
 
     function test_getMetadata_item() external {
 
         // renderer.helper(11899, 4, [uint256(2), 12, 4, 5, 4, 5]);
 
-        string memory meta = items.tokenURI(49);
+        string memory meta = items.tokenURI(1);
         
-        emit log(meta);
     }
 
     // function test_getMetadata_heroBossDrop() external {

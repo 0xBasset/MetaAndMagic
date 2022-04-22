@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
+import { ERC721MM } from "./ERC721MM.sol";
 
-import { ERC721 } from "./ERC721.sol";
 
-
-contract Heroes is ERC721 {
+contract Heroes is ERC721MM {
 
     // TODO
     string constant public name   = "ASDERER";
@@ -15,15 +14,10 @@ contract Heroes is ERC721 {
     mapping(uint256 => uint256) bossSupplies;
 
     address stats;
-    address renderer;
 
-    uint256 entropySeed;
-
-
-    // Oracle information
-    address VRFcoord;
-    uint64  subId;
-    bytes32 keyhash;
+    /*///////////////////////////////////////////////////////////////
+                        INITIALIZATION
+    //////////////////////////////////////////////////////////////*/
 
     function initialize(address stats_, address renderer_) external {
         require(msg.sender == _owner(), "not authorized");
@@ -34,30 +28,23 @@ contract Heroes is ERC721 {
         bossSupplies[10] = 100;
     }
 
+    /*///////////////////////////////////////////////////////////////
+                        VIEW FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
     function getStats(uint256 id_) external view virtual returns(bytes10[6] memory stats_) {    // [][]
         uint256 seed = entropySeed;
-        
-        stats_ = StatsLike(stats).getStats(_traits(seed, id_));
-    }
+        require(seed != 0, "Not revealed");
 
-    function getTraits(uint256 id_) external view returns (uint256[6] memory traits_) {
-        return _traits(entropySeed, id_);
+        stats_ = StatsLike(stats).getStats(_traits(seed, id_));
     }
 
     function isSpecial(uint256 id) external view returns(bool sp) {
         return _isSpecial(id, entropySeed);
     }
-
-    function setUpOracle(address vrf_, bytes32 keyHash, uint64 subscriptionId) external {
-        require(msg.sender == _owner());
-
-        VRFcoord = vrf_;
-        keyhash  = keyHash;
-        subId    = subscriptionId;
-    }
-
     function tokenURI(uint256 id) external view returns (string memory) {
         uint256 seed = entropySeed;
+        if (seed == 0) return RendererLike(renderer).getPlaceholder(1);
         return RendererLike(renderer).getUri(id, _traits(seed, id), _getCategory(id,seed));
     }
 
@@ -65,45 +52,19 @@ contract Heroes is ERC721 {
                         MINT FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function setAuth(address add_, bool auth_) external {
-        require(_owner() == msg.sender, "not authorized");
-        auth[add_] = auth_;
-    }
-
-    function mint(address to, uint256 amount) external virtual returns(uint256 id) {
-        require(auth[msg.sender], "not authorized");
-        for (uint256 i = 0; i < amount; i++) {
-            id = totalSupply + 1;
-            _mint(to, id);     
-        }
-    }
-
     function mintDrop(uint256 boss, address to) external virtual returns(uint256 id) {
         require(auth[msg.sender], "not authorized");
 
         id = 3000 + bossSupplies[boss]--; // Note boss drops are predictable because the entropy seed is known
 
-        _mint(to, id);
+        _mint(to, id, 2);
     }
-
-    function requestEntropy() external {
-        require(msg.sender == _owner(), "not auth");
-        require(entropySeed == 0,       "already requested");
-
-        VRFCoordinatorV2Interface(VRFcoord).requestRandomWords(keyhash, subId, 3, 200000, 1);
-    }
-
-    function rawFulfillRandomWords(uint256 , uint256[] memory randomWords) external {
-        require(msg.sender == VRFcoord, "not allowed");
-        require(entropySeed == 0);
-        entropySeed = randomWords[0];
-   }
 
     /*///////////////////////////////////////////////////////////////
-                             TRAIT FUNCTIONS
+                            INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function _traits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t ) {
+    function _traits(uint256 seed_, uint256 id_) internal pure override returns (uint256[6] memory t ) {
         require(seed_ != uint256(0), "seed not set");
         if (_isSpecial(id_, seed_)) return _getSpecialTraits(seed_, id_);
         
@@ -123,16 +84,6 @@ contract Heroes is ERC721 {
         uint256 traitIndcator = spc * 10 + spc;
 
         t = [traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator];
-    }
-
-    function _getTier(uint256 id_, uint256 seed, bytes32 salt) internal pure returns (uint256 t_) {
-        uint256 rdn = uint256(keccak256(abi.encode(id_, seed, salt))) % 100_0000 + 1; 
-        if (rdn <= 28_9333) return 1;
-        if (rdn <= 52_8781) return 2;
-        if (rdn <= 71_8344) return 3;
-        if (rdn <= 85_8022) return 4;
-        if (rdn <= 94_7815) return 5;
-        return 6;
     }
 
     function _getClass(uint256 id_, uint256 seed, bytes32 salt) internal pure returns (uint256 class_) {
@@ -173,21 +124,11 @@ contract Heroes is ERC721 {
 
 }
 
-
 interface StatsLike {
     function getStats(uint256[6] calldata attributes) external view returns (bytes10[6] memory stats_); 
 }
 
 interface RendererLike {
     function getUri(uint256 id, uint256[6] calldata traits, uint256 cat) external view returns (string memory meta);
-}
-
-interface VRFCoordinatorV2Interface {
-    function requestRandomWords(
-    bytes32 keyHash,
-    uint64 subId,
-    uint16 minimumRequestConfirmations,
-    uint32 callbackGasLimit,
-    uint32 numWords
-  ) external returns (uint256 requestId);
+    function getPlaceholder(uint256 cat) external pure returns (string memory meta);
 }

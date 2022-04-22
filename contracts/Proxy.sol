@@ -20,6 +20,12 @@ contract Proxy {
         _setSlotValue(IMPLEMENTATION_SLOT, bytes32(uint256(uint160(newImpl))));
     }
     
+    function setAdmin(address newAdmin) public {
+        require(msg.sender == _getAddress(ADMIN_SLOT));
+        _setSlotValue(ADMIN_SLOT, bytes32(uint256(uint160(newAdmin))));
+    }
+    
+
     function implementation() public view returns (address impl) {
         impl = address(uint160(uint256(_getSlotValue(IMPLEMENTATION_SLOT))));
     }

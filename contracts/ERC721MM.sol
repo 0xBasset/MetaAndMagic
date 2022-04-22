@@ -3,7 +3,8 @@ pragma solidity 0.8.7;
 
 /// @notice Modern and gas efficient ERC-721 + ERC-20/EIP-2612-like implementation,
 /// Modified version inspired by ERC721A
-contract ERC721 {
+abstract contract ERC721MM {
+
     /*///////////////////////////////////////////////////////////////
                                   EVENTS
     //////////////////////////////////////////////////////////////*/
@@ -19,9 +20,10 @@ contract ERC721 {
                              ERC-721 STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    struct AddressData { uint128 balance; uint128 minted; }
+    struct AddressData { uint128 balance; uint64 listMinted; uint64 publicMinted; }
 
     uint256 public totalSupply;
+    uint256 public entropySeed;
     
     mapping(address => bool)    public auth;
 
@@ -33,6 +35,22 @@ contract ERC721 {
 
     mapping(address => mapping(address => bool)) public isApprovedForAll;
 
+    // Rendering information
+    address public renderer;
+
+    // Oracle information
+    address public VRFcoord;
+
+    uint64  public subId;
+
+    bytes32 public keyhash;
+
+    /*///////////////////////////////////////////////////////////////
+                VIRTUAL FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function _traits(uint256 entropy_, uint256 id_) internal pure virtual returns (uint256[6] memory traits_);
+    
     /*///////////////////////////////////////////////////////////////
                              VIEW FUNCTION
     //////////////////////////////////////////////////////////////*/
@@ -45,8 +63,64 @@ contract ERC721 {
         balance_ = datas[add].balance;
     }
 
-    function minted(address add) external view returns(uint256 minted_) {
-        minted_ = datas[add].minted;
+    function listMinted(address add) external view returns(uint256 minted_) {
+        minted_ = datas[add].listMinted;
+    }
+
+    function publicMinted(address add) external view returns(uint256 minted_) {
+        minted_ = datas[add].publicMinted;
+    }
+
+    /*///////////////////////////////////////////////////////////////
+                            M&M SPECIFIC LOGIC
+    //////////////////////////////////////////////////////////////*/
+
+    function setAuth(address add_, bool auth_) external {
+        require(_owner() == msg.sender, "not authorized");
+        auth[add_] = auth_;
+    }
+
+    function mint(address to, uint256 amount, uint256 stage) external virtual returns(uint256 id) {
+        require(auth[msg.sender], "not authorized");
+        for (uint256 i = 0; i < amount; i++) {
+            id = totalSupply + 1;
+            _mint(to, id, stage);     
+        }
+    }
+
+     function setUpOracle(address vrf_, bytes32 keyHash, uint64 subscriptionId) external {
+        require(msg.sender == _owner());
+
+        VRFcoord = vrf_;
+        keyhash  = keyHash;
+        subId    = subscriptionId;
+    }
+
+    function requestEntropy() external {
+        require(msg.sender == _owner(), "not auth");
+        require(entropySeed == 0,       "already requested");
+
+        VRFCoordinatorV2Interface(VRFcoord).requestRandomWords(keyhash, subId, 3, 200000, 1);
+    }
+
+    function rawFulfillRandomWords(uint256 , uint256[] memory randomWords) external {
+        require(msg.sender == VRFcoord, "not allowed");
+        require(entropySeed == 0);
+        entropySeed = randomWords[0];
+   }
+
+   function getTraits(uint256 id_) external view returns (uint256[6] memory traits_) {
+        return _traits(entropySeed, id_);
+    }
+
+    function _getTier(uint256 id_, uint256 seed, bytes32 salt) internal pure returns (uint256 t_) {
+        uint256 rdn = uint256(keccak256(abi.encode(id_, seed, salt))) % 100_0000 + 1; 
+        if (rdn <= 28_9333) return 1;
+        if (rdn <= 52_8781) return 2;
+        if (rdn <= 71_8344) return 3;
+        if (rdn <= 85_8022) return 4;
+        if (rdn <= 94_7815) return 5;
+        return 6;
     }
     
     /*///////////////////////////////////////////////////////////////
@@ -135,7 +209,7 @@ contract ERC721 {
 
     }
 
-    function _mint(address to, uint256 tokenId) internal { 
+    function _mint(address to, uint256 tokenId, uint256 stage) internal { 
         require(ownerOf[tokenId] == address(0), "ALREADY_MINTED");
 
         totalSupply++;
@@ -144,7 +218,7 @@ contract ERC721 {
         // balances can't exceed type(uint256).max!
         unchecked {
             datas[to].balance++;
-            datas[to].minted++;
+            stage == 1 ? datas[to].listMinted++ : datas[to].publicMinted++;
         }
         
         ownerOf[tokenId] = to;
@@ -160,10 +234,19 @@ contract ERC721 {
         
         totalSupply--;
         datas[owner_].balance--;
-        datas[owner_].minted--;
         
         delete ownerOf[tokenId];
                 
         emit Transfer(owner_, address(0), tokenId); 
     }
+}
+
+interface VRFCoordinatorV2Interface {
+    function requestRandomWords(
+    bytes32 keyHash,
+    uint64 subId,
+    uint16 minimumRequestConfirmations,
+    uint32 callbackGasLimit,
+    uint32 numWords
+  ) external returns (uint256 requestId);
 }

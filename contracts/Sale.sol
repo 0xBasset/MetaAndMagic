@@ -5,7 +5,7 @@ contract MetaAndMagicSale {
 
     uint256 constant PS_MAX  = 1;
 
-    uint8   public stage; // 0 -> init, 1 -> item wl sale, 2 -> items hero sale, 3 -> items public sale, 4 -> hero wl, 5 -> hero ps, 6 -> finalized
+    uint8   public stage; // 0 -> init, 1 -> item wl sale, 2 -> items hero sale, 3 -> items public sale, 4 -> hero wl, 5 -> hero ps
     bytes32 public root;
 
     Sale public heroes;
@@ -23,12 +23,11 @@ contract MetaAndMagicSale {
     // ADMIN FUNCTION
     function moveStage() external {
         require(msg.sender == _owner(), "not allowed");
-
         stage++;
     }
 
-    // TODO add acl
     function setRoot(bytes32 root_) external {
+        require(msg.sender == _owner(), "not allowed");
         root = root_;
     }
 
@@ -37,6 +36,11 @@ contract MetaAndMagicSale {
 
         (bool succ, ) = destination.call{value: address(this).balance}("");
         require(succ, "failed");
+    }
+
+    function ownerMint(address token, address destination, uint256 quantity) external {
+        require(msg.sender == _owner(), "not allowed");
+        IERC721MM(token).mint(destination, quantity, 2);
     }
 
     function mint() external payable returns(uint256 id) {
@@ -50,7 +54,7 @@ contract MetaAndMagicSale {
         require(uint256(sale.pricePS) * 1e16 == msg.value, "not enough sent");
 
         // Make sure that user is only minting the allowed amount
-        uint256 minted  = IERC721MM(sale.token).minted(msg.sender);
+        uint256 minted  = IERC721MM(sale.token).publicMinted(msg.sender);
         require(minted < PS_MAX, "already minted");
 
         // Effects
@@ -63,7 +67,7 @@ contract MetaAndMagicSale {
         }
 
         // Interactions
-        id = IERC721MM(sale.token).mint(msg.sender, 1);
+        id = IERC721MM(sale.token).mint(msg.sender, 1, 2);
     }
 
     function mint(uint256 allowedAmount, uint8 stage_, uint256 amount,  bytes32[] calldata proof_) external payable returns(uint256 id){
@@ -78,7 +82,7 @@ contract MetaAndMagicSale {
         require(stage_ == cacheStage, "wrong stage");
 
         // Make sure that user is only minting the allowed amount
-        uint256 minted  = IERC721MM(sale.token).minted(msg.sender);
+        uint256 minted  = IERC721MM(sale.token).listMinted(msg.sender);
         require(minted + amount <= allowedAmount, "already minted");
 
         bytes32 leaf_ = keccak256(abi.encode(allowedAmount, stage_, msg.sender));
@@ -93,7 +97,7 @@ contract MetaAndMagicSale {
             heroes = sale;
         }
 
-        id = IERC721MM(sale.token).mint(msg.sender, amount);
+        id = IERC721MM(sale.token).mint(msg.sender, amount, 1);
     }
 
     function _verify(bytes32[] memory proof_, bytes32 root_, bytes32 leaf_) internal pure returns (bool allowed) {
@@ -110,8 +114,9 @@ contract MetaAndMagicSale {
 }
 
 interface IERC721MM {
-    function mint(address to, uint256 amount) external returns (uint256 id);
-    function minted(address to) external returns (uint256 minted);
+    function mint(address to, uint256 amount, uint256 stage) external returns (uint256 id);
+    function listMinted(address to) external returns (uint256 minted);
+    function publicMinted(address to) external returns (uint256 minted);
 }
 
 
