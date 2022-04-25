@@ -70,12 +70,20 @@ contract MetaAndMagic {
     */
     function addBoss(address prizeToken, uint256 halfPrize, uint256 hp_, uint256 atk_, uint256 mgk_, uint256 mod_, uint256 element_) external {
         require(msg.sender == _owner(), "not allowed");
-        uint256 boss = ++currentBoss;
+        uint256 boss = currentBoss + 1;
 
         prizeValues[boss] = halfPrize;
         prizeTokens[boss] = prizeToken;
 
         bosses[boss] = Boss({stats: bytes8(abi.encodePacked(uint16(hp_),uint16(atk_),uint16(mgk_), uint8(element_), uint8(mod_))), topScorers:0, highestScore: 0, entries:0, winIndex:0});
+    }
+
+    function moveBoss() external {
+        require(msg.sender == _owner(), "not allowed");
+
+        require(bosses[currentBoss + 1].stats != bytes8(0), "not set");
+
+        currentBoss++;
     }
 
     /*///////////////////////////////////////////////////////////////

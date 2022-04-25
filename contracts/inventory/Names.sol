@@ -107,11 +107,21 @@ contract HeroesDeck {
 contract ItemsDeck {
 
     function getTraitsNames(uint256 id, uint256[6] calldata atts) public pure returns(string[6] memory names) {
+        if (id > 10000) return getBossTraitsNames(id, atts);
+        
         names[0] = level(atts[0]);
         names[1] = kind(id, atts[1]);
         names[2] = material(id, atts[2]);
         names[3] = rarity(atts[3]);
         names[4] = quality(atts[4]);
+        names[5] = element(id, atts[5]);
+    }
+
+    function getBossTraitsNames(uint256 id, uint256[6] calldata atts) internal pure returns(string[6] memory names) {
+        names[0] = level(atts[0]);
+        names[1] = kind(id, atts[1]);
+        names[2] = rarity(atts[3]);
+        names[3] = quality(atts[4]);
         names[5] = element(id, atts[5]);
     }
     

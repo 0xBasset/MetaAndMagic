@@ -86,7 +86,7 @@ contract Items is ERC721MM {
 
     function _traits(uint256 seed_, uint256 id_) internal pure override returns (uint256[6] memory traits) {
         require(seed_ != uint256(0), "seed not set");
-        if (_isSpecial(id_, seed_)) return _getSpecialTraits(seed_, id_);
+        if (_isSpecial(id_, seed_)) return _getSpecialTraits(id_);
 
         traits = [_getTier(id_,   seed_, "LEVEL"), 
                   _getTier(id_,    seed_, "KIND"), 
@@ -98,10 +98,11 @@ contract Items is ERC721MM {
         uint256 boss = _getBossForId(id_);
         if (boss > 0) {
             traits[1] = 10 + boss;
-            traits[2] = 0; // Boss traits doesnt have material type
+            traits[4] = 0; // Boss traits doesnt have material type
+        }
     }
 
-    function _getSpecialTraits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t) {
+    function _getSpecialTraits(uint256 id_) internal pure returns (uint256[6] memory t) {
         uint256 spc = (id_ / 1250) + 1;
         
         uint256 traitIndcator = spc * 10 + spc;

@@ -53,10 +53,12 @@ contract MetaAndMagicBaseTest is DSTest {
 
     function _addBoss() internal {
         meta.addBoss(address(1), 100e18, 10000, 1000, 1000, 3, 0);
+        meta.moveBoss();
     }
 
     function _addBoss(address token, uint256 amt) internal {
         meta.addBoss(address(token), amt, 10000, 1000, 1000, 3, 0);
+        meta.moveBoss();
     }
 
 }
