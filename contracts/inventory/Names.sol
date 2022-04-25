@@ -35,6 +35,7 @@ contract HeroesDeck {
         if (id == 5) name = "Mage";
         if (id == 6) name = "Zombie";
         if (id == 7) name = "God";
+        if (id == 8) name = "Oracle";
 
         str = string(abi.encodePacked('{"trait_type": "Class", "value":"', name ,'"}'));
     }
@@ -129,6 +130,19 @@ contract ItemsDeck {
     function kind(uint256 tokenId, uint256 id) public pure returns (string memory str) {
         string memory name;
         uint256 class = tokenId % 4;
+
+        if (tokenId > 10000) { 
+            if (id == 11) name = "Dogemon's Tail";
+            if (id == 12) name = "Lunar Rings";
+            if (id == 13) name = "Lunar Rings";
+            if (id == 14) name = "Axie Wings";
+            if (id == 15) name = "Circulonimbus";
+            if (id == 16) name = "Vitalik's Horn";
+            if (id == 17) name = "Sand Scale";
+            if (id == 18) name = "Lunar Crystal";
+            if (id == 19) name = "Polybeast's Shards";
+        }
+
         if (class == 0) {
             if (id == 1) name = "Dagger";
             if (id == 2) name = "Sword";
@@ -173,6 +187,10 @@ contract ItemsDeck {
         string memory trait;
 
         uint256 class = tokenId % 4;
+
+        if (tokenId > 10000){
+            if (id == 0) return "";
+        }
 
         if (class < 2) {
             if (id == 1) name = "Wood";
@@ -239,8 +257,8 @@ contract ItemsDeck {
         string memory trait;
 
         uint256 class = tokenId % 4;
-
-        if (class < 3) {
+        
+        if (tokenId > 10000 || class < 3) {
             if (id == 0) name = "None";
             if (id == 1) name = "Water";
             if (id == 2) name = "Fire";
