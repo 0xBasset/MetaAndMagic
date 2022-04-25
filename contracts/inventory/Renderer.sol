@@ -140,31 +140,6 @@ contract MetaAndMagicRenderer {
         svg = wrapSingleTag(call(svgs[sig], sig));
     }
 
-    // function helper(uint256 id, uint256 cat, uint256[6] memory traits) public {
-    //     bytes4[6] memory layers = [bytes4(0),bytes4(0),bytes4(0),bytes4(0),bytes4(0), bytes4(0)];
-
-    //     for (uint256 i = 0; i < 6; i++) {
-    //         // Hero
-    //         if (cat == 1 || cat == 3) {
-    //             layers[i] = bytes4(keccak256(abi.encodePacked((string(abi.encodePacked("hero", Strings.toString(i), Strings.toString(traits[i]),'()'))))));
-    //             if (i == 2) {
-    //                 // overriding rank trait
-    //                 layers[i] = bytes4(keccak256(abi.encodePacked(string((abi.encodePacked("hero", Strings.toString(i), Strings.toString(traits[i - 1]), Strings.toString(traits[i]),'()'))))));
-    //             }
-    //         }
-    //         if (cat == 2 || cat == 4) {
-    //             emit log(string((abi.encodePacked("item", Strings.toString(cat == 2 ? id % 4 : 4), Strings.toString(i), Strings.toString(traits[i]),'()'))));
-    //             layers[i] = bytes4(keccak256(abi.encodePacked(string((abi.encodePacked("item", Strings.toString(cat == 2 ? id % 4 : 4), Strings.toString(i), Strings.toString(traits[i]),'()'))))));
-    //         }
-    //     }
-
-    //     emit log_bytes(layers[4]);
-
-    // }
-
-    // event log(string val);
-    // event log_bytes(bytes32 val);
-
     function _getLayeredSvg(uint256 id, uint256 cat, uint256[6] memory traits) internal view returns (string memory svg) {
         bytes4[6] memory layers = [bytes4(0),bytes4(0),bytes4(0),bytes4(0),bytes4(0), bytes4(0)];
 

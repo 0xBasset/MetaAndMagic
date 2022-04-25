@@ -5,7 +5,7 @@ contract MetaAndMagicSale {
 
     uint256 constant PS_MAX  = 1;
 
-    uint8   public stage; // 0 -> init, 1 -> item wl sale, 2 -> items hero sale, 3 -> items public sale, 4 -> hero wl, 5 -> hero ps
+    uint8   public stage; // 0 -> init, 1 -> item wl sale, 2 -> items hero sale, 3 -> hero wl, 4 -> hero ps ,5 -> items public sale 
     bytes32 public root;
 
     Sale public heroes;
@@ -52,9 +52,9 @@ contract MetaAndMagicSale {
     function mint() external payable returns(uint256 id) {
         uint256 cacheStage = stage; 
 
-        require(cacheStage == 3 ||cacheStage == 5, "not on public sale");
+        require(cacheStage == 4 ||cacheStage == 5, "not on public sale");
 
-        Sale memory sale = cacheStage == 3 ? items : heroes;
+        Sale memory sale = cacheStage == 5 ? items : heroes;
         
         // Make sure use sent enough money
         require(uint256(sale.pricePS) * 1e16 == msg.value, "not enough sent");
@@ -66,7 +66,7 @@ contract MetaAndMagicSale {
         // Effects
         sale.left--;   
 
-        if (cacheStage == 3) {
+        if (cacheStage == 5) {
             items  = sale;
         } else {
             heroes = sale;
@@ -78,7 +78,7 @@ contract MetaAndMagicSale {
 
     function mint(uint256 allowedAmount, uint8 stage_, uint256 amount,  bytes32[] calldata proof_) external payable returns(uint256 id){
         uint256 cacheStage = stage; 
-        Sale memory sale   = cacheStage < 4 ? items : heroes;
+        Sale memory sale   = cacheStage < 3 ? items : heroes;
 
         // Make sure use sent enough money 
         require(amount > 0, "zero amount");
@@ -97,7 +97,7 @@ contract MetaAndMagicSale {
         // Effects
         sale.left -= uint32(amount);
 
-        if (cacheStage < 4) {
+        if (cacheStage < 3) {
             items = sale;
         } else {
             heroes = sale;

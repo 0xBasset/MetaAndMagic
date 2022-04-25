@@ -186,7 +186,7 @@ contract ItemsDeck {
         }
 
         if (class == 2) {
-            if (id == 1) name = "Kinectic";
+            if (id == 1) name = "Kinetic";
             if (id == 2) name = "Potential";
             if (id == 3) name = "Electrical";
             if (id == 4) name = "Nuclear";
