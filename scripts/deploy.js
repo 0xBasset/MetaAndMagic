@@ -42,7 +42,7 @@ async function main() {
   let statsBuff  = await deploy("BuffItemsStats");
   let statsBoss  = await deploy("BossDropsStats");
   
-  let metaRenderer = "0x9E899A10bF2ab5927cAFCed5d1a06f634c31CbB4";
+  let metaRenderer = "0xfEb68fEE8c7F4c5f166df09925b88F0d7DF0Cc49";
   
   let lens   = await deployProxied("MetaAndMagicLens");
   let heroes = await deployProxied("Heroes");
