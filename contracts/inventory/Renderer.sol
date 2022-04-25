@@ -71,8 +71,8 @@ contract MetaAndMagicRenderer {
                     "data:application/json;base64,",
                     Strings.encode(
                         abi.encodePacked(
-                            '{"name":', cat == 1 ? 'Unrevealed Hero' : 'Unrevealed Item',
-                            ',"description":"',cat == 1 ? heroDesc : itemDesc,
+                            '{"name":"', cat == 1 ? 'Unrevealed Hero' : 'Unrevealed Item',
+                            '","description":"',cat == 1 ? heroDesc : itemDesc,
                             '","image": "', cat == 1 ?'https://bafybeiejxuylnujaxbarjogla2fi7qhougbvuzrdhy6r4zhwqj7onbyz2i.ipfs.infura-ipfs.io/' : 'https://bafybeiftizk7brkixhhxbj3ooz7qnh46hdqligeg64m76fhkf54clnvk6i.ipfs.infura-ipfs.io/',
                             '","attributes":[]}')
                         )

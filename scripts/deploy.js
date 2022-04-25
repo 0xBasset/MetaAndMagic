@@ -68,7 +68,7 @@ async function main() {
 
   await items.initialize(statsAtk.address, statsDef.address, statsSpell.address, statsBuff.address, statsBoss.address, metaRenderer); // todo replace with renderer
   await items.setUpOracle(contracts[hre.network.name].vrfCoord,contracts[hre.network.name].keyHash,contracts[hre.network.name].subId);
-  await items.setAuth(items.address, true);
+  await items.setAuth(meta.address, true);
   await items.setAuth(sale.address, true);
   console.log("Done items")
 

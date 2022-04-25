@@ -40,6 +40,12 @@ contract MetaAndMagicSale {
 
     function ownerMint(address token, address destination, uint256 quantity) external {
         require(msg.sender == _owner(), "not allowed");
+
+        if (token == heroes.token) {
+            heroes.left--;
+        } else if (token == items.token) {
+            items.left--;
+        }
         IERC721MM(token).mint(destination, quantity, 2);
     }
 

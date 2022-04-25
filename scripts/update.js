@@ -58,7 +58,9 @@ async function main() {
 
   let contracts = deployedContracts[hre.network.name]
 
-  updateProxy("MetaAndMagicSale", contracts["MetaAndMagicSale"]);
+  await updateProxy("Items", contracts["Items"]);
+
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere

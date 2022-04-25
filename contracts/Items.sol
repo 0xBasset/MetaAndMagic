@@ -103,7 +103,7 @@ contract Items is ERC721MM {
     }
 
     function _getSpecialTraits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t) {
-        uint256 spc = id_ - _getRndForSpecial(seed_) + 1;
+        uint256 spc = (id_ / 1250) + 1;
         
         uint256 traitIndcator = spc * 10 + spc;
 
@@ -115,8 +115,8 @@ contract Items is ERC721MM {
         
         uint256 rdn = uint256(keccak256(abi.encode(id_, seed, salt))) % 100_0000 + 1; 
 
-        if (rdn <= 75_0000) return 0;
-        return (rdn % 5) + 1;
+        if (rdn <= 75_0000) return 1;
+        return (rdn % 5) + 2;
     }
 
     function _bossDropStart(uint256 boss) internal pure returns(uint256 start) {
@@ -147,11 +147,16 @@ contract Items is ERC721MM {
 
     function _isSpecial(uint256 id, uint256 seed) internal pure returns (bool special) {
         uint256 rdn = _getRndForSpecial(seed);
-        if (id > rdn && id <= rdn + 8) return true;
+        for (uint256 i = 0; i < 9; i++) {
+            if (id == rdn + (1250 * i)) {
+                special = true;
+                break;
+            }
+        }
     }
 
     function _getSpecialCategory(uint256 id, uint256 seed) internal pure returns (uint256 spc) {
-        uint256 num = id - _getRndForSpecial(seed);
+        uint256 num = (id / 1250) + 1;
         spc = num + 5 + (num - 1);
     }
 
@@ -163,7 +168,7 @@ contract Items is ERC721MM {
     }
 
     function _getRndForSpecial(uint256 seed) internal pure virtual returns (uint256 rdn) {
-        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 9_992 + 1;
+        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 1250 + 1;
     }
 
 }

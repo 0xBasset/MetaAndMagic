@@ -79,9 +79,9 @@ contract Heroes is ERC721MM {
     }
 
     function _getSpecialTraits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t) {
-        uint256 spc = id_ - _getRndForSpecial(seed_);
+        uint256 spc = (id_ / 428) + 1;
         
-        uint256 traitIndcator = spc * 10 + spc;
+        uint256 traitIndcator = (spc) * 10 + spc;
 
         t = [traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator];
     }
@@ -101,13 +101,18 @@ contract Heroes is ERC721MM {
         return _getTier(id_, seed, salt) + ((rdn % 3) * 6);
     }
 
-    function _isSpecial(uint256 id, uint256 seed) internal pure returns (bool special) {
-        uint256 rdn = _getRndForSpecial(seed);
-        if (id > rdn && id <= rdn + 7) return true;
+    function _isSpecial(uint256 id, uint256 seed_) internal pure returns (bool special) {
+        uint256 rdn = _getRndForSpecial(seed_);
+        for (uint256 i = 0; i < 8; i++) {
+            if (id == rdn + (428 * i)) {
+                special = true;
+                break;
+            }
+        }
     }
 
-    function _getSpecialCategory(uint256 id, uint256 seed) internal pure returns (uint256 spc) {
-        uint256 num = id - _getRndForSpecial(seed);
+    function _getSpecialCategory(uint256 id, uint256 seed_) internal pure returns (uint256 spc) {
+        uint256 num = (id / 428) + 1;
         spc = num + 4 + (num - 1);
     }
 
@@ -119,7 +124,7 @@ contract Heroes is ERC721MM {
     }
 
     function _getRndForSpecial(uint256 seed) internal pure virtual returns (uint256 rdn) {
-        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 2_993 + 1;
+        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 428 + 1;
     }
 
 }
