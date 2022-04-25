@@ -15,7 +15,6 @@ import "./utils/Interfaces.sol";
 
 import "../contracts/Proxy.sol";
 
-
 contract MetaAndMagicBaseTest is DSTest {
     MockMetaAndMagic meta;
     HeroesMock       heroes;
@@ -149,7 +148,7 @@ contract StakeTest is MetaAndMagicBaseTest {
     function testStake_success() external {
         _addBoss();
 
-        uint256 heroId = heroes.mint(address(this), 1);
+        uint256 heroId = heroes.mint(address(this), 1, 2);
 
         meta.stake(heroId);
 
@@ -160,17 +159,17 @@ contract StakeTest is MetaAndMagicBaseTest {
     }
 
     function testStake_failIfNotStarted() external {
-        uint256 heroId = heroes.mint(address(this), 1);
+        uint256 heroId = heroes.mint(address(this), 1, 2);
 
         vm.expectRevert("not started");
         meta.stake(heroId);
     }
 
     function testStake_canUnstake() external {
-        uint256 heroId = heroes.mint(address(this), 1);
+        uint256 heroId = heroes.mint(address(this), 1, 2);
         _addBoss();
 
-        heroes.mint(address(this), heroId);
+        heroes.mint(address(this), heroId, 2);
         heroes.approve(address(meta), heroId);
 
         meta.stake(heroId);
@@ -184,11 +183,11 @@ contract StakeTest is MetaAndMagicBaseTest {
     }    
 
     function testStake_failWithNotOwner() external {
-        uint256 heroId = heroes.mint(address(this), 1);
+        uint256 heroId = heroes.mint(address(this), 1, 2);
 
         _addBoss();
 
-        heroes.mint(address(this), heroId);
+        heroes.mint(address(this), heroId, 2);
         heroes.approve(address(meta), heroId);
 
         meta.stake(heroId);
@@ -206,11 +205,11 @@ contract StakeTest is MetaAndMagicBaseTest {
     }    
 
     function testStake_failIfFought() external {
-        uint256 heroId = heroes.mint(address(this), 1);
+        uint256 heroId = heroes.mint(address(this), 1, 2);
 
         _addBoss();
 
-        heroes.mint(address(this), heroId);
+        heroes.mint(address(this), heroId, 2);
         heroes.approve(address(meta), heroId);
 
         meta.stake(heroId);
@@ -252,8 +251,7 @@ contract FightTest is MetaAndMagicBaseTest {
         _addBoss();
         meta.setBossStats(boss, bossStats);
 
-        heroes.mint(address(this), heroId);
-        heroes.approve(address(meta), heroId);
+        heroes.mint(address(this), 30, 2);
 
         meta.stake(heroId);
 
@@ -320,6 +318,16 @@ contract FightTest is MetaAndMagicBaseTest {
         meta.fight(heroId, itm);
     }
 
+    function test_fightWithOneHeroes() external {
+
+        heroes.mint(address(this), 20, 2);
+        // meta.stake(2);
+        for (uint256 i = 2; i < 19; i++) {
+            meta.stake(i);
+            meta.fight(i, bytes10(0));
+        }
+    }
+
 }
 
 contract ClaimBossDropTest is MetaAndMagicBaseTest {
@@ -376,6 +384,42 @@ contract ClaimBossDropTest is MetaAndMagicBaseTest {
 
         vm.expectRevert("not won");
         meta.getBossDrop(heroId, boss, itm);
+    }
+
+}
+
+contract FightWithBossDrop is MetaAndMagicBaseTest {
+    uint256 boss   = 1;
+    uint256 heroId = 1;
+
+    uint16[5] list = [5,4,3,2,1];  
+    bytes10 itm;
+
+    bytes32 fightId;
+
+    function setUp() public override {
+        super.setUp();
+        _addBoss();
+
+        heroes.mint(address(this), heroId, 2);
+
+        itm = _getPackedItems(list);
+
+        fightId = meta.getFightId(heroId, boss, itm, address(this));
+
+        meta.setFight(fightId, heroId, boss, itm, 0, 0, false, false);
+    }
+
+    function test_fightWithBossItem() external {
+        uint256 itemId = meta.getBossDrop(heroId, boss, itm);
+        _addBoss();
+
+        uint16[5] memory list2 = [uint16(itemId),0,0,0,0]; 
+
+        bytes10 itms = _getPackedItems(list2);
+        
+        meta.stake(heroId);
+        meta.fight(heroId, itms);
     }
 
 }

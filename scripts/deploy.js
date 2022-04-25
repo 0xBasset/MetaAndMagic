@@ -41,12 +41,12 @@ async function main() {
   let statsSpell = await deploy("SpellItemsStats");
   let statsBuff  = await deploy("BuffItemsStats");
   let statsBoss  = await deploy("BossDropsStats");
-  let lens       = await deploy("MetaAndMagicLens");
-
-  let metaRenderer;
-
-  let heroes = await deployProxied("HeroesMock");
-  let items  = await deployProxied("ItemsMock");
+  
+  let metaRenderer = "0x9E899A10bF2ab5927cAFCed5d1a06f634c31CbB4";
+  
+  let lens   = await deployProxied("MetaAndMagicLens");
+  let heroes = await deployProxied("Heroes");
+  let items  = await deployProxied("Items");
   let meta   = await deployProxied("MetaAndMagic");
   let sale   = await deployProxied("MetaAndMagicSale");
 
@@ -58,7 +58,7 @@ async function main() {
 
  await new Promise(resolve => setTimeout(resolve, 1000));
 
-  await heroes.initialize(statsHero.address,statsHero.address) // todo replace with actual renderer
+  await heroes.initialize(statsHero.address,metaRenderer) // todo replace with actual renderer
   await heroes.setUpOracle(contracts[hre.network.name].vrfCoord,contracts[hre.network.name].keyHash,contracts[hre.network.name].subId);
   await heroes.setAuth(meta.address, true);
   await heroes.setAuth(sale.address, true);
@@ -66,13 +66,14 @@ async function main() {
 
   await new Promise(resolve => setTimeout(resolve, 1000));
 
-  await items.initialize(statsAtk.address, statsDef.address, statsSpell.address, statsBuff.address, statsBoss.address, statsBoss.address); // todo replace with renderer
+  await items.initialize(statsAtk.address, statsDef.address, statsSpell.address, statsBuff.address, statsBoss.address, metaRenderer); // todo replace with renderer
   await items.setUpOracle(contracts[hre.network.name].vrfCoord,contracts[hre.network.name].keyHash,contracts[hre.network.name].subId);
-  await items.setAuth(items.address, true);
+  await items.setAuth(meta.address, true);
   await items.setAuth(sale.address, true);
   console.log("Done items")
 
-  await lens.initialize(heroes.address, items.address);
+  await sale.initialize(heroes.address, items.address);
+  await lens.initialize(meta.address, heroes.address, items.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -58,7 +58,8 @@ async function main() {
 
   let contracts = deployedContracts[hre.network.name]
 
-  await updateProxy("MetaAndMagic",  contracts["MetaAndMagic"]);
+  await updateProxy("Items", contracts["Items"]);
+
 
 }
 

@@ -38,20 +38,22 @@ async function main() {
 
   let heroes = await deployProxied("HeroesMock");
   let items  = await deployProxied("ItemsMock");
-  let sale   = await deployProxied("MetaAndMagicSale");
+  // let sale   = await deployProxied("MetaAndMagicSale");
 
   // Config everything
   console.log("Setting up")
 
   await heroes.initialize(contracts["HeroStats"],contracts["MetaAndMagicRenderer"]) // todo replace with actual renderer
-  await heroes.setAuth(sale.address, true);
+  // await heroes.setAuth(sale.address, true);
+  await heroes.setEntropy("14939537241763278366545887256611457859659144253696778057464814769031071232383")
   console.log("Done heroes")
 
   await items.initialize(contracts["AttackItemsStats"], contracts["DefenseItemsStats"],contracts["SpellItemsStats"] , contracts["BuffItemsStats"], contracts["BossDropsStats"], contracts["MetaAndMagicRenderer"]); // todo replace with renderer
-  await items.setAuth(sale.address, true);
+  // await items.setAuth(sale.address, true);
+  await items.setEntropy("14939537241763278366545887256611457859659144253696778057464814769031071232383")
   console.log("Done items")
 
-  await sale.initialize(heroes.address, items.address);
+  // await sale.initialize(heroes.address, items.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

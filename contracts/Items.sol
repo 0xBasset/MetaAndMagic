@@ -1,23 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
-import { ERC721 } from "./ERC721.sol";
+import { ERC721MM } from "./ERC721MM.sol";
 
-contract Items is ERC721 {
+contract Items is ERC721MM {
 
-    string constant public name   = "Meta&Magic-Items";
-    string constant public symbol = "M&M-ITEMS";
-
-    address renderer;
-    uint256 entropySeed;
+    // TODO
+    string constant public name   = "SKADAKLALSDK";
+    string constant public symbol = "ASD";
+    // string constant public name   = "Meta&Magic-Items";
+    // string constant public symbol = "M&M-ITEMS";
 
     mapping(uint256 => address) statsAddress;
     mapping(uint256 => uint256) bossSupplies;
 
-    // Oracle information
-    address VRFcoord;
-    uint64  subId;
-    bytes32 keyhash;
+    /*///////////////////////////////////////////////////////////////
+                        INITIALIZATION
+    //////////////////////////////////////////////////////////////*/
 
     function initialize(address stats_1, address stats_2, address stats_3, address stats_4, address stats_5, address renderer_) external {
         require(msg.sender == _owner(), "not authorized");
@@ -42,48 +41,36 @@ contract Items is ERC721 {
         bossSupplies[9] = 200;
     }
 
-    function setUpOracle(address vrf_, bytes32 keyHash, uint64 subscriptionId) external {
-        require(msg.sender == _owner());
-
-        VRFcoord = vrf_;
-        keyhash  = keyHash;
-        subId    = subscriptionId;
-    }
+    /*///////////////////////////////////////////////////////////////
+                            VIEW FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
 
     function getStats(uint256 id_) external view virtual returns(bytes10[6] memory stats_) {    
         uint256 seed = entropySeed;
-        
-        if (!_isSpecial(id_, seed)) return stats_ = StatsLike(statsAddress[id_ > 10000 ? 9 : (id_ % 4)]).getStats(_traits(seed, id_));
+        require(seed != 0, "Not revealed");
+        stats_ = StatsLike(statsAddress[id_ > 10000 ? 9 : (id_ % 4)]).getStats(_traits(seed, id_));
     }
 
-    function getTraits(uint256 id_) external view returns (uint256[6] memory traits_) {
-        return _traits(entropySeed, id_);
+    function isSpecial(uint256 id) external view returns(bool sp) {
+        return _isSpecial(id, entropySeed);
     }
 
     function tokenURI(uint256 id) external view returns (string memory) {
         uint256 seed = entropySeed;
+        if (seed == 0) return RendererLike(renderer).getPlaceholder(2);
         return RendererLike(renderer).getUri(id, _traits(seed, id), _getCategory(id,seed));
     }
-
 
     /*///////////////////////////////////////////////////////////////
                              MINT FUNCTIONS
     //////////////////////////////////////////////////////////////*/
-
-    function mint(address to, uint256 amount) external virtual returns(uint256 id) {
-        require(auth[msg.sender], "not authorized");
-        for (uint256 i = 0; i < amount; i++) {
-            id = totalSupply + 1;
-            _mint(to, id);     
-        }
-    }
 
     function mintDrop(uint256 boss, address to) external virtual returns(uint256 id) {
         require(auth[msg.sender], "not authorized");
 
         id = _bossDropStart(boss) + bossSupplies[boss]--; // Note boss drops are predictable because the entropy seed is known
 
-        _mint(to, id);
+        _mint(to, id, 2);
     }
 
     function burnFrom(address from, uint256 id) external returns (bool) {
@@ -97,7 +84,7 @@ contract Items is ERC721 {
                              TRAIT FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function _traits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory traits) {
+    function _traits(uint256 seed_, uint256 id_) internal pure override returns (uint256[6] memory traits) {
         require(seed_ != uint256(0), "seed not set");
         if (_isSpecial(id_, seed_)) return _getSpecialTraits(seed_, id_);
 
@@ -116,31 +103,20 @@ contract Items is ERC721 {
     }
 
     function _getSpecialTraits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t) {
-        uint256 spc = id_ - _getRndForSpecial(seed_) + 1;
+        uint256 spc = (id_ / 1250) + 1;
         
         uint256 traitIndcator = spc * 10 + spc;
 
         t = [traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator,traitIndcator];
     }
 
-    event log_named_uint(string key, uint256 val);
-
-
-    function _getTier(uint256 id_, uint256 seed, bytes32 salt) internal pure returns (uint256 t_) {
-        uint256 rdn = uint256(keccak256(abi.encode(id_, seed, salt))) % 100_0000 + 1; 
-        if (rdn <= 28_9333) return 1;
-        if (rdn <= 52_8781) return 2;
-        if (rdn <= 71_8344) return 3;
-        if (rdn <= 85_8022) return 4;
-        if (rdn <= 94_7815) return 5;
-        return 6;
-    }
-
     function _getElement(uint256 id_, uint256 seed, bytes32 salt) internal pure returns (uint256 class_) {
+        if (id_ % 4 == 3) return _getTier(id_, seed, "POTENCY");
+        
         uint256 rdn = uint256(keccak256(abi.encode(id_, seed, salt))) % 100_0000 + 1; 
 
-        if (rdn <= 75_0000) return 0;
-        return (rdn % 5) + 1;
+        if (rdn <= 75_0000) return 1;
+        return (rdn % 5) + 2;
     }
 
     function _bossDropStart(uint256 boss) internal pure returns(uint256 start) {
@@ -171,11 +147,16 @@ contract Items is ERC721 {
 
     function _isSpecial(uint256 id, uint256 seed) internal pure returns (bool special) {
         uint256 rdn = _getRndForSpecial(seed);
-        if (id > rdn && id <= rdn + 8) return true;
+        for (uint256 i = 0; i < 9; i++) {
+            if (id == rdn + (1250 * i)) {
+                special = true;
+                break;
+            }
+        }
     }
 
     function _getSpecialCategory(uint256 id, uint256 seed) internal pure returns (uint256 spc) {
-        uint256 num = id - _getRndForSpecial(seed);
+        uint256 num = (id / 1250) + 1;
         spc = num + 5 + (num - 1);
     }
 
@@ -186,32 +167,15 @@ contract Items is ERC721 {
         return 2;
     }
 
-    function _getRndForSpecial(uint256 seed) internal pure returns (uint256 rdn) {
-        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 9_992 + 1;
-    }
-
-    function requestEntropy() external {
-        require(msg.sender == _owner(), "not auth");
-        require(entropySeed == 0,       "already requested");
-
-        VRFCoordinatorV2Interface(VRFcoord).requestRandomWords(keyhash, subId, 3, 200000, 1);
-    }
-
-    function rawFulfillRandomWords(uint256 , uint256[] memory randomWords) external {
-        require(msg.sender == VRFcoord, "not allowed");
-        require(entropySeed == 0);
-        entropySeed = randomWords[0];
-   }
-
-    function setAuth(address add_, bool auth_) external {
-        require(_owner() == msg.sender, "not authorized");
-        auth[add_] = auth_;
+    function _getRndForSpecial(uint256 seed) internal pure virtual returns (uint256 rdn) {
+        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 1250 + 1;
     }
 
 }
 
 interface RendererLike {
     function getUri(uint256 id, uint256[6] calldata traits, uint256 cat) external view returns (string memory meta);
+    function getPlaceholder(uint256 cat) external pure returns (string memory meta);
 }
 
 interface StatsLike {

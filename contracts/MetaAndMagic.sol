@@ -3,6 +3,8 @@ pragma solidity 0.8.7;
 
 contract MetaAndMagic {
 
+    uint256 constant public precision = 1e12;
+
     address heroesAddress;
     address itemsAddress;
 
@@ -21,6 +23,10 @@ contract MetaAndMagic {
     uint64  subId;
     bytes32 keyhash;
 
+     /*///////////////////////////////////////////////////////////////
+                            DATA STRUCTURES
+    //////////////////////////////////////////////////////////////*/
+
     struct Heroes { address owner; uint16 lastBoss; uint32 highestScore;}
 
     struct Fight  { uint16 heroId; uint16 boss; bytes10 items; uint32 start; uint32 count; bool claimedScore; bool claimedBoss; }
@@ -31,8 +37,16 @@ contract MetaAndMagic {
 
     enum Stat { HP, PHY_DMG, MGK_DMG, MGK_RES, MGK_PEN, PHY_RES, PHY_PEN, ELM }
 
-    uint256 constant public precision = 1e12;
+    event FightResult(address sender, uint256 hero, uint256 boss, bytes10 items, uint256 score, bytes32 id);
 
+
+    /*///////////////////////////////////////////////////////////////
+                            ADMIN FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+        @dev Initialize contract 
+    */
     function initialize(address heroes_, address items_) external {
         require(msg.sender == _owner());
 
@@ -40,6 +54,9 @@ contract MetaAndMagic {
         itemsAddress  = items_;
     }
 
+    /**
+        @dev Initialize oracle information 
+    */
     function setUpOracle(address vrf_, bytes32 keyHash, uint64 subscriptionId) external {
         require(msg.sender == _owner());
 
@@ -48,6 +65,9 @@ contract MetaAndMagic {
         subId    = subscriptionId;
     }
 
+    /**
+        @dev Add next week boss and move it 
+    */
     function addBoss(address prizeToken, uint256 halfPrize, uint256 hp_, uint256 atk_, uint256 mgk_, uint256 mod_, uint256 element_) external {
         require(msg.sender == _owner(), "not allowed");
         uint256 boss = ++currentBoss;
@@ -58,6 +78,13 @@ contract MetaAndMagic {
         bosses[boss] = Boss({stats: bytes8(abi.encodePacked(uint16(hp_),uint16(atk_),uint16(mgk_), uint8(element_), uint8(mod_))), topScorers:0, highestScore: 0, entries:0, winIndex:0});
     }
 
+    /*///////////////////////////////////////////////////////////////
+                            STAKING FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+        @dev Stake and or unstake a list of heroes
+    */
     function manageHero(uint256[] calldata toStake, uint256[] calldata toUnstake) external {
         uint256 len = toStake.length;
         for (uint256 i = 0; i < len; i++) {
@@ -70,12 +97,18 @@ contract MetaAndMagic {
         }
     }
 
+    /**
+        @dev Stake a single hero 
+    */
     function stake(uint256 heroId) public {
         require(currentBoss != 0, "not started");
         _pull(heroesAddress, heroId);
         heroes[heroId] = Heroes(msg.sender, 0, 0);
     }
 
+    /**
+        @dev Unstake a single hero 
+    */
     function unstake(uint256 heroId) public {
         Heroes memory hero = heroes[heroId];
 
@@ -87,6 +120,13 @@ contract MetaAndMagic {
         delete heroes[heroId];
     }
 
+    /*///////////////////////////////////////////////////////////////
+                            FIGHT FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+        @dev Fight this week's boss
+    */
     function fight(uint256 heroId, bytes10 items) public returns(bytes32 fightId) {
         Heroes memory hero = heroes[heroId];
         require(msg.sender == hero.owner, "not owner");
@@ -130,11 +170,15 @@ contract MetaAndMagic {
         }
 
         bosses[currBoss] = boss;
-        heroes[heroId]  = hero;
-        fights[fightId] = fh;
+        heroes[heroId]   = hero;
+        fights[fightId]  = fh;
+
+        emit FightResult(msg.sender, heroId, currBoss, items, score, fightId);
     }
 
-
+    /**
+        @dev Get the boss drop item from this week 
+    */
     function getBossDrop(uint256 heroId_, uint boss_, bytes10 items_) external returns (uint256 bossItemId){
         bytes32 fightId = getFightId(heroId_, boss_, items_, msg.sender);
 
@@ -159,6 +203,9 @@ contract MetaAndMagic {
         bossItemId = MetaAndMagicLike(fh.boss == 10 ? heroesAddress : itemsAddress).mintDrop(boss_, msg.sender);
     }
 
+    /**
+        @dev Get the prize for having the highest score
+    */
     function getPrize(uint256 heroId_, uint256 boss_, bytes10 items_) external {
         bytes32 fightId = getFightId(heroId_, boss_, items_, msg.sender);
         
@@ -178,6 +225,9 @@ contract MetaAndMagic {
         require(IERC20(prizeTokens[fh.boss]).transfer(msg.sender, prizeValues[fh.boss] / boss.topScorers));
     }
 
+    /**
+        @dev Get the raffle prize
+    */
     function getRafflePrize(uint256 heroId_, uint256 boss_, bytes10 items_) external {
         bytes32 fightId = getFightId(heroId_, boss_, items_, msg.sender);
         
@@ -194,6 +244,9 @@ contract MetaAndMagic {
         require(IERC20(prizeTokens[fh.boss]).transfer(msg.sender, prizeValues[fh.boss]));
     }
 
+    /**
+        @dev Request chainlink oracle for the week's raffle
+    */
     function requestRaffleResult(uint256 boss_) external {
         require(boss_ < currentBoss,  "not finished");
         require(requests[boss_] == 0 || msg.sender == _owner(), "already requested");
@@ -202,6 +255,9 @@ contract MetaAndMagic {
         requests[boss_] = reqId;
     }
 
+    /**
+        @dev Chainlink specific function to fulfill the randomness request 
+    */
     function rawFulfillRandomWords(uint256 requestId, uint256[] memory randomWords) external {
         require(msg.sender == VRFcoord, "not allowed");
         for (uint256 index = currentBoss; index > 0; index--) {
@@ -213,11 +269,23 @@ contract MetaAndMagic {
         }
    }
 
+    /*///////////////////////////////////////////////////////////////
+                            VIEW FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
     function getScore(bytes32 fightId, address player) external view returns(uint256 score) {
         Fight memory fh   = fights[fightId];
         require(fh.boss != 0);
         score = _calculateScore(fh.boss, bosses[fh.boss].stats, fh.heroId, fh.items,player);
     }
+
+    function getFightId(uint256 hero_, uint256 boss_, bytes10 items_, address owner_) public pure returns (bytes32 id) {
+        id = keccak256(abi.encode(hero_, boss_, items_, owner_));
+    }
+
+    /*///////////////////////////////////////////////////////////////
+                            INTERNAL FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
 
     function _calculateScore(uint256 boss, bytes8 bossStats, uint256 heroId, bytes10 packedItems, address fighter) internal view virtual returns (uint256) {
         bytes10[6] memory stats = MetaAndMagicLike(heroesAddress).getStats(heroId);
@@ -325,10 +393,6 @@ contract MetaAndMagic {
         ret = val * ((oppPen == 0) && (res == 1) ? 0.5e12: precision) / precision;
     }
 
-    function getFightId(uint256 hero_, uint256 boss_, bytes10 items_, address owner_) public pure returns (bytes32 id) {
-        id = keccak256(abi.encode(hero_, boss_, items_, owner_));
-    }
-    
     function _getPackedItems(uint16[5] memory items) internal pure returns(bytes10 packed) {
         packed = bytes10(abi.encodePacked(items[0], items[1], items[2], items[3], items[4]));
     }

@@ -68,11 +68,11 @@ contract HeroesDeck {
     function pet(uint256 id) public pure returns (string memory str) {
         string memory name;
         if (id == 0) name = "None";
-        if (id == 1) name =  "Fairy";
-        if (id == 2) name =  "Kitsune";
-        if (id == 3) name =  "Unicorn";
-        if (id == 4) name =  "Sphinx";
-        if (id == 5) name =  "Dragon";
+        if (id == 1) name = "Fairy";
+        if (id == 2) name = "Kitsune";
+        if (id == 3) name = "Unicorn";
+        if (id == 4) name = "Sphinx";
+        if (id == 5) name = "Dragon";
 
         str = string(abi.encodePacked('{"trait_type": "Pet", "value":"', name ,'"}'));
     }
@@ -175,18 +175,18 @@ contract ItemsDeck {
         uint256 class = tokenId % 4;
 
         if (class < 2) {
-            if (id == 1)return "Wood";
-            if (id == 2)return "Iron";
-            if (id == 3)return "Bronze";
-            if (id == 4)return "Silver";
-            if (id == 5)return "Gold";
-            if (id == 6)return "Mythril";
+            if (id == 1) name = "Wood";
+            if (id == 2) name = "Iron";
+            if (id == 3) name = "Bronze";
+            if (id == 4) name = "Silver";
+            if (id == 5) name = "Gold";
+            if (id == 6) name = "Mythril";
 
             trait = "Material";
         }
 
         if (class == 2) {
-            if (id == 1) name = "Kinectic";
+            if (id == 1) name = "Kinetic";
             if (id == 2) name = "Potential";
             if (id == 3) name = "Electrical";
             if (id == 4) name = "Nuclear";
@@ -245,7 +245,7 @@ contract ItemsDeck {
             if (id == 1) name = "Water";
             if (id == 2) name = "Fire";
             if (id == 3) name = "Air";
-            if (id == 4) name = "Lightining";
+            if (id == 4) name = "Lightning";
             if (id == 5) name = "Earth";
 
             trait = "Element";

@@ -5,11 +5,11 @@ contract MetaAndMagicSale {
 
     uint256 constant PS_MAX  = 1;
 
-    uint8   stage; // 0 -> init, 1 -> item wl sale, 2 -> items hero sale, 3 -> items public sale, 4 -> hero wl, 5 -> hero ps, 6 -> finalized
-    bytes32 root;
+    uint8   public stage; // 0 -> init, 1 -> item wl sale, 2 -> items hero sale, 3 -> hero wl, 4 -> hero ps ,5 -> items public sale 
+    bytes32 public root;
 
-    Sale heroes;
-    Sale items;
+    Sale public heroes;
+    Sale public items;
 
     struct Sale { address token; uint32  left; uint32  priceWl; uint32  pricePS; }
 
@@ -23,11 +23,11 @@ contract MetaAndMagicSale {
     // ADMIN FUNCTION
     function moveStage() external {
         require(msg.sender == _owner(), "not allowed");
-
         stage++;
     }
 
     function setRoot(bytes32 root_) external {
+        require(msg.sender == _owner(), "not allowed");
         root = root_;
     }
 
@@ -38,36 +38,47 @@ contract MetaAndMagicSale {
         require(succ, "failed");
     }
 
+    function ownerMint(address token, address destination, uint256 quantity) external {
+        require(msg.sender == _owner(), "not allowed");
+
+        if (token == heroes.token) {
+            heroes.left--;
+        } else if (token == items.token) {
+            items.left--;
+        }
+        IERC721MM(token).mint(destination, quantity, 2);
+    }
+
     function mint() external payable returns(uint256 id) {
         uint256 cacheStage = stage; 
 
-        require(cacheStage == 3 ||cacheStage == 5, "not on public sale");
+        require(cacheStage == 4 ||cacheStage == 5, "not on public sale");
 
-        Sale memory sale = cacheStage == 3 ? items : heroes;
+        Sale memory sale = cacheStage == 5 ? items : heroes;
         
         // Make sure use sent enough money
         require(uint256(sale.pricePS) * 1e16 == msg.value, "not enough sent");
 
         // Make sure that user is only minting the allowed amount
-        uint256 minted  = IERC721MM(sale.token).minted(msg.sender);
+        uint256 minted  = IERC721MM(sale.token).publicMinted(msg.sender);
         require(minted < PS_MAX, "already minted");
 
         // Effects
         sale.left--;   
 
-        if (cacheStage == 3) {
+        if (cacheStage == 5) {
             items  = sale;
         } else {
             heroes = sale;
         }
 
         // Interactions
-        id = IERC721MM(sale.token).mint(msg.sender, 1);
+        id = IERC721MM(sale.token).mint(msg.sender, 1, 2);
     }
 
     function mint(uint256 allowedAmount, uint8 stage_, uint256 amount,  bytes32[] calldata proof_) external payable returns(uint256 id){
         uint256 cacheStage = stage; 
-        Sale memory sale   = cacheStage < 4 ? items : heroes;
+        Sale memory sale   = cacheStage < 3 ? items : heroes;
 
         // Make sure use sent enough money 
         require(amount > 0, "zero amount");
@@ -77,7 +88,7 @@ contract MetaAndMagicSale {
         require(stage_ == cacheStage, "wrong stage");
 
         // Make sure that user is only minting the allowed amount
-        uint256 minted  = IERC721MM(sale.token).minted(msg.sender);
+        uint256 minted  = IERC721MM(sale.token).listMinted(msg.sender);
         require(minted + amount <= allowedAmount, "already minted");
 
         bytes32 leaf_ = keccak256(abi.encode(allowedAmount, stage_, msg.sender));
@@ -86,13 +97,13 @@ contract MetaAndMagicSale {
         // Effects
         sale.left -= uint32(amount);
 
-        if (cacheStage < 4) {
+        if (cacheStage < 3) {
             items = sale;
         } else {
             heroes = sale;
         }
 
-        id = IERC721MM(sale.token).mint(msg.sender, amount);
+        id = IERC721MM(sale.token).mint(msg.sender, amount, 1);
     }
 
     function _verify(bytes32[] memory proof_, bytes32 root_, bytes32 leaf_) internal pure returns (bool allowed) {
@@ -109,8 +120,9 @@ contract MetaAndMagicSale {
 }
 
 interface IERC721MM {
-    function mint(address to, uint256 amount) external returns (uint256 id);
-    function minted(address to) external returns (uint256 minted);
+    function mint(address to, uint256 amount, uint256 stage) external returns (uint256 id);
+    function listMinted(address to) external returns (uint256 minted);
+    function publicMinted(address to) external returns (uint256 minted);
 }
 
 

@@ -16,7 +16,7 @@ contract HeroesMock is Heroes {
     function mintFree(address to, uint256 amount) external virtual returns(uint256 id) {
         for (uint256 i = 0; i < amount; i++) {
             id = mockminted++;
-            _mint(to, id);     
+            _mint(to, id, 2);     
         }
     }
 
@@ -25,9 +25,12 @@ contract HeroesMock is Heroes {
     }
 
     function getSpecialSart() external view returns (uint256 rdn) {
-        rdn = uint256(keccak256(abi.encode(entropySeed, "SPECIAL"))) % 2_993 + 1;
+        rdn = _getRndForSpecial(entropySeed);
     }
 
+    function _getRndForSpecial(uint256 seed) internal pure override returns (uint256 rdn) {
+        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 10 + 1;
+    }
 
 }
 
@@ -43,21 +46,21 @@ contract ItemsMock is Items {
     function mintFree(address to, uint256 amount) external virtual returns(uint256 id) {
         for (uint256 i = 0; i < amount; i++) {
             id = mockminted++;
-            _mint(to, id);     
+            _mint(to, id, 2);     
         }
     }
 
     function mintId(address to, uint256 id_) external virtual returns(uint256 id) {
-        _mint(to, id_);    
+        _mint(to, id_, 2);    
         id = id_; 
     }
 
     function mintFive(address to, uint16 fst, uint16 sc,uint16 thr,uint16 frt,uint16 fifth)  external returns(uint16[5] memory list) {
-        _mint(to, fst);
-        _mint(to, sc);
-        _mint(to, thr);
-        _mint(to, frt);
-        _mint(to, fifth);
+        _mint(to, fst, 2);
+        _mint(to, sc, 2);
+        _mint(to, thr, 2);
+        _mint(to, frt, 2);
+        _mint(to, fifth, 2);
 
         list = [fst,sc,thr,frt, fifth];
     }
@@ -66,9 +69,12 @@ contract ItemsMock is Items {
         entropySeed = seed;
     }
 
-
     function getSpecialSart() external view returns (uint256 rdn) {
-        rdn = uint256(keccak256(abi.encode(entropySeed, "SPECIAL"))) % 9_992 + 1;
+        rdn = _getRndForSpecial(entropySeed);
+    }
+
+    function _getRndForSpecial(uint256 seed) internal pure override returns (uint256 rdn) {
+        rdn = uint256(keccak256(abi.encode(seed, "SPECIAL"))) % 10 + 1;
     }
 }
 

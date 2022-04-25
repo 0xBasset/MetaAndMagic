@@ -5,15 +5,24 @@ pragma solidity 0.8.7;
 contract MetaAndMagicRenderer {
 
     mapping(uint256 => address) decks; // 
-    mapping(bytes4 => address) svgs; // svg to trait indicator to address that stores it
+    mapping(bytes4 => address)  svgs; // svg to trait indicator to address that stores it
 
-    string constant heroDesc = unicode"Meta & Magic Heroes is a collection of 3,000 genesis heroes that give players access to fight in a 100% on-chain NFT game. ⛓️ Can you defeat the bosses to win? 🏆 Season I 😈 Equip weapons 🗡️ Cast spells 🔥 ERC-721A standard 🍒";
-    string constant itemDesc = unicode"Meta & Magic Items is a collection of 10,000 relic items that aid the genesis heroes in the battles against the ten dark entities. ⛓   Can you defeat the bosses to win? 🏆 Season I 😈 Equip weapons 🗡️ Cast spells 🔥 ERC-721A standard 🍒";
+    // Todo
+    // string constant heroDesc = unicode"Meta & Magic Heroes is a collection of 3,000 genesis heroes that give players access to fight in a 100% on-chain NFT game. ⛓️ Can you defeat the bosses to win? 🏆 Season I 😈 Equip weapons 🗡️ Cast spells 🔥 ERC-721A standard 🍒";
+    // string constant itemDesc = unicode"Meta & Magic Items is a collection of 10,000 relic items that aid the genesis heroes in the battles against the ten dark entities. ⛓   Can you defeat the bosses to win? 🏆 Season I 😈 Equip weapons 🗡️ Cast spells 🔥 ERC-721A standard 🍒";
+   
+    string constant heroDesc = unicode"aaaa";
+    string constant itemDesc = unicode"bbbb";
+   
     string constant header = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="mm" width="100%" height="100%" version="1.1" viewBox="0 0 64 64">';
     string constant footer = '<style>#hero{shape-rendering: crispedges;image-rendering: -webkit-crisp-edges;image-rendering: -moz-crisp-edges;image-rendering: crisp-edges;image-rendering: pixelated;-ms-interpolation-mode: nearest-neighbor;}</style></svg>';
 
     function getUri(uint256 id, uint256[6] calldata traits, uint256 cat) external view returns (string memory meta) {
         meta = _getMetadata(id, traits, cat);
+    }
+
+    function getPlaceholder(uint256 cat) external pure returns (string memory meta){
+        meta = _getPlaceholderMetadata(cat);
     }
 
     function setSvg(bytes4 sig, address impl) external {
@@ -55,6 +64,23 @@ contract MetaAndMagicRenderer {
                 );
     }
 
+    function _getPlaceholderMetadata(uint256 cat) internal pure returns (string memory meta) {
+        meta = 
+            string(
+                abi.encodePacked(
+                    "data:application/json;base64,",
+                    Strings.encode(
+                        abi.encodePacked(
+                            '{"name":"', cat == 1 ? 'Unrevealed Hero' : 'Unrevealed Item',
+                            '","description":"',cat == 1 ? heroDesc : itemDesc,
+                            '","image": "', cat == 1 ?'https://bafybeiejxuylnujaxbarjogla2fi7qhougbvuzrdhy6r4zhwqj7onbyz2i.ipfs.infura-ipfs.io/' : 'https://bafybeiftizk7brkixhhxbj3ooz7qnh46hdqligeg64m76fhkf54clnvk6i.ipfs.infura-ipfs.io/',
+                            '","attributes":[]}')
+                        )
+                    )
+                );
+    }
+
+
 
     function _getName(uint256 id, uint256 cat) internal pure returns (string memory name) {
         string memory category;
@@ -66,7 +92,7 @@ contract MetaAndMagicRenderer {
             string memory className;
             if (class <= 1) className = class == 0 ? "Attack" : "Defense"; 
             if (class > 1)  className = class == 2 ? "Spell" : "Buff"; 
-            category = string(abi.encodePacked(className, ' Item #', Strings.toString(id)));
+            category = string(abi.encodePacked(className, ' #', Strings.toString(id)));
         }
 
 
@@ -77,7 +103,7 @@ contract MetaAndMagicRenderer {
     }
 
     function _getAttributes(uint256 id, uint256 cat, uint256[6] calldata traits) internal view returns (string memory atts) {
-        if (cat > 4) return string(abi.encodePacked('{"trait_type":"1-of-1","value":"',_getUniqueName(cat),'"}'));
+        if (cat > 4) return string(abi.encodePacked('{"trait_type":"One-of-One","value":"',_getUniqueName(cat),'"}'));
 
         string[6] memory names = IDecks(decks[cat % 2 == 0 ? 2 : 1]).getTraitsNames(id, traits);
 
@@ -87,17 +113,17 @@ contract MetaAndMagicRenderer {
     function _getUniqueName(uint256 cat) internal pure returns (string memory name) {
         if (cat == 5)  name = "Alexander the Great";
         if (cat == 6)  name = "Excalibur of King Arthur";
-        if (cat == 7)  name = "Hou Yi";
+        if (cat == 7)  name = "Brahma";
         if (cat == 8)  name = "Mjolnir of Thor";
-        if (cat == 9)  name = "Fujibayashi Nagato";
+        if (cat == 9)  name = "Mutant Ape";
         if (cat == 10) name = "Headband of Wukong";
-        if (cat == 11) name = "Rasputin";
-        if (cat == 12) name = "Achilleus Armor";
-        if (cat == 13) name = "Merlin";
+        if (cat == 11) name = "Fujibayashi Nagato";
+        if (cat == 12) name = "Achilles Armor";
+        if (cat == 13) name = "Hou Yi";
         if (cat == 14) name = "Avada Kedavra";
-        if (cat == 15) name = "Mutant Ape";
+        if (cat == 15) name = "Merlin";
         if (cat == 16) name = "Kamehameha";
-        if (cat == 17) name = "Brahma";
+        if (cat == 17) name = "Rasputin";
         if (cat == 18) name = "Urim and Thummim";
         if (cat == 20) name = "Philosopher's Stone";
     }
@@ -113,31 +139,6 @@ contract MetaAndMagicRenderer {
         bytes4 sig = bytes4(keccak256(abi.encodePacked(string((abi.encodePacked("one", Strings.toString(cat), '()'))))));
         svg = wrapSingleTag(call(svgs[sig], sig));
     }
-
-    // function helper(uint256 id, uint256 cat, uint256[6] memory traits) public {
-    //     bytes4[6] memory layers = [bytes4(0),bytes4(0),bytes4(0),bytes4(0),bytes4(0), bytes4(0)];
-
-    //     for (uint256 i = 0; i < 6; i++) {
-    //         // Hero
-    //         if (cat == 1 || cat == 3) {
-    //             layers[i] = bytes4(keccak256(abi.encodePacked((string(abi.encodePacked("hero", Strings.toString(i), Strings.toString(traits[i]),'()'))))));
-    //             if (i == 2) {
-    //                 // overriding rank trait
-    //                 layers[i] = bytes4(keccak256(abi.encodePacked(string((abi.encodePacked("hero", Strings.toString(i), Strings.toString(traits[i - 1]), Strings.toString(traits[i]),'()'))))));
-    //             }
-    //         }
-    //         if (cat == 2 || cat == 4) {
-    //             emit log(string((abi.encodePacked("item", Strings.toString(cat == 2 ? id % 4 : 4), Strings.toString(i), Strings.toString(traits[i]),'()'))));
-    //             layers[i] = bytes4(keccak256(abi.encodePacked(string((abi.encodePacked("item", Strings.toString(cat == 2 ? id % 4 : 4), Strings.toString(i), Strings.toString(traits[i]),'()'))))));
-    //         }
-    //     }
-
-    //     emit log_bytes(layers[4]);
-
-    // }
-
-    // event log(string val);
-    // event log_bytes(bytes32 val);
 
     function _getLayeredSvg(uint256 id, uint256 cat, uint256[6] memory traits) internal view returns (string memory svg) {
         bytes4[6] memory layers = [bytes4(0),bytes4(0),bytes4(0),bytes4(0),bytes4(0), bytes4(0)];
