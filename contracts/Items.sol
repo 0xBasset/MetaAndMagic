@@ -98,8 +98,7 @@ contract Items is ERC721MM {
         uint256 boss = _getBossForId(id_);
         if (boss > 0) {
             traits[1] = 10 + boss;
-            traits[4] = 0; // Quality is overriden
-        } 
+            traits[2] = 0; // Boss traits doesnt have material type
     }
 
     function _getSpecialTraits(uint256 seed_, uint256 id_) internal pure returns (uint256[6] memory t) {
