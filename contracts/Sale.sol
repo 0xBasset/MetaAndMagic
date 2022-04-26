@@ -11,13 +11,13 @@ contract MetaAndMagicSale {
     Sale public heroes;
     Sale public items;
 
-    struct Sale { address token; uint32  left; uint32  priceWl; uint32  pricePS; }
+    struct Sale { address token; uint16  left; uint16 amtPs; uint32  priceWl; uint32  pricePS; }
 
     function initialize(address heroes_, address items_) external {
         require(msg.sender == _owner(), "not allowed");
 
-        heroes = Sale(heroes_, 3_000,  25, 38);
-        items  = Sale(items_,  10_000, 10, 15);
+        heroes = Sale(heroes_, 3_000,  1, 25, 38);
+        items  = Sale(items_,  10_000, 2, 10, 15);
     }
 
     // ADMIN FUNCTION
@@ -61,7 +61,7 @@ contract MetaAndMagicSale {
 
         // Make sure that user is only minting the allowed amount
         uint256 minted  = IERC721MM(sale.token).publicMinted(msg.sender);
-        require(minted < PS_MAX, "already minted");
+        require(minted < sale.amtPs, "already minted");
 
         // Effects
         sale.left--;   
@@ -95,7 +95,7 @@ contract MetaAndMagicSale {
         require(_verify(proof_, root, leaf_), "not on list");
 
         // Effects
-        sale.left -= uint32(amount);
+        sale.left -= uint16(amount);
 
         if (cacheStage < 3) {
             items = sale;

@@ -58,8 +58,10 @@ async function main() {
 
   let contracts = deployedContracts[hre.network.name]
 
-  await updateProxy("Items", contracts["Items"]);
-
+  renderer = await hre.ethers.getContractAt("MetaAndMagicRenderer", "0xfEb68fEE8c7F4c5f166df09925b88F0d7DF0Cc49"); 
+  
+  renderer.setDeck(1, contracts["HeroesDeck"]);
+  renderer.setDeck(2, contracts["ItemsDeck"]);
 
 }
 

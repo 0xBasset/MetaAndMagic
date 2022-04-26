@@ -32,9 +32,9 @@ async function main() {
   const inventoryContracts = ["HeroRankAssassin","HeroRankMonk","HeroRankMage","HeroRankZombie","HeroRankGod", "HeroRankOracle","HeroLevel","HeroClass","HeroRankWarrior","HeroRankMarksman","HeroRarity","HeroPet", "HeroItem","HeroOne","ItemAttackLevel", "ItemAttackKind","ItemAttackMaterial","ItemAttackRarity","ItemAttackQuality","ItemAttackElement","ItemDefenseLevel","ItemDefenseType","ItemDefenseMaterial","ItemDefenseRarity","ItemDefenseQuality","ItemDefenseElement","ItemSpellLevel","ItemSpellType", "ItemSpellEnergy","ItemSpellRarity","ItemSpellQuality","ItemSpellElement","ItemBuffLevel","ItemBuffType","ItemBuffVintage","ItemBuffRarity","ItemBuffQuality","ItemBuffPotency","BossDropLevel","BossDropType","BossDropRarity","BossDropQuality","BossDropElement","ItemOne"]
   renderer = await deployProxied("MetaAndMagicRenderer");
 
-    let n = 599;
+    // let n = 599;
 
-    // renderer = await hre.ethers.getContractAt("MetaAndMagicRenderer", "0x9E899A10bF2ab5927cAFCed5d1a06f634c31CbB4"); 
+    // renderer = await hre.ethers.getContractAt("MetaAndMagicRenderer", "0xfEb68fEE8c7F4c5f166df09925b88F0d7DF0Cc49"); 
 
     for (let i = 0; i < inventoryContracts.length; i++) {
         // deploying dummy items
