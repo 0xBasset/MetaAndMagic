@@ -68,12 +68,12 @@ contract HeroesDeck {
 
     function pet(uint256 id) public pure returns (string memory str) {
         string memory name;
-        if (id == 0) name = "None";
-        if (id == 1) name = "Fairy";
-        if (id == 2) name = "Kitsune";
-        if (id == 3) name = "Unicorn";
-        if (id == 4) name = "Sphinx";
-        if (id == 5) name = "Dragon";
+        if (id == 1) name = "None";
+        if (id == 2) name = "Fairy";
+        if (id == 3) name = "Kitsune";
+        if (id == 4) name = "Unicorn";
+        if (id == 5) name = "Sphinx";
+        if (id == 6) name = "Dragon";
 
         str = string(abi.encodePacked('{"trait_type": "Pet", "value":"', name ,'"}'));
     }
@@ -120,8 +120,9 @@ contract ItemsDeck {
     function getBossTraitsNames(uint256 id, uint256[6] calldata atts) internal pure returns(string[6] memory names) {
         names[0] = level(atts[0]);
         names[1] = kind(id, atts[1]);
-        names[2] = rarity(atts[3]);
-        names[3] = quality(atts[4]);
+        names[2] = rarity(atts[2]);
+        names[3] = quality(atts[3]);
+        names[4] = "{}";
         names[5] = element(id, atts[5]);
     }
     
@@ -144,7 +145,7 @@ contract ItemsDeck {
         if (tokenId > 10000) { 
             if (id == 11) name = "Dogemon's Tail";
             if (id == 12) name = "Lunar Rings";
-            if (id == 13) name = "Lunar Rings";
+            if (id == 13) name = "Etherhead";
             if (id == 14) name = "Axie Wings";
             if (id == 15) name = "Circulonimbus";
             if (id == 16) name = "Vitalik's Horn";
@@ -197,10 +198,6 @@ contract ItemsDeck {
         string memory trait;
 
         uint256 class = tokenId % 4;
-
-        if (tokenId > 10000){
-            if (id == 0) return "";
-        }
 
         if (class < 2) {
             if (id == 1) name = "Wood";
@@ -269,17 +266,17 @@ contract ItemsDeck {
         uint256 class = tokenId % 4;
         
         if (tokenId > 10000 || class < 3) {
-            if (id == 0) name = "None";
-            if (id == 1) name = "Water";
-            if (id == 2) name = "Fire";
-            if (id == 3) name = "Air";
-            if (id == 4) name = "Lightning";
-            if (id == 5) name = "Earth";
+            if (id == 1) name = "None";
+            if (id == 2) name = "Water";
+            if (id == 3) name = "Fire";
+            if (id == 4) name = "Air";
+            if (id == 5) name = "Lightning";
+            if (id == 6) name = "Earth";
 
             trait = "Element";
         }
 
-        if (class == 3) {
+        if (tokenId < 10000 && class == 3) {
             if (id == 1) name = "None";
             if (id == 2) name = "Weak";
             if (id == 3) name = "Mild";
