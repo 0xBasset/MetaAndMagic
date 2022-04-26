@@ -120,15 +120,15 @@ contract Items is ERC721MM {
     }
 
     function _bossDropStart(uint256 boss) internal pure returns(uint256 start) {
-        if (boss == 1) start = 10001;
-        if (boss == 2) start = 11001;
-        if (boss == 3) start = 11901;
-        if (boss == 4) start = 12701;
-        if (boss == 5) start = 13401;
-        if (boss == 6) start = 14001;
-        if (boss == 7) start = 14501;
-        if (boss == 8) start = 14901;
-        if (boss == 9) start = 15201;
+        if (boss == 1) start = 10000;
+        if (boss == 2) start = 11000;
+        if (boss == 3) start = 11900;
+        if (boss == 4) start = 12700;
+        if (boss == 5) start = 13400;
+        if (boss == 6) start = 14000;
+        if (boss == 7) start = 14500;
+        if (boss == 8) start = 14900;
+        if (boss == 9) start = 15200;
     } 
 
 
