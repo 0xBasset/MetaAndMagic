@@ -42,14 +42,14 @@ contract MetaAndMagicSale {
         require(msg.sender == _owner(), "not allowed");
 
         if (token == heroes.token) {
-            heroes.left--;
+            heroes.left -= uint16(quantity);
         } else if (token == items.token) {
-            items.left--;
+            items.left -= uint16(quantity);
         }
         IERC721MM(token).mint(destination, quantity, 2);
     }
 
-    function mint() external payable returns(uint256 id) {
+    function mint(uint256 amt) external payable returns(uint256 id) {
         uint256 cacheStage = stage; 
 
         require(cacheStage == 4 ||cacheStage == 5, "not on public sale");
@@ -57,14 +57,14 @@ contract MetaAndMagicSale {
         Sale memory sale = cacheStage == 5 ? items : heroes;
         
         // Make sure use sent enough money
-        require(uint256(sale.pricePS) * 1e16 == msg.value, "not enough sent");
+        require(uint256(sale.pricePS) * amt * 1e16 == msg.value, "not enough sent");
 
         // Make sure that user is only minting the allowed amount
         uint256 minted  = IERC721MM(sale.token).publicMinted(msg.sender);
-        require(minted < sale.amtPs, "already minted");
+        require(minted + amt <= sale.amtPs, "already minted");
 
         // Effects
-        sale.left--;   
+        sale.left -= uint16(amt);   
 
         if (cacheStage == 5) {
             items  = sale;
@@ -73,7 +73,7 @@ contract MetaAndMagicSale {
         }
 
         // Interactions
-        id = IERC721MM(sale.token).mint(msg.sender, 1, 2);
+        id = IERC721MM(sale.token).mint(msg.sender, amt, 2);
     }
 
     function mint(uint256 allowedAmount, uint8 stage_, uint256 amount,  bytes32[] calldata proof_) external payable returns(uint256 id){

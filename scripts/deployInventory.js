@@ -29,12 +29,14 @@ async function deploy(contractName, nonce) {
 async function main() {
   await hre.run("compile");
 
-  const inventoryContracts = ["HeroRankAssassin","HeroRankMonk","HeroRankMage","HeroRankZombie","HeroRankGod", "HeroRankOracle","HeroLevel","HeroClass","HeroRankWarrior","HeroRankMarksman","HeroRarity","HeroPet", "HeroItem","HeroOne","ItemAttackLevel", "ItemAttackKind","ItemAttackMaterial","ItemAttackRarity","ItemAttackQuality","ItemAttackElement","ItemDefenseLevel","ItemDefenseType","ItemDefenseMaterial","ItemDefenseRarity","ItemDefenseQuality","ItemDefenseElement","ItemSpellLevel","ItemSpellType", "ItemSpellEnergy","ItemSpellRarity","ItemSpellQuality","ItemSpellElement","ItemBuffLevel","ItemBuffType","ItemBuffVintage","ItemBuffRarity","ItemBuffQuality","ItemBuffPotency","BossDropLevel","BossDropType","BossDropRarity","BossDropQuality","BossDropElement","ItemOne"]
-  renderer = await deployProxied("MetaAndMagicRenderer");
+  // const inventoryContracts = ["HeroRankAssassin","HeroRankMonk","HeroRankMage","HeroRankZombie","HeroRankGod", "HeroRankOracle","HeroLevel","HeroClass","HeroRankWarrior","HeroRankMarksman","HeroRarity","HeroPet", "HeroItem","HeroOne","ItemAttackLevel", "ItemAttackKind","ItemAttackMaterial","ItemAttackRarity","ItemAttackQuality","ItemAttackElement","ItemDefenseLevel","ItemDefenseType","ItemDefenseMaterial","ItemDefenseRarity","ItemDefenseQuality","ItemDefenseElement","ItemSpellLevel","ItemSpellType", "ItemSpellEnergy","ItemSpellRarity","ItemSpellQuality","ItemSpellElement","ItemBuffLevel","ItemBuffType","ItemBuffVintage","ItemBuffRarity","ItemBuffQuality","ItemBuffPotency","BossDropLevel","BossDropType","BossDropRarity","BossDropQuality","BossDropElement","ItemOne"]
+  // renderer = await deployProxied("MetaAndMagicRenderer");
 
-    // let n = 599;
+  const inventoryContracts = ["ItemDefenseType"]
 
-    // renderer = await hre.ethers.getContractAt("MetaAndMagicRenderer", "0xfEb68fEE8c7F4c5f166df09925b88F0d7DF0Cc49"); 
+    let n = 946;
+
+    renderer = await hre.ethers.getContractAt("MetaAndMagicRenderer", "0xfEb68fEE8c7F4c5f166df09925b88F0d7DF0Cc49"); 
 
     for (let i = 0; i < inventoryContracts.length; i++) {
         // deploying dummy items
@@ -53,13 +55,13 @@ async function main() {
         n++
     }
 
-   let hDeck = await deploy("HeroesDeck", n);
-   n++
-   let iDeck = await deploy("ItemsDeck", n)
-   n++
-   renderer.setDeck(1, hDeck.address, {nonce:n});
-   n++
-   renderer.setDeck(2, iDeck.address, {nonce:n});
+  //  let hDeck = await deploy("HeroesDeck", n);
+  //  n++
+  //  let iDeck = await deploy("ItemsDeck", n)
+  //  n++
+  //  renderer.setDeck(1, hDeck.address, {nonce:n});
+  //  n++
+  //  renderer.setDeck(2, iDeck.address, {nonce:n});
 }
 
 // We recommend this pattern to be able to use async/await everywhere
