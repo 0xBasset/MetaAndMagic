@@ -5,11 +5,8 @@ import { ERC721MM } from "./ERC721MM.sol";
 
 contract Items is ERC721MM {
 
-    // TODO
-    string constant public name   = "SKADAKLALSDK";
-    string constant public symbol = "ASD";
-    // string constant public name   = "Meta&Magic-Items";
-    // string constant public symbol = "M&M-ITEMS";
+    string constant public name   = "Meta & Magic Items";
+    string constant public symbol = "ITEMS";
 
     mapping(uint256 => address) statsAddress;
     mapping(uint256 => uint256) bossSupplies;

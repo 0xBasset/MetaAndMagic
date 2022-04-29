@@ -5,11 +5,8 @@ import { ERC721MM } from "./ERC721MM.sol";
 
 contract Heroes is ERC721MM {
 
-    // TODO
-    string constant public name   = "ASDERER";
-    string constant public symbol = "GSD";
-    // string constant public name   = "Meta&Magic-Heroes";
-    // string constant public symbol = "M&M-HEROES";
+    string constant public name   = "Meta & Magic Heroes";
+    string constant public symbol = "HEROES";
 
     mapping(uint256 => uint256) bossSupplies;
 

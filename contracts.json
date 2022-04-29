@@ -72,7 +72,21 @@
         "vrfCoord": "0x271682DEB8C4E0901D1a1550aD2e64D568E69909",
         "linkToken": "0x514910771af9ca656af840dff83e8264ecf986ca",
         "keyHash": "0x8af398995b04c28e9951adb9721ef74c74f93e6a478f39e7e0777be13527e7ef",
-        "subId": 1,
-        "MetaAndMagicRenderer": "0xa2Fd4dEd120690890557EC9cf01af827EBd72F7d"
+        "subId": 87,
+        "HeroStats": "0x86558Bee55278143Af718193F3152D7ADeA90a5F",
+        "AttackItemsStats": "0x4840BEB883fA9dB66d14de55d1De7cF8102AbED3",
+        "DefenseItemsStats": "0x52AF222389D3F0552e6c549E6ACe440D1C06f892",
+        "SpellItemsStats": "0xfbDa3AD3F3Ae8e1ee69e55B894FAeE3eC6Cfa997",
+        "BuffItemsStats": "0xb47b703148982C151e46Ba5e7B08c196Dcd3bc23",
+        "BossDropsStats": "0x572cf517FC9cEd03Dd91D7B90E8Cb54e3DabF72e",
+        "MetaAndMagicLens": "0xFe8B6bb675b5529EBedD5301E8E2BdAb53961E4A",
+        "Heroes": "0xEB47df3383D077D36f307B7f0B1d0357c43B839e",
+        "Items": "0x5dCAFCA3683Cd240B5f26Bf8433Ae1EaF5AE54FC",
+        "MetaAndMagicRenderer": "0xa2Fd4dEd120690890557EC9cf01af827EBd72F7d",
+        "MetaAndMagic": "0xBCac6442A8545f7bfF556835Aa9f9e64a59780b7",
+        "MetaAndMagicSale": "0x30e69Da9Bc8b1F43BCB2604152CCBe65fefA680F"
     }
 }
+
+
+
