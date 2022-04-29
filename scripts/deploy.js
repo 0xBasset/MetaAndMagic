@@ -31,19 +31,24 @@ async function deploy(contractName, nonce) {
 async function main() {
   await hre.run("compile");
 
+  nonce = 1017;
   // Deploy Stats address
-  let statsHero  = await deploy("HeroStats");
-  let statsAtk   = await deploy("AttackItemsStats");
-  let statsDef   = await deploy("DefenseItemsStats");
-  let statsSpell = await deploy("SpellItemsStats");
+  let statsHero  = await deploy("HeroStats",nonce);
+  nonce++
+  let statsAtk   = await deploy("AttackItemsStats", nonce);
+  nonce++
+  let statsDef   = await deploy("DefenseItemsStats", nonce);
+    nonce++
+  let statsSpell = await deploy("SpellItemsStats", nonce);
+    nonce++
   let statsBuff  = await deploy("BuffItemsStats", nonce);
+    nonce++
   let statsBoss  = await deploy("BossDropsStats", nonce);
+  nonce++
 
   let contracts = deployedContracts[hre.network.name]
-
-  nonce = 111;
   
-  let metaRenderer = "0xfEb68fEE8c7F4c5f166df09925b88F0d7DF0Cc49";
+  let metaRenderer = contracts["MetaAndMagicRenderer"];
   
   let lens   = await deployProxied("MetaAndMagicLens", nonce);
   nonce += 2

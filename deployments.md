@@ -360,6 +360,46 @@ Done meta
 Done heroes
 Done items
 
+Rinkeby deployment
+
+Deploying HeroStats
+0x693ed398119C3101AAa02fF593b4AB2CdfafC860
+Deploying AttackItemsStats
+0xb108872D5DB72C2F882B51A445B07aeaa859B3c5
+Deploying DefenseItemsStats
+0xC25c9a7B80345728a240f776De0007be6f45a3E9
+Deploying SpellItemsStats
+0x320a48190679a70A05edd5bedB0A808d01A1Ef61
+Deploying BuffItemsStats
+0x03Cb11875d3bdE62405bf29Ea4565512AA0db37f
+Deploying BossDropsStats
+0x2Ffa5cabae029A7f7Caa795e65a418e2B2Eca099
+Deploying MetaAndMagicLens
+0x977c1d590cc50D099a83C394C0E1724967B031C6
+Deploying Proxy
+0x8Ba37344694AAaB0f168A031a4F67ea789A6Fe31
+Deploying Heroes
+0x828c0bBdC3b26f61E6e2060848a6699Ce0EDCA89
+Deploying Proxy
+0xaA5FA092d7fb9b5065C6cC6E28800C1eCF934AbD
+Deploying Items
+0x7E4c23F56cd9C2e275d2E3fE4fACBb999c730247
+Deploying Proxy
+0xf6a7F6359AEcab1404E0c306BDB7290F10612CF5
+Deploying MetaAndMagic
+0x8685695cf32d4Bb6705590a3b0c91a44F6e953DF
+Deploying Proxy
+0xE084702f3409320007f60cB0274eA58365Fda0f1
+Deploying MetaAndMagicSale
+0x1320c0c8621e671Bd6e990Be547721c7E85b0bf9
+Deploying Proxy
+0x2905631f35123F950BE7674F74C46ACca9efb041
+Setting up
+Done meta
+Done heroes
+Done items
+
+
 
 Mainnet Inventory 
 
