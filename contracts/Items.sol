@@ -115,7 +115,7 @@ contract Items is ERC721MM {
         
         uint256 rdn = uint256(keccak256(abi.encode(id_, seed, salt))) % 100_0000 + 1; 
 
-        if (rdn <= 75_0000) return 1;
+        if (rdn <= 50_0000) return 1;
         return (rdn % 5) + 2;
     }
 

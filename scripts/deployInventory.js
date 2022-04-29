@@ -29,14 +29,11 @@ async function deploy(contractName, nonce) {
 async function main() {
   await hre.run("compile");
 
-  // const inventoryContracts = ["HeroRankAssassin","HeroRankMonk","HeroRankMage","HeroRankZombie","HeroRankGod", "HeroRankOracle","HeroLevel","HeroClass","HeroRankWarrior","HeroRankMarksman","HeroRarity","HeroPet", "HeroItem","HeroOne","ItemAttackLevel", "ItemAttackKind","ItemAttackMaterial","ItemAttackRarity","ItemAttackQuality","ItemAttackElement","ItemDefenseLevel","ItemDefenseType","ItemDefenseMaterial","ItemDefenseRarity","ItemDefenseQuality","ItemDefenseElement","ItemSpellLevel","ItemSpellType", "ItemSpellEnergy","ItemSpellRarity","ItemSpellQuality","ItemSpellElement","ItemBuffLevel","ItemBuffType","ItemBuffVintage","ItemBuffRarity","ItemBuffQuality","ItemBuffPotency","BossDropLevel","BossDropType","BossDropRarity","BossDropQuality","BossDropElement","ItemOne"]
-  // renderer = await deployProxied("MetaAndMagicRenderer");
+  const inventoryContracts = ["HeroRankAssassin","HeroRankMonk","HeroRankMage","HeroRankZombie","HeroRankGod", "HeroRankOracle","HeroLevel","HeroClass","HeroRankWarrior","HeroRankMarksman","HeroRarity","HeroPet", "HeroItem","HeroOne","ItemAttackLevel", "ItemAttackKind","ItemAttackMaterial","ItemAttackRarity","ItemAttackQuality","ItemAttackElement","ItemDefenseLevel","ItemDefenseType","ItemDefenseMaterial","ItemDefenseRarity","ItemDefenseQuality","ItemDefenseElement","ItemSpellLevel","ItemSpellType", "ItemSpellEnergy","ItemSpellRarity","ItemSpellQuality","ItemSpellElement","ItemBuffLevel","ItemBuffType","ItemBuffVintage","ItemBuffRarity","ItemBuffQuality","ItemBuffPotency","BossDropLevel","BossDropType","BossDropRarity","BossDropQuality","BossDropElement","ItemOne"]
 
-  const inventoryContracts = ["ItemDefenseType"]
+    let n = 7;
 
-    let n = 946;
-
-    renderer = await hre.ethers.getContractAt("MetaAndMagicRenderer", "0xfEb68fEE8c7F4c5f166df09925b88F0d7DF0Cc49"); 
+    renderer = await hre.ethers.getContractAt("MetaAndMagicRenderer", "0xa2Fd4dEd120690890557EC9cf01af827EBd72F7d"); 
 
     for (let i = 0; i < inventoryContracts.length; i++) {
         // deploying dummy items
@@ -54,14 +51,13 @@ async function main() {
         renderer.setSvgs(sigs, inv.address, {nonce: n});
         n++
     }
-
-  //  let hDeck = await deploy("HeroesDeck", n);
-  //  n++
-  //  let iDeck = await deploy("ItemsDeck", n)
-  //  n++
-  //  renderer.setDeck(1, hDeck.address, {nonce:n});
-  //  n++
-  //  renderer.setDeck(2, iDeck.address, {nonce:n});
+   let hDeck = await deploy("HeroesDeck", n);
+   n++
+   let iDeck = await deploy("ItemsDeck", n)
+   n++
+   renderer.setDeck(1, hDeck.address, {nonce:n});
+   n++
+   renderer.setDeck(2, iDeck.address, {nonce:n});
 }
 
 // We recommend this pattern to be able to use async/await everywhere
