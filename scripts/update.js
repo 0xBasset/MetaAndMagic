@@ -58,10 +58,13 @@ async function main() {
 
   let contracts = deployedContracts[hre.network.name]
 
-  renderer = await hre.ethers.getContractAt("MetaAndMagicRenderer", "0xfEb68fEE8c7F4c5f166df09925b88F0d7DF0Cc49"); 
+  // renderer = await hre.ethers.getContractAt("MetaAndMagicRenderer", "0xfEb68fEE8c7F4c5f166df09925b88F0d7DF0Cc49"); 
   
-  renderer.setDeck(1, contracts["HeroesDeck"]);
-  renderer.setDeck(2, contracts["ItemsDeck"]);
+  // renderer.setDeck(1, contracts["HeroesDeck"]);
+  // renderer.setDeck(2, contracts["ItemsDeck"]);
+
+  let sale = await updateProxy("MetaAndMagicSale", "0x197c53FFE5BAC8452440e2656f71246B9Dba5565");
+  await sale.initialize("0xFcB6B373A0109071129Ae31974644Ebb9b47aC05","0x2c7985027940e506145642d92CBc9e269de16252");
 
 }
 

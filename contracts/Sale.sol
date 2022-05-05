@@ -5,7 +5,7 @@ contract MetaAndMagicSale {
 
     uint256 constant PS_MAX  = 1;
 
-    uint8   public stage; // 0 -> init, 1 -> item wl sale, 2 -> items hero sale, 3 -> hero wl, 4 -> hero ps ,5 -> items public sale 
+    uint8   public stage; // 0 -> init, 1 -> hero wl, 2 -> hero ps  3 -> item wl sale, 4 -> items hero sale ,5 -> items public sale 
     bytes32 public root;
 
     Sale public heroes;
@@ -16,8 +16,8 @@ contract MetaAndMagicSale {
     function initialize(address heroes_, address items_) external {
         require(msg.sender == _owner(), "not allowed");
 
-        heroes = Sale(heroes_, 3_000,  1, 25, 38);
-        items  = Sale(items_,  10_000, 2, 10, 15);
+        heroes = Sale(heroes_, 3_000,  1, 15, 20);
+        items  = Sale(items_,  10_000, 5, 5, 8);
     }
 
     // ADMIN FUNCTION
@@ -52,7 +52,7 @@ contract MetaAndMagicSale {
     function mint(uint256 amt) external payable returns(uint256 id) {
         uint256 cacheStage = stage; 
 
-        require(cacheStage == 4 ||cacheStage == 5, "not on public sale");
+        require(cacheStage == 2 ||cacheStage == 5, "not on public sale");
 
         Sale memory sale = cacheStage == 5 ? items : heroes;
         
@@ -78,7 +78,7 @@ contract MetaAndMagicSale {
 
     function mint(uint256 allowedAmount, uint8 stage_, uint256 amount,  bytes32[] calldata proof_) external payable returns(uint256 id){
         uint256 cacheStage = stage; 
-        Sale memory sale   = cacheStage < 3 ? items : heroes;
+        Sale memory sale   = cacheStage >= 3 ? items : heroes;
 
         // Make sure use sent enough money 
         require(amount > 0, "zero amount");
@@ -97,7 +97,7 @@ contract MetaAndMagicSale {
         // Effects
         sale.left -= uint16(amount);
 
-        if (cacheStage < 3) {
+        if (cacheStage >= 3) {
             items = sale;
         } else {
             heroes = sale;
