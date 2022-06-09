@@ -16,9 +16,9 @@ contract MetaAndMagicLens {
     }
 
     function unstakedHeroes() external view returns (uint256[] memory unstaked){
-        unstaked = new uint256[](3000 - IERC721(heroesAddress).balanceOf(heroesAddress));
+        unstaked = new uint256[](3101 - IERC721(heroesAddress).balanceOf(heroesAddress));
         uint256 counter = 0;
-        for (uint256 i = 1; i < 3000; i++) {
+        for (uint256 i = 1; i < 3101; i++) {
             unstaked[counter++] = i;
         }
     }
@@ -32,11 +32,11 @@ contract MetaAndMagicLens {
     }
 
     function stakedHeroesOf(address acc) external view returns (uint256[] memory staked) {
-        uint256[] memory helper = new uint256[](3000);
+        uint256[] memory helper = new uint256[](3101);
 
         uint256 size = 0;
 
-        for (uint256 i = 1; i < 3000; i++) {
+        for (uint256 i = 1; i < 3101; i++) {
             (address owner,,) = IMetaAndMagicLike(meta).heroes(i);
             if (owner == acc){
                 helper[size++] = i;
@@ -53,6 +53,14 @@ contract MetaAndMagicLens {
         items = new uint256[](IERC721(itemsAddress).balanceOf(acc));
         uint256 counter = 0;
         for (uint256 i = 1; i < 15401; i++) {
+            if (IERC721(itemsAddress).ownerOf(i) == acc) items[counter++] = i;
+        }
+    }
+
+    function itemsOfUser(address acc, uint256 startingIndex, uint256 count) external view returns(uint256[] memory items) {
+        items = new uint256[](IERC721(itemsAddress).balanceOf(acc));
+        uint256 counter = 0;
+        for (uint256 i = startingIndex; i < startingIndex + count; i++) {
             if (IERC721(itemsAddress).ownerOf(i) == acc) items[counter++] = i;
         }
     }

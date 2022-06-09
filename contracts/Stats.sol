@@ -422,7 +422,6 @@ contract BossDropsStats is StatsLike {
     function kind(uint256 id) public pure returns (bytes10 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
  
-        // Todo fill according to latest tokenomics
         if (id == 11)  (hp, atk, mgk, mod) = (0,1500,1500,0);      // Dogemons Tail
         if (id == 12)  (hp, atk, mgk, mod) = (5000,0,0,0);     // Lunar Rings
         if (id == 13)  (hp, atk, mgk, mod) = (0,2000,2000,2);     // Etherhead
@@ -518,7 +517,6 @@ contract HeroStats is StatsLike {
 
     function rank(uint256 id) public pure returns (bytes10 packed) {
         (uint16 hp, uint16 atk, uint16 mgk, uint16 mod) = (0,0,0,0);
-        //todo adjust this
         if (id == 1) (hp, atk, mgk, mod) = (99, 0,0,0);  // novice
         if (id == 2) (hp, atk, mgk, mod) = (198,0,0,4);  // beginner
         if (id == 3) (hp, atk, mgk, mod) = (297,0,0,1); // intermediate

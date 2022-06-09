@@ -6,10 +6,10 @@ import { ERC721MM } from "./ERC721MM.sol";
 contract Items is ERC721MM {
 
     // TODO
-    string constant public name   = "SKADAKLALSDK";
-    string constant public symbol = "ASD";
-    // string constant public name   = "Meta&Magic-Items";
-    // string constant public symbol = "M&M-ITEMS";
+    // string constant public name   = "Meta & Magic Items";
+    // string constant public symbol = "ITEMS";
+    string constant public name   = "MMMMMMMMMM";
+    string constant public symbol = "IIIIII";
 
     mapping(uint256 => address) statsAddress;
     mapping(uint256 => uint256) bossSupplies;
@@ -115,7 +115,7 @@ contract Items is ERC721MM {
         
         uint256 rdn = uint256(keccak256(abi.encode(id_, seed, salt))) % 100_0000 + 1; 
 
-        if (rdn <= 75_0000) return 1;
+        if (rdn <= 50_0000) return 1;
         return (rdn % 5) + 2;
     }
 

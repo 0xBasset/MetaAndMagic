@@ -229,7 +229,6 @@ contract MetaAndMagic {
 
         fights[fightId].claimedScore = true;
 
-        // todo activate this
         require(IERC20(prizeTokens[fh.boss]).transfer(msg.sender, prizeValues[fh.boss] / boss.topScorers));
     }
 

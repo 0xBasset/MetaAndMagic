@@ -32,17 +32,18 @@ async function deploy(contractName) {
   return impl
 }
 
-async function updateProxy(contractName, address) {
+async function updateProxy(contractName, address, nonce) {
     console.log("Deploying", contractName)
     const ImplFact = await hre.ethers.getContractFactory(contractName);
-    let impl = await ImplFact.deploy();
+    let impl = await ImplFact.deploy({nonce: nonce});
+    nonce++
     console.log(impl.address)
     await impl.deployed();
 
     console.log("Updating Impl")
     let a = await hre.ethers.getContractAt("Proxy", address);
 
-    await a.setImplementation(impl.address);
+    await a.setImplementation(impl.address, {nonce: nonce});
 
     let im = await hre.ethers.getContractAt(contractName, address);
     return im
@@ -57,12 +58,12 @@ async function main() {
   await hre.run("compile");
 
   let contracts = deployedContracts[hre.network.name]
+  let nonce = 650
 
-  renderer = await hre.ethers.getContractAt("MetaAndMagicRenderer", "0xfEb68fEE8c7F4c5f166df09925b88F0d7DF0Cc49"); 
+  // await updateProxy("MetaAndMagicLens", contracts["MetaAndMagicLens"], nonce);
   
-  renderer.setDeck(1, contracts["HeroesDeck"]);
-  renderer.setDeck(2, contracts["ItemsDeck"]);
-
+   let sale = await updateProxy("MetaAndMagicSale", "0x4d007c8B6f55A24bb8CFc0718A4dBcF604496A62", 1307)
+  await sale.initialize("0x473b00b374553d058E7af14E518472393CFA038E", "0x552A6341C7c1D4aB4e424A0f2548888F6Ef26966", {nonce: 1309})
 }
 
 // We recommend this pattern to be able to use async/await everywhere

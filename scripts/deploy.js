@@ -1,79 +1,97 @@
 const hre = require("hardhat");
 
-const contracts = require("../contracts.json")
+const deployedContracts = require("../contracts.json")
 
-async function deployProxied(contractName) {
+async function deployProxied(contractName, nonce) {
   console.log("Deploying", contractName)
   const Factory = await hre.ethers.getContractFactory(contractName);
-  let impl = await Factory.deploy();
+  let impl = await Factory.deploy({nonce: nonce});
+  nonce++
   console.log(impl.address)
-
-  await new Promise(resolve => setTimeout(resolve, 5000));
 
   console.log("Deploying Proxy")
   const ProxyFac = await hre.ethers.getContractFactory("Proxy");
-  let proxy = await ProxyFac.deploy(impl.address);
+  let proxy = await ProxyFac.deploy(impl.address, {nonce: nonce});
   console.log(proxy.address)
 
-  await new Promise(resolve => setTimeout(resolve, 5000));
-
+  await proxy.deployed();
 
   let a = await hre.ethers.getContractAt(contractName, proxy.address);
   return a;
 }
 
-async function deploy(contractName) {
+async function deploy(contractName, nonce) {
   console.log("Deploying", contractName)
   const Factory = await hre.ethers.getContractFactory(contractName);
-  let impl = await Factory.deploy();
+  let impl = await Factory.deploy({nonce: nonce});
   console.log(impl.address)
-  await new Promise(resolve => setTimeout(resolve, 5000));
   return impl
 }
 
 async function main() {
   await hre.run("compile");
 
+  let contracts = deployedContracts[hre.network.name]
+
+  nonce = 1017;
   // Deploy Stats address
-  let statsHero  = await deploy("HeroStats");
-  let statsAtk   = await deploy("AttackItemsStats");
-  let statsDef   = await deploy("DefenseItemsStats");
-  let statsSpell = await deploy("SpellItemsStats");
-  let statsBuff  = await deploy("BuffItemsStats");
-  let statsBoss  = await deploy("BossDropsStats");
+  let statsHero  = await deploy("HeroStats",nonce);
+  nonce++
+  let statsAtk   = await deploy("AttackItemsStats", nonce);
+  nonce++
+  let statsDef   = await deploy("DefenseItemsStats", nonce);
+    nonce++
+  let statsSpell = await deploy("SpellItemsStats", nonce);
+    nonce++
+  let statsBuff  = await deploy("BuffItemsStats", nonce);
+    nonce++
+  let statsBoss  = await deploy("BossDropsStats", nonce);
+  nonce++
   
-  let metaRenderer = "0xfEb68fEE8c7F4c5f166df09925b88F0d7DF0Cc49";
+  let metaRenderer = contracts["MetaAndMagicRenderer"];
   
-  let lens   = await deployProxied("MetaAndMagicLens");
-  let heroes = await deployProxied("Heroes");
-  let items  = await deployProxied("Items");
-  let meta   = await deployProxied("MetaAndMagic");
-  let sale   = await deployProxied("MetaAndMagicSale");
+  let lens   = await deployProxied("MetaAndMagicLens", nonce);
+  nonce += 2
+  let heroes = await deployProxied("Heroes", nonce);
+  nonce += 2
+  let items  = await deployProxied("Items", nonce);
+  nonce += 2
+  let meta   = await deployProxied("MetaAndMagic", nonce);
+  nonce += 2
+  let sale   = await deployProxied("MetaAndMagicSale", nonce);
+  nonce += 2
 
   // Config everything
   console.log("Setting up")
-  await meta.initialize(heroes.address, items.address);
-  await meta.setUpOracle(contracts[hre.network.name].vrfCoord,contracts[hre.network.name].keyHash,contracts[hre.network.name].subId)
+  await meta.initialize(heroes.address, items.address, {nonce: nonce});
+  nonce++
+  await meta.setUpOracle(contracts.vrfCoord,contracts.keyHash,contracts.subId, {nonce: nonce})
+  nonce++
   console.log("Done meta")
 
- await new Promise(resolve => setTimeout(resolve, 1000));
-
-  await heroes.initialize(statsHero.address,metaRenderer) // todo replace with actual renderer
-  await heroes.setUpOracle(contracts[hre.network.name].vrfCoord,contracts[hre.network.name].keyHash,contracts[hre.network.name].subId);
-  await heroes.setAuth(meta.address, true);
-  await heroes.setAuth(sale.address, true);
+  await heroes.initialize(statsHero.address, metaRenderer, {nonce:nonce})
+  nonce++  
+  await heroes.setUpOracle(contracts.vrfCoord,contracts.keyHash,contracts.subId, {nonce:nonce});
+  nonce++
+  await heroes.setAuth(meta.address, true, {nonce:nonce});
+  nonce++
+  await heroes.setAuth(sale.address, true, {nonce:nonce});
+  nonce++
   console.log("Done heroes")
 
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await items.initialize(statsAtk.address, statsDef.address, statsSpell.address,statsBuff.address, statsBoss.address, metaRenderer, {nonce: nonce});
+  nonce++
+  await items.setUpOracle(contracts.vrfCoord,contracts.keyHash,contracts.subId, {nonce: nonce});
+  nonce++
+  await items.setAuth(meta.address, true, {nonce: nonce});
+  nonce++
+  await items.setAuth(sale.address, true, {nonce: nonce});
+  nonce++
+  console.log("Done items"),
 
-  await items.initialize(statsAtk.address, statsDef.address, statsSpell.address, statsBuff.address, statsBoss.address, metaRenderer); // todo replace with renderer
-  await items.setUpOracle(contracts[hre.network.name].vrfCoord,contracts[hre.network.name].keyHash,contracts[hre.network.name].subId);
-  await items.setAuth(meta.address, true);
-  await items.setAuth(sale.address, true);
-  console.log("Done items")
-
-  await sale.initialize(heroes.address, items.address);
-  await lens.initialize(meta.address, heroes.address, items.address);
+  await sale.initialize(heroes.address, items.address,{nonce:nonce});
+  nonce++
+  await lens.initialize(meta.address, heroes.address, items.address,{nonce:nonce});
 }
 
 // We recommend this pattern to be able to use async/await everywhere
