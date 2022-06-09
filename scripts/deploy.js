@@ -31,6 +31,8 @@ async function deploy(contractName, nonce) {
 async function main() {
   await hre.run("compile");
 
+  let contracts = deployedContracts[hre.network.name]
+
   nonce = 1017;
   // Deploy Stats address
   let statsHero  = await deploy("HeroStats",nonce);
@@ -45,8 +47,6 @@ async function main() {
     nonce++
   let statsBoss  = await deploy("BossDropsStats", nonce);
   nonce++
-
-  let contracts = deployedContracts[hre.network.name]
   
   let metaRenderer = contracts["MetaAndMagicRenderer"];
   

@@ -57,6 +57,14 @@ contract MetaAndMagicLens {
         }
     }
 
+    function itemsOfUser(address acc, uint256 startingIndex, uint256 count) external view returns(uint256[] memory items) {
+        items = new uint256[](IERC721(itemsAddress).balanceOf(acc));
+        uint256 counter = 0;
+        for (uint256 i = startingIndex; i < startingIndex + count; i++) {
+            if (IERC721(itemsAddress).ownerOf(i) == acc) items[counter++] = i;
+        }
+    }
+
     function _owner() internal view returns (address owner_) {
         bytes32 slot = bytes32(0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103);
         assembly {

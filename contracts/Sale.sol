@@ -5,7 +5,7 @@ contract MetaAndMagicSale {
 
     uint256 constant PS_MAX  = 1;
 
-    uint8   public stage; // 0 -> init, 1 -> hero wl, 2 -> hero ps  3 -> item wl sale, 4 -> items hero sale ,5 -> items public sale 
+    uint8   public stage; // 0 -> init, 1 -> hero wl, 2 -> hero ps  3 -> item wl sale, 4 -> items hero sale ,5 -> items public sale, 6 -> both heroes and items public
     bytes32 public root;
 
     Sale public heroes;
@@ -16,8 +16,8 @@ contract MetaAndMagicSale {
     function initialize(address heroes_, address items_) external {
         require(msg.sender == _owner(), "not allowed");
 
-        heroes = Sale(heroes_, 3_000,  1, 15, 20);
-        items  = Sale(items_,  10_000, 5, 5, 8);
+        items.pricePS = 1;
+        heroes.pricePS = 20;
     }
 
     // ADMIN FUNCTION
@@ -47,6 +47,33 @@ contract MetaAndMagicSale {
             items.left -= uint16(quantity);
         }
         IERC721MM(token).mint(destination, quantity, 2);
+    }
+
+    function mint(uint256 collection, uint256 amt) external payable returns(uint256 id) {
+        uint256 cacheStage = stage; 
+        require(cacheStage == 6, "not on public sale");
+        require(collection == 1 || collection == 2, "invalid collection");
+
+        Sale memory sale = collection == 2 ? items : heroes;
+        
+        // Make sure use sent enough money
+        require(uint256(sale.pricePS) * amt * 1e16 == msg.value, "not enough sent");
+
+        // Make sure that user is only minting the allowed amount
+        uint256 minted  = IERC721MM(sale.token).publicMinted(msg.sender);
+        require(minted + amt <= sale.amtPs, "already minted");
+
+        // Effects
+        sale.left -= uint16(amt);   
+
+        if (collection == 2) {
+            items  = sale;
+        } else {
+            heroes = sale;
+        }
+
+        // Interactions
+        id = IERC721MM(sale.token).mint(msg.sender, amt, 2);
     }
 
     function mint(uint256 amt) external payable returns(uint256 id) {
